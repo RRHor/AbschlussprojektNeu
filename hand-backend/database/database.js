@@ -11,8 +11,6 @@ const connectDB = async () => {
     }
 };
 
-    router.post('/logout', (req, res) => {
-        res.json({ message: 'Logout erfolgreich' });
-    });
+
 
 export default connectDB;
