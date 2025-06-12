@@ -1,4 +1,5 @@
 import { useLocation, useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
 function VerifyEmail() {
   const [status, setStatus] = useState('Verifiziere...');
   const [error, setError] = useState(null);
@@ -15,7 +16,7 @@ function VerifyEmail() {
       }
       try {
         // Anfrage an das Backend senden
-        const response = await fetch('http://localhost:5000/api/auth/verify', {
+        const response = await fetch('http://localhost:4000/api/auth/verify', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
