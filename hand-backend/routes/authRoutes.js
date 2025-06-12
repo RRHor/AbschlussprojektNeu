@@ -2,6 +2,7 @@ import express from 'express';
 import jwt from 'jsonwebtoken';
 import User from '../models/UserModel.js';
 import sendVerificationEmail from '../utils/sendVerificationEmail.js';
+import authMiddleware from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
@@ -118,6 +119,11 @@ router.post('/request-verification', async (req, res) => {
     console.error('Fehler bei der Anfrage:', error);
     res.status(500).json({ message: 'Serverfehler' });
   }
+});
+
+// Route zum Abrufen der Benutzerdaten
+router.get('/users/me', authMiddleware, async (req, res) => {
+  res.json(req.user);
 });
 
 export default router;

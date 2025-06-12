@@ -4,7 +4,7 @@ import bcrypt from "bcryptjs";
 const userSchema = new mongoose.Schema(
   {
     name: { type: String, required: true },
-    address: {
+    adress: {
       street: { type: String, required: true },
       city: { type: String, required: true },
       state: { type: String, required: true },
@@ -33,6 +33,11 @@ userSchema.pre("save", async function (next) {
     next(error);
   }
 });
+
+// Methode zum Passwort-Vergleich
+userSchema.methods.matchPassword = async function (enteredPassword) {
+  return await bcrypt.compare(enteredPassword, this.password);
+};
 
 const User = mongoose.model("User", userSchema);
 export default User;
