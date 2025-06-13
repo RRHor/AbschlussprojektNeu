@@ -126,4 +126,22 @@ router.get('/users/me', authMiddleware, async (req, res) => {
   res.json(req.user);
 });
 
+// Route zum Aktualisieren der Benutzerdaten
+router.put('/users/:id', authMiddleware, async (req, res) => {
+  try {
+    const user = await User.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      { new: true, runValidators: true }
+    ).select('-password');
+    if (!user) {
+      return res.status(404).json({ message: 'User nicht gefunden' });
+    }
+    res.json(user);
+  } catch (error) {
+    console.error('Fehler beim Aktualisieren:', error);
+    res.status(500).json({ message: 'Serverfehler' });
+  }
+});
+
 export default router;

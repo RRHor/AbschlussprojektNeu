@@ -45,7 +45,7 @@ function Profile({ user, setUser, onLogout }) {
 
   // Daten speichern
   const handleSave = () => {
-    fetch(`http://localhost:4000/api/users/${localUser._id}`, {
+    fetch(`http://localhost:4000/api/auth/users/${localUser._id}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
