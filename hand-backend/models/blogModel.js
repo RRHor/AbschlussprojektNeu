@@ -1,18 +1,15 @@
 import mongoose from "mongoose";
 
-const postSchema = new mongoose.Schema(
+const blogSchema = new mongoose.Schema(
   {
     title: { type: String, required: true },
     description: { type: String, required: true },
     user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true }, // Verknüpfung zum User
-    createdAt: { type: Date, default: Date.now },
-    // Optional: Kategorie, Bilder, Status, etc.
-    // category: { type: String },
-    // images: [String],
-    // status: { type: String, default: "offen" }
+    tags: [{ type: String }],           // Tags als Array von Strings
+    images: [{ type: String }],         // Bild-URLs oder Dateinamen
   },
   { timestamps: true }
 );
 
-const Post = mongoose.model("Post", postSchema);
-export default Post;
+const Blog = mongoose.model("Blog", blogSchema);
+export default Blog;
