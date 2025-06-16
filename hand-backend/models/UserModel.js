@@ -7,7 +7,7 @@ const userSchema = new mongoose.Schema(
     adress: {
       street: { type: String, required: true },
       city: { type: String, required: true },
-      state: { type: String, required: true },
+      district: { type: String, required: true },
       zip: { type: Number, required: true },
     },
     email: { type: String, required: true, unique: true },
