@@ -8,7 +8,7 @@ const userSchema = new mongoose.Schema({
   isVerify: { type: Boolean, default: false },
   adress:   { type: mongoose.Schema.Types.ObjectId, ref: 'Adress' }, // Referenz!
   isAdmin:  { type: Boolean, default: false },
-  verificationCode: { type: Number, required: true },
+  verificationCode: { type: String, required: false, default: null },
 });
 
 // Passwort vor dem Speichern hashen

@@ -14,7 +14,7 @@ const userSchema = new mongoose.Schema(
     password: { type: String, required: true },
     isAdmin: { type: Boolean, default: false },
     isActive: { type: Boolean, default: true },
-    verificationCode: { type: String, default: null },
+    verificationCode: { type: String, required: false, default: null },
     verificationCodeExpires: { type: Date, default: null },
   },
   { timestamps: true }
