@@ -32,7 +32,7 @@ export const sendVerificationEmail = async (to, verificationCode) => {
             <strong>${verificationCode}</strong>
           </div>
           <p>Oder klicke auf diesen Link, um deine E-Mail direkt zu bestätigen:</p>
-          <p><a href="http://localhost:5173/verify?code=${verificationCode}" style="background-color: #4CAF50; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px; display: inline-block;">E-Mail bestätigen</a></p>
+          <p><a href="http://localhost:5173/verify?email=${to}&code=${verificationCode}" style="background-color: #4CAF50; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px; display: inline-block;">E-Mail bestätigen</a></p>
           <p>Dieser Code ist 24 Stunden gültig.</p>
           <p>Viele Grüße,<br>Dein Hand-Hand Team</p>
         </div>

@@ -1,6 +1,6 @@
 import express from "express";
 import jwt from "jsonwebtoken";
-import User from "../models/userSchema.js";
+import User from "../models/UserModel.js";
 import { sendVerificationEmail } from "../utils/emailService.js";
 import authMiddleware from "../middleware/authMiddleware.js";
 
@@ -9,63 +9,34 @@ const router = express.Router();
 // Registrierung
 router.post("/register", async (req, res) => {
   try {
-    const { nickname, email, password, adress } = req.body;
+    const { name, email, password, adress } = req.body;
 
     // Prüfe, ob User existiert
-    // const existingUser = await User.findOne({ email });
-    // if (existingUser) {
-    //     return res.status(400).json({ message: 'E-Mail bereits vergeben' });
-    // }
-
-    // Prüfen, ob Nickname oder E-Mail schon vergeben sind
-    const existingUser = await User.findOne({ $or: [{ email }, { nickname }] });
+    const existingUser = await User.findOne({ email });
     if (existingUser) {
-      return res
-        .status(400)
-        .json({ message: "E-Mail oder Nickname bereits vergeben" });
+      return res.status(400).json({ message: "E-Mail bereits vergeben" });
     }
 
+    // Verifizierungscode generieren (z.B. 6-stellige Zahl)
+    const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
 
-
-    // Verifizierungscode als String generieren
-    const verificationCode = Math.floor(
-      100000 + Math.random() * 900000
-    );
-
+    // User anlegen
     const newUser = new User({
-      nickname,
+      name,
       email,
       password,
       adress,
-    //   isVerify: false,
-      verificationCode,
+      verificationCode, // <-- hier wird der Code gesetzt!
     });
+
     await newUser.save();
 
     // Verifizierungs-E-Mail senden
-    await sendVerificationEmail(newUser.email, newUser.verificationCode);
+    await sendVerificationEmail(email, verificationCode);
 
-    // JWT erzeugen
-    // const token = jwt.sign({ id: newUser._id }, process.env.JWT_SECRET, {
-    //   expiresIn: "30d",
-    // });
-
-    res.status(201).json({
-      message: "User erfolgreich erstellt. Bitte E-Mail verifizieren.",
-    //   token,
-      user: {
-        _id: newUser._id,
-        nickname: newUser.nickname,
-        email: newUser.email,
-        adress: newUser.adress,
-        isAdmin: newUser.isAdmin,
-        isVerify: newUser.isVerify,
-      },
-    });
+    res.status(201).json({ message: "User erfolgreich registriert", user: newUser });
   } catch (error) {
-    res
-      .status(500)
-      .json({ message: "Registrierung fehlgeschlagen", error: error.message });
+    res.status(500).json({ message: "Registrierung fehlgeschlagen", error: error.message });
   }
 });
 

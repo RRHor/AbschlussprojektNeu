@@ -2,7 +2,7 @@
 // Enthält alle Routen zur E-Mail-Verifizierung von Usern zum Backend
 
 import express from "express";
-import User from "../models/userSchema.js";
+import User from "../models/UserModel.js";
 
 const router = express.Router();
 
