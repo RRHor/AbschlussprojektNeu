@@ -55,4 +55,26 @@ Bek: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4NGZmYTcyNWFhNTczNmJiNjA1M
   }
 }
 
+{
+  "email": "bekex13985@ihnpo.com",
+  "password": "password123"
+}
+{
+  "message": "Login erfolgreich",
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4NGZmYTcyNWFhNTczNmJiNjA1M2U4MSIsImlhdCI6MTc1MDE2MjMxNSwiZXhwIjoxNzUyNzU0MzE1fQ.2FuRbQsNl0bU_x-wFDv0nDEvQDWdii7RqdD_aSmO4UY",
+  "user": {
+    "_id": "684ffa725aa5736bb6053e81",
+    "nickname": "Bek",
+    "email": "bekex13985@ihnpo.com",
+    "adress": {
+      "street": "Musterstraße 1",
+      "city": "Musterstadt",
+      "state": "NRW",
+      "zip": 12345
+    },
+    "isAdmin": false,
+    "isVerify": true
+  }
+}
+
 
