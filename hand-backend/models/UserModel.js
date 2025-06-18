@@ -13,6 +13,7 @@ const userSchema = new mongoose.Schema(
         street: { type: String, required: true },   // Straße
         city: { type: String, required: true },     // Stadt
         district: { type: String, required: true }, // Stadtteil/Bezirk
+        state: { type: String, required: true },    // Bundesland
         zip: { type: Number, required: true },      // Postleitzahl
       }
     ],

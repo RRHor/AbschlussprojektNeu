@@ -4,6 +4,16 @@ import authMiddleware from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
+// Route für eingeloggten User (JWT-geschützt)
+router.get('/users/me', authMiddleware, async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+    res.json(user);
+  } catch (error) {
+    res.status(500).json({ message: "Serverfehler", error: error.message });
+  }
+});
+
 // Einzelnen User abrufen
 router.get('/users/:id', async (req, res) => {
   try {
@@ -15,11 +25,6 @@ router.get('/users/:id', async (req, res) => {
   } catch (error) {
     res.status(500).json({ message: 'Serverfehler', error: error.message });
   }
-});
-
-// Route für eingeloggten User (JWT-geschützt)
-router.get('/users/me', authMiddleware, async (req, res) => {
-  res.json(req.user);
 });
 
 // Userdaten aktualisieren (nur für eingeloggten User oder Admin)
