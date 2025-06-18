@@ -58,4 +58,23 @@ router.delete('/:id', authMiddleware, async (req, res) => {
   res.json({ message: 'Kommentar gelöscht' });
 });
 
+// Suche nach Kommentaren mit Text, z.B. /api/comments?q=Suchwort
+router.get('/', async (req, res) => {
+  const { q } = req.query;
+  let filter = {};
+  if (q) {
+    filter = { text: { $regex: q, $options: 'i' } };
+  }
+  const comments = await Comment.find(filter).populate('user', 'name');
+  res.json(comments);
+});
+
 export default router;
+
+/*Wie benutzt du die Suche?
+Alle User mit „max“ im Namen oder E-Mail:
+GET /api/users?q=max
+Alle Posts mit „Nachbarschaft“ im Titel oder Inhalt:
+GET /api/posts?q=Nachbarschaft
+Alle Kommentare mit „toll“ im Text:
+GET /api/comments?q=toll*/ 

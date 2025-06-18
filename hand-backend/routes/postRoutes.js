@@ -6,9 +6,19 @@ const router = express.Router();
 
 
 
-// Alle Posts abrufen
+// Suche nach Posts mit Titel oder Inhalt, z.B. /api/posts?q=Suchwort
 router.get('/', async (req, res) => {
-  const posts = await Post.find().populate('user', 'name');
+  const { q } = req.query;
+  let filter = {};
+  if (q) {
+    filter = {
+      $or: [
+        { title: { $regex: q, $options: 'i' } },   // Suche im Titel (case-insensitive)
+        { content: { $regex: q, $options: 'i' } }  // Suche im Inhalt
+      ]
+    };
+  }
+  const posts = await Post.find(filter).populate('user', 'name');
   res.json(posts);
 });
 
@@ -41,4 +51,12 @@ router.delete('/:id', authMiddleware, async (req, res) => {
 });
 
 export default router;
+
+/*Wie benutzt du die Suche?
+Alle User mit „max“ im Namen oder E-Mail:
+GET /api/users?q=max
+Alle Posts mit „Nachbarschaft“ im Titel oder Inhalt:
+GET /api/posts?q=Nachbarschaft
+Alle Kommentare mit „toll“ im Text:
+GET /api/comments?q=toll*/ 
 

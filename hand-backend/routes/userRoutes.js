@@ -62,4 +62,28 @@ router.patch('/users/:id/make-admin', authMiddleware, async (req, res) => {
   }
 });
 
+// Suche nach Usern mit Name oder E-Mail, z.B. /api/users?q=Suchwort
+router.get('/users', async (req, res) => {
+  const { q } = req.query;
+  let filter = {};
+  if (q) {
+    filter = {
+      $or: [
+        { name: { $regex: q, $options: 'i' } },
+        { email: { $regex: q, $options: 'i' } }
+      ]
+    };
+  }
+  const users = await User.find(filter);
+  res.json(users);
+});
+
 export default router;
+
+/*Wie benutzt du die Suche?
+Alle User mit „max“ im Namen oder E-Mail:
+GET /api/users?q=max
+Alle Posts mit „Nachbarschaft“ im Titel oder Inhalt:
+GET /api/posts?q=Nachbarschaft
+Alle Kommentare mit „toll“ im Text:
+GET /api/comments?q=toll*/ 
