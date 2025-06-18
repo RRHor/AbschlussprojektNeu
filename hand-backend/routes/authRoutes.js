@@ -25,7 +25,7 @@ router.post("/register", async (req, res) => {
       name,
       email,
       password,
-      adress,
+      adress: [adress], // <-- Array!
       verificationCode, // <-- hier wird der Code gesetzt!
     });
 
