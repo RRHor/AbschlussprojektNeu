@@ -4,11 +4,31 @@ import Ad from '../models/adModel.js';
 
 const router = express.Router();
 
-// Alle Anzeigen abrufen
+// Suche nach Anzeigen (Ads) mit Titel, Beschreibung, Typ oder Tags.
+// Beispiel: /api/ads?q=suche
 router.get('/', async (req, res) => {
-  const ads = await Ad.find().populate('user', 'nickname');
+  const { q } = req.query;
+  let filter = {};
+  if (q) {
+    filter = {
+      $or: [
+        { title: { $regex: q, $options: 'i' } },         // Suche im Titel
+        { description: { $regex: q, $options: 'i' } },   // Suche in der Beschreibung
+        { type: { $regex: q, $options: 'i' } },          // Suche im Typ (biete/suche/tausche)
+        { tags: { $regex: q, $options: 'i' } }           // Suche in Tags
+      ]
+    };
+  }
+  const ads = await Ad.find(filter).populate('user', 'name');
   res.json(ads);
 });
+
+/*Hinweise:
+
+Die Suche ist case-insensitive (Groß-/Kleinschreibung wird ignoriert).
+Du kannst nach Titel, Beschreibung, Typ und Tags suchen.
+Beispiel:
+/api/ads?q=suche findet alle Anzeigen, die „suche“ im Titel, in der Beschreibung, im Typ oder in den Tags haben.*/
 
 // Einzelne Anzeige abrufen
 router.get('/:id', async (req, res) => {

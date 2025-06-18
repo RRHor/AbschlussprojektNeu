@@ -58,16 +58,29 @@ router.delete('/:id', authMiddleware, async (req, res) => {
   res.json({ message: 'Kommentar gelöscht' });
 });
 
-// Suche nach Kommentaren mit Text, z.B. /api/comments?q=Suchwort
+// Suche nach Kommentaren mit Text ODER Username, z.B. /api/comments?q=Suchwort
 router.get('/', async (req, res) => {
   const { q } = req.query;
-  let filter = {};
+  let comments = await Comment.find().populate('user', 'name nickname');
+  
   if (q) {
-    filter = { text: { $regex: q, $options: 'i' } };
+    const regex = new RegExp(q, 'i'); // case-insensitive
+    comments = comments.filter(comment =>
+      regex.test(comment.text) ||
+      (comment.user && (
+        regex.test(comment.user.name || '') ||
+        regex.test(comment.user.nickname || '')
+      ))
+    );
   }
-  const comments = await Comment.find(filter).populate('user', 'name');
   res.json(comments);
 });
+
+/*Hinweise:
+- die Suche ist case-insensitive
+- jetzt man mit api/comments?q=mux sowohl nach Kommentartext als auch nach Usernamen oder Nickname suchen
+- Das Feld nickname wird mit einbezogen, falls du es im UserModel hast
+*/
 
 export default router;
 
@@ -77,4 +90,4 @@ GET /api/users?q=max
 Alle Posts mit „Nachbarschaft“ im Titel oder Inhalt:
 GET /api/posts?q=Nachbarschaft
 Alle Kommentare mit „toll“ im Text:
-GET /api/comments?q=toll*/ 
+GET /api/comments?q=toll*/

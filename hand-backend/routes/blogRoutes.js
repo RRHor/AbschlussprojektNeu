@@ -4,11 +4,28 @@ import Blog from '../models/blogModel.js';
 
 const router = express.Router();
 
-// Alle Blogposts abrufen
+// Suche nach Blogposts mit Titel, Beschreibung oder Tags.
+// Beispiel: /api/blogs?q=hilfe
 router.get('/', async (req, res) => {
-  const blogs = await Blog.find().populate('user', 'name');
+  const { q } = req.query;
+  let filter = {};
+  if (q) {
+    filter = {
+      $or: [
+        { title: { $regex: q, $options: 'i' } },         // Suche im Titel
+        { description: { $regex: q, $options: 'i' } },   // Suche in der Beschreibung
+        { tags: { $regex: q, $options: 'i' } }           // Suche in Tags
+      ]
+    };
+  }
+  const blogs = await Blog.find(filter).populate('user', 'name');
   res.json(blogs);
 });
+
+/*Die Suche ist case-insensitive.
+Du kannst nach Titel, Beschreibung und Tags suchen.
+Beispiel:
+/api/blogs?q=hilfe findet alle Blogposts, die „hilfe“ im Titel, in der Beschreibung oder in den Tags haben.*/
 
 // Einzelnen Blogpost abrufen
 router.get('/:id', async (req, res) => {

@@ -57,4 +57,52 @@ router.post('/:id/join', authMiddleware, async (req, res) => {
   res.json({ message: 'Teilnahme bestätigt', event });
 });
 
+/**
+ * Suche nach Events mit Titel, Beschreibung, Ort oder Tags.
+ * Beispiel: /api/events?q=nachbarschaft
+ */
+router.get('/', async (req, res) => {
+  const { q } = req.query;
+  let filter = {};
+  if (q) {
+    filter = {
+      $or: [
+        { title: { $regex: q, $options: 'i' } },         // Suche im Titel
+        { description: { $regex: q, $options: 'i' } },   // Suche in der Beschreibung
+        { location: { $regex: q, $options: 'i' } },      // Suche im Ort
+        { tags: { $regex: q, $options: 'i' } }           // Suche in Tags
+      ]
+    };
+  }
+  // Events mit Userdaten holen
+  let events = await Event.find(filter)
+    .populate('organizer', 'name nickname')
+    .populate('participants', 'name nickname');
+
+  // Falls q gesetzt ist, auch nach Usernamen filtern
+  if (q) {
+    const regex = new RegExp(q, 'i');
+    events = events.filter(event =>
+      regex.test(event.organizer?.name || '') ||
+      regex.test(event.organizer?.nickname || '') ||
+      event.participants.some(user =>
+        regex.test(user.name || '') || regex.test(user.nickname || '')
+      ) ||
+      // Die bisherigen Felder bleiben erhalten
+      regex.test(event.title) ||
+      regex.test(event.description) ||
+      regex.test(event.location) ||
+      (event.tags && event.tags.some(tag => regex.test(tag)))
+    );
+  }
+
+  res.json(events);
+});
+
+/*Hinweise:
+- die Suche ist case-insensitive
+- du kannst nach Titel, Beschreibung, Ort und Tags suchen
+- Beispiel: /api/events?q= hilfe findet alle Events, die "hilfe" im Titel, in der Beschreibung, im Ort oder in den Tags haben
+- mit populate('organizer', 'name') und populate('participants', 'name') bekommst du die Namen der Organisatoren und Teilnehmer direkt mitgeliefert*/
+
 export default router;
