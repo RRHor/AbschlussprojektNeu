@@ -1,19 +1,47 @@
-Erstellen von einen GitHub Repository
-git clone LINK (GitHub Repository ins Local clonen , nur einmal am Anfang)
-git branch  (welche branches gibt es remote)
-git status (welcher branch ist aktuell aktiv)
-git branch <NEUER_NAME> ODER git branch -M <NEUER_NAME> (neuen git branch local erstellen)
-Eure Änderungen/Programmieren
+# Git Branch-Workflow: Branches erstellen, mergen & Konflikte lösen
+
+## 1. Neuen Branch erstellen und wechseln
+```bash
+git checkout -b <branchname>
+```
+
+## 2. Änderungen vornehmen und committen
+```bash
 git add .
-git commit -m "TEXT"
-git push -u origin <NEUER_NAME> (Einmaliges synchronisieren von eurem neuen localen branch mit Remote Origin)
-Der neue locale Branch existiert jetzt auch Remote auf GitHub
-Überprüfen über das Dropdown in GitHub
-Im zu mergenden Branch einen Git Pullrequest erstellen
-Auto Merge abwarten (Able to merge)
-Button Pull Request ausführen
-Gemergeter Branch z.B. main/master/dev ist aktuell
-Nächste Schritte z.B.:
-git fetch (Überprüfen ob es neue Änderungen remote gibt)
-git pull (Falls es Änderungen gibt, die Änderungen bei mir local updaten)
-Theoretisch geht dieser Kreislauf immer wieder hin und her mit den neuen Änderungen/Branches/Merge
+git commit -m "Beschreibung der Änderungen"
+```
+
+## 3. Branch mit Remote-Repository verknüpfen
+```bash
+git push -u origin <branchname>
+```
+
+## 4. Pull Request erstellen
+- Gehe zu deinem Repository auf GitHub.
+- Klicke auf "Compare & pull request".
+- Füge eine Beschreibung hinzu und klicke auf "Create pull request".
+
+## 5. Code überprüfen und mergen
+- Überprüfe die Änderungen im Pull Request.
+- Klicke auf "Merge pull request", um die Änderungen zu übernehmen.
+
+## 6. Lokalen Branch aktualisieren
+```bash
+git checkout main
+git pull origin main
+```
+
+## 7. Branch löschen (optional)
+```bash
+git branch -d <branchname>
+git push origin --delete <branchname>
+```
+
+## Hinweise
+- Stelle sicher, dass du regelmäßig deinen `main`-Branch aktualisierst.
+- Löse Konflikte, falls vorhanden, bevor du den Pull Request erstellst.
+
+
+
+
+
