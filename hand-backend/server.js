@@ -13,6 +13,8 @@ import eventRoutes from './routes/eventRoutes.js';
 import commentRoutes from './routes/commentRoutes.js';
 import adressRoutes from './routes/adressRoutes.js';
 import testEmailRoutes from './routes/testEmailRoutes.js'
+// import profileRoutes from './routes/profileRoutes.js';
+// import loginRoute from './routes/loginRoutes.js';
 
 // Lade Umgebungsvariablen aus .env-Datei
 dotenv.config();
@@ -63,6 +65,12 @@ app.use('/api', adressRoutes);
 app.get('/', (req, res) => {
   res.send('Willkommen im "Hand in Hand"-Backend!');
 });
+
+// Profil-Routen (z.B. /api/profile)
+// app.use('/api', profileRoutes);
+
+// Login-Routen (z.B. /api/auth/login)
+// app.use('/api/auth', loginRoute);
 
 // Starte den Server
 app.listen(PORT, () => {
