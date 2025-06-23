@@ -1,11 +1,37 @@
-// import mongoose from 'mongoose';
+import mongoose from 'mongoose';
 
-// const adressSchema = new mongoose.Schema({
-//   street: { type: String, required: true },
-//   city: { type: String, required: true },
-//   district: { type: String, required: true },
-//   zip: { type: Number, required: true }
-// });
+const addressSchema = new mongoose.Schema({
+    firstName: {
+        type: String,
+        required: true,
+    },
+    lastName: {
+        type: String,
+        required: true,
+    },
+    street: {
+        type: String,
+        required: true,
+    },
+    zipCode: {
+        type: String,
+        required: true,
 
-// const Adress = mongoose.models.Adress || mongoose.model('Adress', adressSchema);
-// export default Adress;
+    },
+    city: {
+        type: String,
+        required: true,
+    },
+    district: {
+        type: String,
+        required: false,
+    },
+    user: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        required: true,
+    }
+});
+
+const Adresse = mongoose.model('Adresse', addressSchema);
+export default Adresse;
