@@ -18,6 +18,20 @@ router.get('/:id', async (req, res) => {
 });
 
 // Kommentar erstellen
+<<<<<<< HEAD
+=======
+// router.post('/', authMiddleware, async (req, res) => {
+//   try {
+//     const { text, post } = req.body;
+//     const comment = new Comment({ text, post, user: req.user._id });
+//     await comment.save();
+//     res.status(201).json(comment);
+//   } catch (error) {
+//     res.status(400).json({ message: 'Fehler beim Erstellen', error });
+//   }
+// });
+
+>>>>>>> 3721eefb9d95a337e082e1e867930b8f4f605d4d
 router.post('/', protect, async (req, res) => {
   try {
     const { text, post } = req.body;
@@ -30,6 +44,23 @@ router.post('/', protect, async (req, res) => {
 });
 
 // Kommentar bearbeiten (nur Ersteller oder Admin)
+<<<<<<< HEAD
+=======
+// router.put('/:id', authMiddleware, async (req, res) => {
+//   const comment = await Comment.findById(req.params.id);
+//   if (!comment) return res.status(404).json({ message: 'Kommentar nicht gefunden' });
+
+//   // Nur Ersteller oder Admin darf bearbeiten
+//   if (comment.user.toString() !== req.user._id.toString() && !req.user.isAdmin) {
+//     return res.status(403).json({ message: 'Keine Berechtigung' });
+//   }
+
+//   comment.text = req.body.text || comment.text;
+//   await comment.save();
+//   res.json(comment);
+// });
+
+>>>>>>> 3721eefb9d95a337e082e1e867930b8f4f605d4d
 router.put('/:id', protect, async (req, res) => {
   const comment = await Comment.findById(req.params.id);
   if (!comment) return res.status(404).json({ message: 'Kommentar nicht gefunden' });
@@ -45,6 +76,22 @@ router.put('/:id', protect, async (req, res) => {
 });
 
 // Kommentar löschen (nur Ersteller oder Admin)
+<<<<<<< HEAD
+=======
+// router.delete('/:id', authMiddleware, async (req, res) => {
+//   const comment = await Comment.findById(req.params.id);
+//   if (!comment) return res.status(404).json({ message: 'Kommentar nicht gefunden' });
+
+//   // Nur Ersteller oder Admin darf löschen
+//   if (comment.user.toString() !== req.user._id.toString() && !req.user.isAdmin) {
+//     return res.status(403).json({ message: 'Keine Berechtigung' });
+//   }
+
+//   await comment.deleteOne();
+//   res.json({ message: 'Kommentar gelöscht' });
+// });
+
+>>>>>>> 3721eefb9d95a337e082e1e867930b8f4f605d4d
 router.delete('/:id', protect, async (req, res) => {
   const comment = await Comment.findById(req.params.id);
   if (!comment) return res.status(404).json({ message: 'Kommentar nicht gefunden' });

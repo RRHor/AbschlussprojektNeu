@@ -18,6 +18,19 @@ router.get('/:id', async (req, res) => {
 });
 
 // Neues Event erstellen
+<<<<<<< HEAD
+=======
+// router.post('/', authMiddleware, async (req, res) => {
+//   try {
+//     const event = new Event({ ...req.body, organizer: req.user._id });
+//     await event.save();
+//     res.status(201).json(event);
+//   } catch (error) {
+//     res.status(400).json({ message: 'Fehler beim Erstellen', error });
+//   }
+// });
+
+>>>>>>> 3721eefb9d95a337e082e1e867930b8f4f605d4d
 router.post('/', protect, async (req, res) => {
   try {
     const event = new Event({ ...req.body, organizer: req.user._id });
@@ -29,6 +42,19 @@ router.post('/', protect, async (req, res) => {
 });
 
 // Event bearbeiten
+<<<<<<< HEAD
+=======
+// router.put('/:id', authMiddleware, async (req, res) => {
+//   try {
+//     const event = await Event.findByIdAndUpdate(req.params.id, req.body, { new: true });
+//     if (!event) return res.status(404).json({ message: 'Event nicht gefunden' });
+//     res.json(event);
+//   } catch (error) {
+//     res.status(400).json({ message: 'Fehler beim Bearbeiten', error });
+//   }
+// });
+
+>>>>>>> 3721eefb9d95a337e082e1e867930b8f4f605d4d
 router.put('/:id', protect, async (req, res) => {
   try {
     const event = await Event.findByIdAndUpdate(req.params.id, req.body, { new: true });
@@ -40,6 +66,15 @@ router.put('/:id', protect, async (req, res) => {
 });
 
 // Event löschen
+<<<<<<< HEAD
+=======
+// router.delete('/:id', authMiddleware, async (req, res) => {
+//   const event = await Event.findByIdAndDelete(req.params.id);
+//   if (!event) return res.status(404).json({ message: 'Event nicht gefunden' });
+//   res.json({ message: 'Event gelöscht' });
+// });
+
+>>>>>>> 3721eefb9d95a337e082e1e867930b8f4f605d4d
 router.delete('/:id', protect, async (req, res) => {
   const event = await Event.findByIdAndDelete(req.params.id);
   if (!event) return res.status(404).json({ message: 'Event nicht gefunden' });
@@ -47,6 +82,19 @@ router.delete('/:id', protect, async (req, res) => {
 });
 
 // An Event teilnehmen
+<<<<<<< HEAD
+=======
+// router.post('/:id/join', authMiddleware, async (req, res) => {
+//   const event = await Event.findById(req.params.id);
+//   if (!event) return res.status(404).json({ message: 'Event nicht gefunden' });
+//   if (!event.participants.includes(req.user._id)) {
+//     event.participants.push(req.user._id);
+//     await event.save();
+//   }
+//   res.json({ message: 'Teilnahme bestätigt', event });
+// });
+
+>>>>>>> 3721eefb9d95a337e082e1e867930b8f4f605d4d
 router.post('/:id/join', protect, async (req, res) => {
   const event = await Event.findById(req.params.id);
   if (!event) return res.status(404).json({ message: 'Event nicht gefunden' });

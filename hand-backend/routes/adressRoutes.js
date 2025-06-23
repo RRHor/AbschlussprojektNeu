@@ -1,4 +1,5 @@
 import express from 'express';
+<<<<<<< HEAD
 import {protect} from '../middleware/authMiddleware.js';
 import User from '../models/UserModel.js';
 
@@ -16,14 +17,43 @@ const router = express.Router();
  * }
  */
 router.post('/users/me/adress', protect, async (req, res) => {
+=======
+import Adresse from '../models/adressSchema.js';
+import {protect} from '../middleware/authMiddleware.js';
+import User from '../models/userSchema.js';
+
+const router = express.Router();
+
+router.post('/users/me/adresse', protect, async (req, res) => {
+>>>>>>> 3721eefb9d95a337e082e1e867930b8f4f605d4d
     try {
+        const {firstName, lastName, street, zipCode, city, district} = req.body;
+
+        // Adresse anlegen und mit der User-ID verknüpfen
+        const adresse = new Adresse({
+            firstName,
+            lastName,
+            street,
+            zipCode,
+            city,
+            district,
+            user: req.user._id
+        });
+
+        await adresse.save();
+
+        // 2. User aktualisieren (Adresse zuweisen)
         const user = await User.findById(req.user._id);
-        user.adress.push(req.body); // Neue Adresse ans Array anhängen
-        await user.save();
-        res.status(201).json({ message: "Adresse hinzugefügt", adress: user.adress });
+
+        // User bekommt die Adresse zugewiesen
+        req.user.adress = adresse._id;
+        await req.user.save();
+        res.status(201).json({message: 'Adresse erfolgrich angelegt', adresse});
     } catch (error) {
-        res.status(500).json({ message: "Fehler beim Hinzufügen der Adresse", error: error.message });
+        // console.error('Fehler beim Anlegen der Adresse:', error);
+        res.status(500).json({message: 'Serverfehler beim Anlegen der Adresse', error: error.message});
     }
+<<<<<<< HEAD
 });
 
 /**
@@ -92,5 +122,8 @@ router.delete('/users/me/adress/:index', protect, async (req, res) => {
     res.status(500).json({ message: "Fehler beim Löschen der Adresse", error: error.message });
   }
 });
+=======
+})
+>>>>>>> 3721eefb9d95a337e082e1e867930b8f4f605d4d
 
 export default router;

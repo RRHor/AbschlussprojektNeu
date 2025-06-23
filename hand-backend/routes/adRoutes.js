@@ -38,6 +38,19 @@ router.get('/:id', async (req, res) => {
 });
 
 // Neue Anzeige erstellen
+<<<<<<< HEAD
+=======
+// router.post('/', authMiddleware, async (req, res) => {
+//   try {
+//     const ad = new Ad({ ...req.body, user: req.user._id });
+//     await ad.save();
+//     res.status(201).json(ad);
+//   } catch (error) {
+//     res.status(400).json({ message: 'Fehler beim Erstellen', error });
+//   }
+// });
+
+>>>>>>> 3721eefb9d95a337e082e1e867930b8f4f605d4d
 router.post('/', protect, async (req, res) => {
   try {
     const ad = new Ad({ ...req.body, user: req.user._id });
@@ -49,6 +62,19 @@ router.post('/', protect, async (req, res) => {
 });
 
 // Anzeige bearbeiten
+<<<<<<< HEAD
+=======
+// router.put('/:id', authMiddleware, async (req, res) => {
+//   try {
+//     const ad = await Ad.findByIdAndUpdate(req.params.id, req.body, { new: true });
+//     if (!ad) return res.status(404).json({ message: 'Anzeige nicht gefunden' });
+//     res.json(ad);
+//   } catch (error) {
+//     res.status(400).json({ message: 'Fehler beim Bearbeiten', error });
+//   }
+// });
+
+>>>>>>> 3721eefb9d95a337e082e1e867930b8f4f605d4d
 router.put('/:id', protect, async (req, res) => {
   try {
     const ad = await Ad.findByIdAndUpdate(req.params.id, req.body, { new: true });
@@ -60,6 +86,15 @@ router.put('/:id', protect, async (req, res) => {
 });
 
 // Anzeige löschen
+<<<<<<< HEAD
+=======
+// router.delete('/:id', authMiddleware, async (req, res) => {
+//   const ad = await Ad.findByIdAndDelete(req.params.id);
+//   if (!ad) return res.status(404).json({ message: 'Anzeige nicht gefunden' });
+//   res.json({ message: 'Anzeige gelöscht' });
+// });
+
+>>>>>>> 3721eefb9d95a337e082e1e867930b8f4f605d4d
 router.delete('/:id', protect, async (req, res) => {
   const ad = await Ad.findByIdAndDelete(req.params.id);
   if (!ad) return res.status(404).json({ message: 'Anzeige nicht gefunden' });
