@@ -2,7 +2,7 @@ import express from "express";
 import jwt from "jsonwebtoken";
 import User from "../models/UserModel.js";
 import { sendVerificationEmail } from "../utils/emailService.js";
-import authMiddleware from "../middleware/authMiddleware.js";
+import{protect} from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
@@ -102,12 +102,12 @@ router.post("/login", async (req, res) => {
 });
 
 // Eigene Userdaten abrufen
-router.get("/users/me", authMiddleware, async (req, res) => {
+router.get("/users/me", protect, async (req, res) => {
   res.json(req.user);
 });
 
 // Userdaten aktualisieren
-router.put("/users/:id", authMiddleware, async (req, res) => {
+router.put("/users/:id", protect, async (req, res) => {
   try {
     const user = await User.findByIdAndUpdate(req.params.id, req.body, {
       new: true,

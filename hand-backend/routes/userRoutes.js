@@ -1,11 +1,11 @@
 import express from 'express';
 import User from '../models/UserModel.js';
-import authMiddleware from '../middleware/authMiddleware.js';
+import { protect} from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
 // Route für eingeloggten User (JWT-geschützt)
-router.get('/users/me', authMiddleware, async (req, res) => {
+router.get('/users/me', protect, async (req, res) => {
   try {
     const user = await User.findById(req.user._id);
     res.json(user);
@@ -28,7 +28,7 @@ router.get('/users/:id', async (req, res) => {
 });
 
 // Userdaten aktualisieren (nur für eingeloggten User oder Admin)
-router.put('/users/:id', authMiddleware, async (req, res) => {
+router.put('/users/:id', protect, async (req, res) => {
   try {
     // Optional: Prüfen, ob req.user._id === req.params.id oder req.user.isAdmin
     if (req.user._id.toString() !== req.params.id && !req.user.isAdmin) {
@@ -45,7 +45,7 @@ router.put('/users/:id', authMiddleware, async (req, res) => {
 });
 
 // Admin kann andere User zu Admins machen (Admin-Check enthalten)
-router.patch('/users/:id/make-admin', authMiddleware, async (req, res) => {
+router.patch('/users/:id/make-admin', protect, async (req, res) => {
   try {
     if (!req.user.isAdmin) {
       return res.status(403).json({ message: 'Nur Admins dürfen diese Aktion durchführen' });

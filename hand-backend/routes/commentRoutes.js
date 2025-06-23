@@ -1,5 +1,5 @@
 import express from 'express';
-import authMiddleware from '../middleware/authMiddleware.js';
+import {protect} from '../middleware/authMiddleware.js';
 import Comment from '../models/commentModel.js';
 
 const router = express.Router();
@@ -18,7 +18,7 @@ router.get('/:id', async (req, res) => {
 });
 
 // Kommentar erstellen
-router.post('/', authMiddleware, async (req, res) => {
+router.post('/', protect, async (req, res) => {
   try {
     const { text, post } = req.body;
     const comment = new Comment({ text, post, user: req.user._id });
@@ -30,7 +30,7 @@ router.post('/', authMiddleware, async (req, res) => {
 });
 
 // Kommentar bearbeiten (nur Ersteller oder Admin)
-router.put('/:id', authMiddleware, async (req, res) => {
+router.put('/:id', protect, async (req, res) => {
   const comment = await Comment.findById(req.params.id);
   if (!comment) return res.status(404).json({ message: 'Kommentar nicht gefunden' });
 
@@ -45,7 +45,7 @@ router.put('/:id', authMiddleware, async (req, res) => {
 });
 
 // Kommentar löschen (nur Ersteller oder Admin)
-router.delete('/:id', authMiddleware, async (req, res) => {
+router.delete('/:id', protect, async (req, res) => {
   const comment = await Comment.findById(req.params.id);
   if (!comment) return res.status(404).json({ message: 'Kommentar nicht gefunden' });
 

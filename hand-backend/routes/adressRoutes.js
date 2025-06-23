@@ -1,5 +1,5 @@
 import express from 'express';
-import authMiddleware from '../middleware/authMiddleware.js';
+import {protect} from '../middleware/authMiddleware.js';
 import User from '../models/UserModel.js';
 
 const router = express.Router();
@@ -15,7 +15,7 @@ const router = express.Router();
  *   "zip": 12345
  * }
  */
-router.post('/users/me/adress', authMiddleware, async (req, res) => {
+router.post('/users/me/adress', protect, async (req, res) => {
     try {
         const user = await User.findById(req.user._id);
         user.adress.push(req.body); // Neue Adresse ans Array anhängen
@@ -30,7 +30,7 @@ router.post('/users/me/adress', authMiddleware, async (req, res) => {
  * Überschreibt ALLE Adressen des Users mit einer neuen Adresse (nur sinnvoll, wenn User nur eine Adresse haben soll).
  * Erwartet die Adressdaten im Request-Body.
  */
-router.put('/users/me/adress', authMiddleware, async (req, res) => {
+router.put('/users/me/adress', protect, async (req, res) => {
   try {
     const { street, city, district, zip } = req.body;
 
@@ -57,7 +57,7 @@ router.put('/users/me/adress', authMiddleware, async (req, res) => {
  * Beispiel: PUT /users/me/adress/0 aktualisiert die erste Adresse.
  * Erwartet die neuen Adressdaten im Body.
  */
-router.put('/users/me/adress/:index', authMiddleware, async (req, res) => {
+router.put('/users/me/adress/:index', protect, async (req, res) => {
   try {
     const user = await User.findById(req.user._id);
     const idx = parseInt(req.params.index, 10);
@@ -77,7 +77,7 @@ router.put('/users/me/adress/:index', authMiddleware, async (req, res) => {
  * Löscht eine bestimmte Adresse im Adress-Array des Users anhand des Index.
  * Beispiel: DELETE /users/me/adress/0 löscht die erste Adresse.
  */
-router.delete('/users/me/adress/:index', authMiddleware, async (req, res) => {
+router.delete('/users/me/adress/:index', protect, async (req, res) => {
   try {
     const user = await User.findById(req.user._id);
     const idx = parseInt(req.params.index, 10);

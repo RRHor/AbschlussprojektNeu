@@ -1,5 +1,5 @@
 import express from 'express';
-import authMiddleware from '../middleware/authMiddleware.js';
+import {protect} from '../middleware/authMiddleware.js';
 import Event from '../models/eventModel.js';
 
 const router = express.Router();
@@ -18,7 +18,7 @@ router.get('/:id', async (req, res) => {
 });
 
 // Neues Event erstellen
-router.post('/', authMiddleware, async (req, res) => {
+router.post('/', protect, async (req, res) => {
   try {
     const event = new Event({ ...req.body, organizer: req.user._id });
     await event.save();
@@ -29,7 +29,7 @@ router.post('/', authMiddleware, async (req, res) => {
 });
 
 // Event bearbeiten
-router.put('/:id', authMiddleware, async (req, res) => {
+router.put('/:id', protect, async (req, res) => {
   try {
     const event = await Event.findByIdAndUpdate(req.params.id, req.body, { new: true });
     if (!event) return res.status(404).json({ message: 'Event nicht gefunden' });
@@ -40,14 +40,14 @@ router.put('/:id', authMiddleware, async (req, res) => {
 });
 
 // Event löschen
-router.delete('/:id', authMiddleware, async (req, res) => {
+router.delete('/:id', protect, async (req, res) => {
   const event = await Event.findByIdAndDelete(req.params.id);
   if (!event) return res.status(404).json({ message: 'Event nicht gefunden' });
   res.json({ message: 'Event gelöscht' });
 });
 
 // An Event teilnehmen
-router.post('/:id/join', authMiddleware, async (req, res) => {
+router.post('/:id/join', protect, async (req, res) => {
   const event = await Event.findById(req.params.id);
   if (!event) return res.status(404).json({ message: 'Event nicht gefunden' });
   if (!event.participants.includes(req.user._id)) {

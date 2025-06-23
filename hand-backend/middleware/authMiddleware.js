@@ -1,7 +1,7 @@
 import jwt from 'jsonwebtoken';
 import User from '../models/UserModel.js';
 
-const authMiddleware = async (req, res, next) => {
+export async function protect(req, res, next) {
     let token = null;
 
     // Token aus Cookie lesen (optional)
@@ -25,6 +25,4 @@ const authMiddleware = async (req, res, next) => {
     } catch (err) {
         return res.status(401).json({ message: 'Token ungültig' });
     }
-};
-
-export default authMiddleware;
+}
