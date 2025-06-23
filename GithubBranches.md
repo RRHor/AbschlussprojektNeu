@@ -1,6 +1,7 @@
 # Git Branch-Workflow: Branches erstellen, mergen & Konflikte lösen
 
 ## 1. Neuen Branch erstellen und wechseln
+Mit diesem Befehl richten wir die Branch ein
 ```bash
 git checkout -b <branchname>
 ```
