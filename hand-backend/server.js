@@ -15,6 +15,7 @@ import adressRoutes from './routes/adressRoutes.js';
 import testEmailRoutes from './routes/testEmailRoutes.js'
 import postRoutes from './routes/postRoutes.js';
 
+
 // Lade Umgebungsvariablen aus .env-Datei
 dotenv.config();
 
@@ -46,7 +47,7 @@ app.use('/api', verifyRoutes);
 app.use('/api', userRoutes);
 
 // Blog-Routen (z.B. /api/blog)
-app.use('/api/blog', blogRoutes);
+app.use('/api/blogs', blogRoutes);
 
 // Kleinanzeigen-Routen (z.B. /api/ads)
 app.use('/api/ads', adRoutes);
