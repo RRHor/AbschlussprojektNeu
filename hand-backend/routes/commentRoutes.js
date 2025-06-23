@@ -32,8 +32,10 @@ router.get('/:id', async (req, res) => {
  */
 router.post('/', protect, async (req, res) => {
   try {
-    const { text, post } = req.body;
-    const comment = new Comment({ text, post, user: req.user._id });
+    const comment = new Comment({
+      ...req.body,
+      user: req.user._id // <-- User-ID aus Token setzen!
+    });
     await comment.save();
     res.status(201).json(comment);
   } catch (error) {

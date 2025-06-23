@@ -1,7 +1,6 @@
 import express from 'express';
-import Adresse from '../models/adressSchema.js'; // Passe ggf. den Pfad an
 import { protect } from '../middleware/authMiddleware.js';
-import User from '../models/UserModel.js'; // Passe ggf. den Pfad an
+import User from '../models/userSchema.js'; // Passe ggf. den Pfad an
 
 const router = express.Router();
 

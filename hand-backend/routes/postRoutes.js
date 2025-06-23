@@ -1,6 +1,6 @@
 import express from 'express';
 import {protect} from '../middleware/authMiddleware.js';
-import Post from '../models/PostModel.js';
+import Post from '../models/postModel.js';
 
 const router = express.Router();
 
