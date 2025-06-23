@@ -53,6 +53,5 @@ userSchema.methods.matchPassword = async function (enteredPassword) {
 
 };
 
-const User = mongoose.model('User', userSchema);
-
-export default User;
+// Verhindert OverwriteModelError bei mehrfachen Imports:
+export default mongoose.models.User || mongoose.model('User', userSchema);

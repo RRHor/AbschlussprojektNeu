@@ -1,6 +1,7 @@
 import express from 'express';
-import {protect} from '../middleware/authMiddleware.js';
+import { protect } from '../middleware/authMiddleware.js';
 import Blog from '../models/blogModel.js';
+import User from '../models/UserModel.js';
 
 const router = express.Router();
 
@@ -35,20 +36,6 @@ router.get('/:id', async (req, res) => {
 });
 
 // Blogpost erstellen
-<<<<<<< HEAD
-=======
-// router.post('/', authMiddleware, async (req, res) => {
-//   try {
-//     const blog = new Blog({ ...req.body, user: req.user._id });
-//     await blog.save();
-//     res.status(201).json(blog);
-//   } catch (error) {
-//     res.status(400).json({ message: 'Fehler beim Erstellen', error });
-//   }
-// });
-
-// Blogpost erstellen
->>>>>>> 3721eefb9d95a337e082e1e867930b8f4f605d4d
 router.post('/', protect, async (req, res) => {
   try {
     const blog = new Blog({ ...req.body, user: req.user._id });
@@ -60,20 +47,6 @@ router.post('/', protect, async (req, res) => {
 });
 
 // Blogpost bearbeiten
-<<<<<<< HEAD
-=======
-// router.put('/:id', authMiddleware, async (req, res) => {
-//   try {
-//     const blog = await Blog.findByIdAndUpdate(req.params.id, req.body, { new: true });
-//     if (!blog) return res.status(404).json({ message: 'Blogpost nicht gefunden' });
-//     res.json(blog);
-//   } catch (error) {
-//     res.status(400).json({ message: 'Fehler beim Bearbeiten', error });
-//   }
-// });
-
-// Blogpost bearbeiten
->>>>>>> 3721eefb9d95a337e082e1e867930b8f4f605d4d
 router.put('/:id', protect, async (req, res) => {
   try {
     const blog = await Blog.findByIdAndUpdate(req.params.id, req.body, { new: true });
@@ -85,20 +58,22 @@ router.put('/:id', protect, async (req, res) => {
 });
 
 // Blogpost löschen
-<<<<<<< HEAD
-=======
-// router.delete('/:id', authMiddleware, async (req, res) => {
-//   const blog = await Blog.findByIdAndDelete(req.params.id);
-//   if (!blog) return res.status(404).json({ message: 'Blogpost nicht gefunden' });
-//   res.json({ message: 'Blogpost gelöscht' });
-// });
-
-// Blogpost löschen
->>>>>>> 3721eefb9d95a337e082e1e867930b8f4f605d4d
 router.delete('/:id', protect, async (req, res) => {
   const blog = await Blog.findByIdAndDelete(req.params.id);
   if (!blog) return res.status(404).json({ message: 'Blogpost nicht gefunden' });
   res.json({ message: 'Blogpost gelöscht' });
+});
+
+// Suche nach User anhand von E-Mail oder Nickname
+router.post('/searchUser', async (req, res) => {
+  const user = await User.findOne({ 
+    $or: [
+      { email: req.body.email }, 
+      { nickname: req.body.nickname }
+    ] 
+  });
+  if (!user) return res.status(404).json({ message: 'User nicht gefunden' });
+  res.json(user);
 });
 
 export default router;

@@ -1,46 +1,43 @@
-
-<<<<<<< HEAD
-export async function protect(req, res, next) {
-=======
 import jwt from 'jsonwebtoken';
-import User from '../models/userSchema.js'; // Assuming you have a user schema defined
+import User from '../models/userSchema.js'; // Passe ggf. den Pfad/Dateinamen an
 
-export const protect = async (req, res, next) => {
+/**
+ * Middleware zum Schutz von Routen (JWT-Authentifizierung)
+ * - Prüft Token aus Cookie oder Authorization-Header
+ * - Lädt den User aus der Datenbank und hängt ihn an req.user an
+ */
+export async function protect(req, res, next) {
+    // Debug-Logging für Cookies und Authorization-Header
+    console.log('Cookies:', req.cookies);
+    console.log('Authorization Header:', req.headers.authorization);
 
-    // Logging für Debugging
-    console.log(('Cookies:', req.cookies));
-    console.log(('Authorization Header:', req.headers.authorization));
-
->>>>>>> 3721eefb9d95a337e082e1e867930b8f4f605d4d
     let token = null;
 
-    // 1. Token aus Cookie lesen (wenn vorhanden)
+    // Token aus Cookie lesen (falls vorhanden)
     if (req.cookies && req.cookies.token) {
         token = req.cookies.token;
     }
 
-
-    // 2. Order aus dem Authorization-Header lesen (wenn vorhanden)
-    // Authorization-Header: Bearer <token
-    else if (req.headers.authorization && 
-        req.headers.authorization.startsWith('Bearer')
-    ) {
+    // Oder Token aus Authorization-Header lesen (falls vorhanden)
+    if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
         token = req.headers.authorization.split(' ')[1];
     }
-    
+
+    // Wenn kein Token gefunden wurde, Zugriff verweigern
     if (!token) {
         return res.status(401).json({ message: 'Nicht autorisiert, Token fehlt' });
     }
-    try {
-        // Debugging: Ausgabe des Tokens und des JWT_SECRET
-        // console.log(('JWT_SECRET:', process.env.JWT_SECRET));
-        
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        req.user = await User.findById(decoded.id).select('-password');
-        next();
 
-    }
-    catch (err) {
+    try {
+        // Token verifizieren
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+        // User anhand der ID aus dem Token laden (ohne Passwort)
+        req.user = await User.findById(decoded.id).select('-password');
+
+        // Weiter zur nächsten Middleware/Route
+        next();
+    } catch (err) {
         return res.status(401).json({ message: 'Token ungültig' });
     }
 }

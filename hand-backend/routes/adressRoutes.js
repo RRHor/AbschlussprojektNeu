@@ -1,7 +1,7 @@
 import express from 'express';
-<<<<<<< HEAD
-import {protect} from '../middleware/authMiddleware.js';
-import User from '../models/UserModel.js';
+import Adresse from '../models/adressSchema.js'; // Passe ggf. den Pfad an
+import { protect } from '../middleware/authMiddleware.js';
+import User from '../models/UserModel.js'; // Passe ggf. den Pfad an
 
 const router = express.Router();
 
@@ -10,24 +10,17 @@ const router = express.Router();
  * Erwartet die Adressdaten im Request-Body.
  * Beispiel-Body:
  * {
+ *   "firstName": "Max",
+ *   "lastName": "Mustermann",
  *   "street": "Beispielstraße 1",
+ *   "zipCode": 12345,
  *   "city": "Beispielstadt",
- *   "district": "Mitte",
- *   "zip": 12345
+ *   "district": "Mitte"
  * }
  */
 router.post('/users/me/adress', protect, async (req, res) => {
-=======
-import Adresse from '../models/adressSchema.js';
-import {protect} from '../middleware/authMiddleware.js';
-import User from '../models/userSchema.js';
-
-const router = express.Router();
-
-router.post('/users/me/adresse', protect, async (req, res) => {
->>>>>>> 3721eefb9d95a337e082e1e867930b8f4f605d4d
     try {
-        const {firstName, lastName, street, zipCode, city, district} = req.body;
+        const { firstName, lastName, street, zipCode, city, district } = req.body;
 
         // Adresse anlegen und mit der User-ID verknüpfen
         const adresse = new Adresse({
@@ -42,18 +35,15 @@ router.post('/users/me/adresse', protect, async (req, res) => {
 
         await adresse.save();
 
-        // 2. User aktualisieren (Adresse zuweisen)
+        // User aktualisieren (Adresse zuweisen)
         const user = await User.findById(req.user._id);
+        user.adress = adresse._id;
+        await user.save();
 
-        // User bekommt die Adresse zugewiesen
-        req.user.adress = adresse._id;
-        await req.user.save();
-        res.status(201).json({message: 'Adresse erfolgrich angelegt', adresse});
+        res.status(201).json({ message: 'Adresse erfolgreich angelegt', adresse });
     } catch (error) {
-        // console.error('Fehler beim Anlegen der Adresse:', error);
-        res.status(500).json({message: 'Serverfehler beim Anlegen der Adresse', error: error.message});
+        res.status(500).json({ message: 'Serverfehler beim Anlegen der Adresse', error: error.message });
     }
-<<<<<<< HEAD
 });
 
 /**
@@ -122,8 +112,5 @@ router.delete('/users/me/adress/:index', protect, async (req, res) => {
     res.status(500).json({ message: "Fehler beim Löschen der Adresse", error: error.message });
   }
 });
-=======
-})
->>>>>>> 3721eefb9d95a337e082e1e867930b8f4f605d4d
 
 export default router;
