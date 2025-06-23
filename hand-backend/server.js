@@ -15,6 +15,7 @@ import adressRoutes from './routes/adressRoutes.js';
 import testEmailRoutes from './routes/testEmailRoutes.js'
 // import profileRoutes from './routes/profileRoutes.js';
 // import loginRoute from './routes/loginRoutes.js';
+// import blogRoutes from './routes/blogRoutes.js';
 
 // Lade Umgebungsvariablen aus .env-Datei
 dotenv.config();
@@ -47,7 +48,7 @@ app.use('/api', verifyRoutes);
 app.use('/api', userRoutes);
 
 // Blog-Routen (z.B. /api/blog)
-app.use('/api/blog', blogRoutes);
+app.use('/api/blogs', blogRoutes);
 
 // Kleinanzeigen-Routen (z.B. /api/ads)
 app.use('/api/ads', adRoutes);
@@ -71,6 +72,9 @@ app.get('/', (req, res) => {
 
 // Login-Routen (z.B. /api/auth/login)
 // app.use('/api/auth', loginRoute);
+
+// Blog-Routen (z.B. /api/blog) 
+// app.use('/api/blog', blogRoutes);
 
 // Starte den Server
 app.listen(PORT, () => {

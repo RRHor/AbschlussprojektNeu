@@ -40,12 +40,26 @@ const userSchema = new mongoose.Schema({
 });
 
 // Passwort vor dem Speichern hashen
-userSchema.pre('save', async function (next) {
-  if (!this.isModified('password'))
-    return next();
-  this.password = await bcrypt.hash(this.password, 10);
-  next();
-})
+// userSchema.pre('save', async function (next) {
+//   if (!this.isModified('password'))
+//     return next();
+//   this.password = await bcrypt.hash(this.password, 10);
+//   next();
+// })
+
+// Password hashing middleware
+userSchema.pre("save", async function (next) {
+    if (!this.isModified("password")) {
+        return next();
+    }
+    try {
+        const salt = await bcrypt.genSalt(10);
+        this.password = await bcrypt.hash(this.password, salt);
+        next();
+    } catch (error) {
+        return next(error);
+    }
+});
 
 // Methode zum Passwortvergleich
 userSchema.methods.matchPassword = async function (enteredPassword) {
