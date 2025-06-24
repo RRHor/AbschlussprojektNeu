@@ -23,8 +23,8 @@ const userSchema = new mongoose.Schema({
     adress: {
         street: { type: String, required: true },
         city: { type: String, required: true },
-        state: { type: String, required: true },
-        zip: { type: Number, required: true },
+        district: { type: String, required: true },
+        zipCode: { type: Number, required: true },
         district: { type: String }, // optional
         firstName: { type: String }, // optional
         lastName: { type: String },  // optional
@@ -43,6 +43,13 @@ const userSchema = new mongoose.Schema({
     },
     verificationCode: {
         type: Number,
+    },
+    // Für das Ändern des Passworts
+    resetToken: {
+        type: String,
+    },
+    resetTokenExpires: {
+        type: Date,
     },
 }, {
     timestamps: true,

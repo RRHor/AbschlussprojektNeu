@@ -306,3 +306,14 @@ Hier ist eine **Übersicht aller typischen Endpunkte** deiner Anwendung (basiere
 ---
 
 **Wenn du zu einem Endpunkt ein Beispiel-Request oder eine Erklärung brauchst, sag einfach Bescheid!**
+
+
+
+
+
+
+user: { 
+      type: mongoose.Schema.Types.ObjectId, 
+      ref: "User", 
+      required: true 
+    }, // Verfasser des Kommentars
