@@ -5,11 +5,13 @@ import bcrypt from "bcryptjs";
 const userSchema = new mongoose.Schema(
   {
     // Name des Users (Pflichtfeld)
-    name: { type: String, required: true },
+    nickname: { type: String, required: true },
 
     // Array von Adress-Objekten für mehrere Wohnsitze
     adress: [
       {
+        firstName: { type: String, required: true },
+        lastName: { type: String, required: true },
         street: { type: String, required: true },   // Straße
         city: { type: String, required: true },     // Stadt
         district: { type: String, required: true }, // Stadtteil/Bezirk

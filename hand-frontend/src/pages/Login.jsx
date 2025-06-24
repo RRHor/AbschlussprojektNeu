@@ -7,9 +7,8 @@ function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [formData, setFormData] = useState({
-    username: '',
+    email: '',
     password: '',
-    email: ''
   });
   const [isLoading, setIsLoading] = useState(false);
 
@@ -21,7 +20,7 @@ function Login() {
   };
 
   const handleLogin = async () => {
-    if (!formData.username || !formData.password) {
+    if (!formData.email || !formData.password) {
       alert('Bitte alle Felder ausfüllen');
       return;
     }
@@ -29,13 +28,13 @@ function Login() {
     setIsLoading(true);
     
     try {
-      const response = await fetch(`${API_URL}/login`, {
+      const response = await fetch(`${API_URL}/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          username: formData.username,
+          email: formData.email, // oder besser: formData.email
           password: formData.password
         })
       });

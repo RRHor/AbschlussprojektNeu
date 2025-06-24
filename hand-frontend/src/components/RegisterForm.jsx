@@ -17,9 +17,9 @@ const RegisterForm = ({ onSuccess }) => {
     city: '',
     district: '',
     zip: '',
+    state: '', // <-- state hinzugefügt
   });
 
-  // Speichert, ob Feld verlassen wurde UND Inhalt hat
   const [touchedFields, setTouchedFields] = useState({
     nickname: false,
     email: false,
@@ -30,6 +30,7 @@ const RegisterForm = ({ onSuccess }) => {
     city: false,
     district: false,
     zip: false,
+    state: false, // <-- state hinzugefügt
   });
 
   const [message, setMessage] = useState('');
@@ -88,6 +89,7 @@ const RegisterForm = ({ onSuccess }) => {
             city: formData.city,
             district: formData.district,
             zip: parseInt(formData.zip, 10),
+            state: formData.state, // <-- state hinzugefügt
           },
         }),
       });
@@ -96,7 +98,7 @@ const RegisterForm = ({ onSuccess }) => {
       if (response.ok) {
         localStorage.setItem('token', data.token);
         onSuccess(data);
-        navigate('/login');
+        navigate('/auth/login');
       } else {
         setMessage(`❌ Fehler: ${data.message || 'Unbekannter Fehler'}`);
       }
@@ -118,6 +120,7 @@ const RegisterForm = ({ onSuccess }) => {
     city: 'Stadt',
     district: 'Landkreis oder Stadtteil',
     zip: 'PLZ',
+    state: 'Bundesland', // <-- state hinzugefügt
   };
 
   return (
@@ -148,7 +151,6 @@ const RegisterForm = ({ onSuccess }) => {
               className={`register-input ${
                 touchedFields[field] ? 'filled' : ''
               }`}
-              // placeholder={fieldLabels[field]}
               autoComplete="off"
             />
             {formErrors[field] && (

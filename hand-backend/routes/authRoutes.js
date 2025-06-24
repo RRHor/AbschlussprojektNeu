@@ -9,7 +9,9 @@ const router = express.Router();
 // Registrierung
 router.post("/register", async (req, res) => {
   try {
-    const { name, email, password, adress } = req.body;
+    const { nickname, email, password, adress } = req.body;
+
+    console.log("Register-Request erhalten", req.body);
 
     // Prüfe, ob User existiert
     const existingUser = await User.findOne({ email });
@@ -22,10 +24,10 @@ router.post("/register", async (req, res) => {
 
     // User anlegen
     const newUser = new User({
-      name,
+      nickname,
       email,
       password,
-      adress: [adress], // <-- Array!
+      adress: [adress], // <-- adress ist ein Objekt, wird als Array gespeichert
       verificationCode, // <-- hier wird der Code gesetzt!
     });
 
@@ -36,6 +38,7 @@ router.post("/register", async (req, res) => {
 
     res.status(201).json({ message: "User erfolgreich registriert", user: newUser });
   } catch (error) {
+    console.error(error);
     res.status(500).json({ message: "Registrierung fehlgeschlagen", error: error.message });
   }
 });
