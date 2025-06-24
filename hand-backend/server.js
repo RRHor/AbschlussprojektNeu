@@ -14,6 +14,9 @@ import commentRoutes from './routes/commentRoutes.js';
 import adressRoutes from './routes/adressRoutes.js';
 import testEmailRoutes from './routes/testEmailRoutes.js'
 import postRoutes from './routes/postRoutes.js';
+import passwordRequestRoute from './routes/passwordResetRequestRoute.js';
+import passwordResetRoutes from './routes/passwordResetRoute.js';
+
 
 
 // Lade Umgebungsvariablen aus .env-Datei
@@ -63,6 +66,11 @@ app.use('/api', adressRoutes);
 
 // Post-Routen (z.B. /api/posts)
 app.use('/api/posts', postRoutes);
+
+// Passwort-Zurücksetzen-Routen (z.B. /api/password-reset)
+app.use('/api/auth', passwordRequestRoute);
+
+app.use('/api/auth', passwordResetRoutes);
 
 // Root-Route (Startseite)
 app.get('/', (req, res) => {
