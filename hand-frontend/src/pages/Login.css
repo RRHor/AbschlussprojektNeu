@@ -1,0 +1,736 @@
+/* Basis-Styling für HTML-Elemente */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+    line-height: 1.5;
+    color: #333;
+    overflow-x: hidden;
+}
+
+/* Haupt-Wrapper für die gesamte Seite */
+.login-page-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+    box-sizing: border-box;
+    position: relative; 
+    background: linear-gradient(-45deg,#05004E , #F8E8C3, #05004E, #F8E8C3);
+    background-size: 400% 400%;
+    animation: gradientShift 15s ease infinite;
+    overflow: hidden;
+}
+
+@keyframes gradientShift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+/* Hintergrundmuster */
+.background-pattern-container {
+    position: absolute;
+    inset: 0;
+    opacity: 0.05; 
+    overflow: hidden;
+    pointer-events: none;
+}
+
+.background-pattern-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle at 20% 50%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 40% 80%, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
+    animation: float 6s ease-in-out infinite;
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0px) rotate(0deg); }
+    50% { transform: translateY(-20px) rotate(5deg); }
+}
+
+/* Haupt-Container für die Login-Box und zusätzliche Info */
+.login-main-container {
+    position: relative;
+    width: 100%;
+    max-width: 448px;
+    z-index: 10;
+    animation: slideIn 0.8s ease-out;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(50px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Back Button */
+.back-button {
+    position: absolute;
+    top: -64px; 
+    left: 50%; /* Center the button */
+    transform: translateX(-50%); /* Adjust for centering */
+    display: flex;
+    align-items: center;
+    color: rgba(255, 255, 255, 0.9);
+    text-decoration: none;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2); 
+    border-radius: 50px;
+    padding: 12px 24px; 
+    cursor: pointer;
+    font-size: 1em;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    white-space: nowrap; /* Prevent text wrapping */
+}
+
+.back-button:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateX(-50%) translateY(-5px); /* Maintain centering */
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+}
+
+.back-button-icon {
+    margin-right: 8px;
+    transition: transform 0.3s ease;
+}
+
+.back-button:hover .back-button-icon {
+    transform: translateX(-6px); 
+}
+
+/* Hauptkarte (Login/Forgot Password Box) */
+.login-card {
+    background: rgba(255, 255, 255, 0.25);
+    backdrop-filter: blur(20px); 
+    border-radius: 24px; 
+    box-shadow: 
+        0 8px 32px rgba(0, 0, 0, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.18); 
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.login-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 
+        0 20px 40px rgba(0, 0, 0, 0.15),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+/* Header mit Gradient */
+.login-card-header {
+    background: linear-gradient(135deg, #05004E 0%, #4FE3C1 100%); 
+    padding: 32px; 
+    text-align: center;
+    color: white;
+    position: relative;
+    overflow: hidden;
+}
+
+.login-card-header::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    animation: shimmer 3s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+    0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+    50% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+    100% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+}
+
+.header-icon-wrapper {
+    width: 80px; 
+    height: 80px; 
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 50%; 
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 16px auto; 
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    transition: all 0.3s ease;
+    position: relative;
+    z-index: 1;
+}
+
+.header-icon-wrapper:hover {
+    transform: scale(1.1) rotate(5deg);
+}
+
+.header-icon {
+    color: #05004E;
+}
+
+.header-title {
+    font-size: 30px; 
+    font-weight: 700; 
+    margin-bottom: 8px;
+    position: relative;
+    z-index: 1;
+}
+
+.header-subtitle {
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 1em;
+    position: relative;
+    z-index: 1;
+}
+
+/* Formularinhalt */
+.login-card-content {
+    padding: 32px;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.form-section {
+    display: flex;
+    flex-direction: column;
+    gap: 24px; 
+}
+
+/* Input-Gruppen */
+.input-group {
+    position: relative;
+}
+
+.input-group .input-icon {
+    position: absolute;
+    top: 50%;
+    left: 16px;
+    transform: translateY(-50%);
+    height: 1.2rem; 
+    width: 1.2rem; 
+    color: rgba(5, 0, 78, 0.6); 
+    transition: all 0.3s ease;
+    pointer-events: none;
+    z-index: 2;
+}
+
+.input-group input:focus + .input-icon,
+.input-group.focused .input-icon {
+    color: #4FE3C1;
+    transform: translateY(-50%) scale(1.1);
+}
+
+.input-group input {
+    width: 100%;
+    padding: 16px 16px 16px 48px;
+    border: 2px solid rgba(5, 0, 78, 0.2);
+    border-radius: 12px; 
+    font-size: 1em;
+    color: #05004E;  
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease; 
+    box-sizing: border-box;
+    position: relative;
+}
+
+.input-group input::placeholder {
+    color: rgba(5, 0, 78, 0.5);
+}
+
+.input-group input:focus {
+    outline: none;
+    border-color: #4FE3C1; 
+    background: rgba(255, 255, 255, 0.95);
+    box-shadow: 
+        0 0 0 3px rgba(79, 227, 193, 0.2),
+        0 8px 25px rgba(79, 227, 193, 0.15);
+    transform: translateY(-2px);
+}
+
+/* Passwort-Sichtbarkeits-Toggle */
+.password-toggle {
+    position: absolute;
+    top: 50%;
+    right: 16px; 
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: rgba(5, 0, 78, 0.6); 
+    padding: 8px; 
+    align-items: center;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.password-toggle:hover {
+    background: rgba(79, 227, 193, 0.1);
+    color: #4FE3C1;
+}
+
+/* Remember Me Checkbox und Forgot Password Link */
+.form-options {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap; /* Allow wrapping on smaller screens */
+    gap: 10px;
+}
+
+.remember-me-checkbox {
+    display: flex;
+    align-items: center;
+    font-size: 0.875em;
+    color: #05004E;
+    cursor: pointer;
+}
+
+.remember-me-checkbox input[type="checkbox"] {
+    margin-right: 8px; 
+    border-radius: 4px; 
+    border: 2px solid rgba(5, 0, 78, 0.3); 
+    background: rgba(255, 255, 255, 0.5);
+    appearance: none;
+    -webkit-appearance: none;
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    display: inline-block;
+    vertical-align: middle;
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+.remember-me-checkbox input[type="checkbox"]:checked {
+    background: #4FE3C1; 
+    border-color: #4FE3C1;
+}
+
+.remember-me-checkbox input[type="checkbox"]:checked::after {
+    content: '✔';
+    color: white;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 10px;
+    font-weight: bold;
+}
+
+.remember-me-checkbox input[type="checkbox"]:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(79, 227, 193, 0.3); 
+    border-color: #4FE3C1; 
+}
+
+.forgot-password-link {
+    font-size: 0.875em; 
+    color: #05004E;
+    text-decoration: underline;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.forgot-password-link:hover {
+    color: #4FE3C1; 
+}
+
+/* Buttons */
+.submit-button {
+    width: 100%;
+    padding: 16px 24px; 
+    border-radius: 12px; 
+    font-weight: 600;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.primary-button {
+    background: linear-gradient(135deg, #05004E 0%, #4FE3C1 100%);
+    color: white;
+    box-shadow: 0 8px 25px rgba(5, 0, 78, 0.3);
+}
+
+.primary-button::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    transition: all 0.6s ease;
+    transform: translate(-50%, -50%);
+}
+
+.primary-button:hover::before {
+    width: 300px;
+    height: 300px;
+}
+
+.primary-button:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 15px 35px rgba(5, 0, 78, 0.4);
+}
+
+.primary-button:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px #3b82f6, 0 0 0 4px #bfdbfe; 
+}
+
+.primary-button:disabled {
+    opacity: 0.5; 
+    cursor: not-allowed; 
+    transform: none;
+    box-shadow: none;
+}
+
+.secondary-button {
+    background-color: #f3f4f6; 
+    color: #374151; 
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06); 
+}
+
+.secondary-button:hover {
+    background-color: #e5e7eb;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1); 
+}
+
+/* Spinner für Ladezustand */
+.spinner-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.spinner {
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-top: 3px solid #ffffff;
+    border-radius: 50%;
+    width: 20px; 
+    height: 20px;
+    animation: spin 1s linear infinite;
+    margin-right: 12px; 
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Info Box (für Passwort zurücksetzen) */
+.info-box {
+    background-color: #eff6ff; 
+    border: 1px solid #bfdbfe; 
+    border-radius: 12px;
+    padding: 16px; 
+    text-align: left;
+}
+
+.info-box p {
+    font-size: 0.875em; 
+    color: #1e40af; 
+    margin: 0;
+}
+
+/* Button Gruppe (Forgot Password Buttons) */
+.button-group {
+    display: flex;
+    flex-direction: column;
+    gap: 12px; 
+}
+
+/* Footer-Bereich der Karte */
+.card-footer {
+    margin-top: 32px;
+    text-align: center;
+}
+
+/* Trennlinie "oder" */
+.separator {
+    display: flex;
+    align-items: center;
+    justify-content: center; 
+    margin-bottom: 16px; 
+    color: rgba(5, 0, 78, 0.6);
+    font-size: 0.875em; 
+}
+
+.separator::before,
+.separator::after {
+    content: '';
+    flex-grow: 1; 
+    border-top: 1px solid rgba(5, 0, 78, 0.2); 
+}
+
+.separator::before {
+    margin-right: 16px; 
+}
+
+.separator::after {
+    margin-left: 16px; 
+}
+
+/* Registrieren-Prompt */
+.register-prompt {
+    font-size: 0.875em;
+    color: #05004E;
+}
+
+.register-link {
+    color:  #DE887B; 
+    background-color: rgba(5, 0, 78, 0.6);
+    border-radius: 24px;
+    padding: 3px 5px;
+    text-decoration: underline;
+    font-weight: 600; 
+    margin-left: 4px;
+    transition: all 0.3s ease;
+}
+
+.register-link:hover {
+    color: white; 
+}
+
+/* Zusätzliche Informationen unter der Karte */
+.additional-info {
+    margin-top: 32px;
+    text-align: center;
+    font-size: 0.875em; 
+    color: rgba(255, 255, 255, 0.75); 
+    background-color: rgba(5, 0, 78, 0.25);
+    border-radius: 24px;
+    padding: 10px 20px; /* Added padding for better appearance */
+}
+
+/* Responsive Anpassungen */
+@media (max-width: 768px) {
+    .login-page-wrapper {
+        padding: 15px; /* Slightly more padding for tablets */
+    }
+
+    .login-main-container {
+        max-width: 90%; /* Allow wider card on smaller screens */
+    }
+
+    .login-card {
+        border-radius: 20px; /* Slightly smaller radius */
+        box-shadow: 
+            0 6px 20px rgba(0, 0, 0, 0.1),
+            inset 0 1px 0 rgba(255, 255, 255, 0.15); 
+    }
+
+    .login-card-header {
+        padding: 28px 20px; /* Adjust padding */
+    }
+
+    .header-title {
+        font-size: 26px; /* Slightly smaller title */
+    }
+
+    .header-subtitle {
+        font-size: 0.95em;
+    }
+
+    .login-card-content {
+        padding: 25px; /* Adjust padding */
+    }
+
+    .back-button {
+        top: 20px; /* Adjust position */
+        left: 20px; /* Align to the left */
+        transform: none; /* Remove transform for centering */
+        padding: 10px 20px; /* Smaller button */
+        font-size: 0.9em;
+    }
+
+    .back-button:hover {
+        transform: translateY(-3px); /* Only vertical hover effect */
+    }
+
+    .back-button:hover .back-button-icon {
+        transform: translateX(-4px); /* Smaller icon movement */
+    }
+
+    .input-group input {
+        padding: 14px 14px 14px 44px; 
+    }
+
+    .input-group .input-icon {
+        left: 14px;
+    }
+
+    .password-toggle {
+        right: 14px;
+    }
+
+    .form-options {
+        flex-direction: column; /* Stack on smaller screens */
+        align-items: flex-start;
+        gap: 12px; 
+    }
+
+    .submit-button {
+        padding: 14px 22px;
+        font-size: 1.05em;
+    }
+
+    .additional-info {
+        padding: 8px 15px; /* Smaller padding */
+        font-size: 0.8em;
+    }
+}
+
+@media (max-width: 480px) {
+    .login-page-wrapper {
+        padding: 10px;
+    }
+
+    .login-main-container {
+        max-width: 100%; /* Allow full width */
+    }
+
+    .login-card {
+        border-radius: 15px; 
+    }
+
+    .login-card-header {
+        padding: 20px 15px;
+    }
+
+    .header-icon-wrapper {
+        width: 60px;
+        height: 60px;
+        margin-bottom: 10px;
+    }
+
+    .header-title {
+        font-size: 22px;
+    }
+
+    .header-subtitle {
+        font-size: 0.85em;
+    }
+
+    .login-card-content {
+        padding: 20px;
+    }
+
+    .input-group input {
+        padding: 12px 12px 12px 40px; /* Adjust for smaller screens */
+        font-size: 0.95em;
+    }
+
+    .input-group .input-icon {
+        left: 12px;
+        width: 1.1rem;
+        height: 1.1rem;
+    }
+
+    .password-toggle {
+        right: 12px;
+        padding: 6px;
+    }
+
+    .submit-button {
+        padding: 12px 18px;
+        font-size: 1em;
+    }
+
+    .info-box {
+        padding: 12px;
+        font-size: 0.8em;
+    }
+
+    .separator {
+        font-size: 0.8em;
+    }
+
+    .register-prompt {
+        font-size: 0.8em;
+    }
+    
+    .back-button {
+        top: 10px;
+        left: 10px;
+        padding: 8px 16px;
+        font-size: 0.8em;
+    }
+}
+
+/* Optional: Even smaller screens like iPhone SE */
+@media (max-width: 375px) {
+    .login-page-wrapper {
+        padding: 5px;
+    }
+
+    .login-card-header {
+        padding: 18px 10px;
+    }
+
+    .header-title {
+        font-size: 20px;
+    }
+
+    .header-subtitle {
+        font-size: 0.8em;
+    }
+
+    .login-card-content {
+        padding: 15px;
+    }
+
+    .input-group input {
+        padding: 10px 10px 10px 35px;
+        font-size: 0.9em;
+    }
+
+    .input-group .input-icon {
+        left: 10px;
+        width: 1rem;
+        height: 1rem;
+    }
+
+    .password-toggle {
+        right: 10px;
+        padding: 5px;
+    }
+
+    .submit-button {
+        padding: 10px 15px;
+        font-size: 0.9em;
+    }
+
+    .remember-me-checkbox, .forgot-password-link {
+        font-size: 0.8em;
+    }
+}

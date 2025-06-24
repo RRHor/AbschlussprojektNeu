@@ -1,0 +1,292 @@
+/* Color Variables (from profile.css) */
+:root {
+  --deepBlue: #05004E;
+  --skyBlue: #2E7EB3;
+  --mint: #4FE3C1;
+  --cream: #F8E8C3;
+  --coral: #DE887B;
+}
+
+/* Container */
+.help-container {
+  min-height: 100vh;
+  background-color: var(--cream);
+  padding: 2rem 1rem;
+}
+
+.help-wrapper {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Header (similar to profile-header) */
+.help-header {
+  background-color: var(--deepBlue);
+  color: white;
+  padding: 2rem;
+  border-radius: 1rem 1rem 0 0;
+  margin-bottom: 2rem;
+}
+
+.help-header .header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.help-header .header-text h1 {
+  font-size: 2rem;
+  font-weight: bold;
+  margin: 0 0 0.5rem 0;
+}
+
+.help-header .header-text p {
+  opacity: 0.8;
+  margin: 0;
+}
+
+/* Main Content */
+.help-content {
+  background-color: white;
+  padding: 2rem;
+  border-radius: 0 0 1rem 1rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Section Block Styling (similar to profile-form-section) */
+.section-block {
+  margin-bottom: 2rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid var(--cream); /* subtle separator */
+}
+
+.section-block:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+}
+
+.section-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--deepBlue);
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid var(--mint);
+  margin-bottom: 1.5rem;
+}
+
+/* Input Group Styling (similar to profile.css) */
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.input-group label {
+  font-weight: 500;
+  color: var(--deepBlue);
+  font-size: 0.9rem;
+}
+
+.input-container {
+  position: relative;
+}
+
+.question-input,
+.answer-input {
+  width: 100%;
+  padding: 0.75rem;
+  border: 2px solid var(--mint);
+  border-radius: 0.5rem;
+  background-color: var(--cream);
+  color: var(--deepBlue);
+  font-size: 1rem;
+  resize: vertical; /* Allow vertical resizing */
+  min-height: 50px;
+}
+
+.question-input:focus,
+.answer-input:focus {
+  outline: none;
+  border-color: var(--skyBlue);
+  box-shadow: 0 0 0 3px rgba(46, 126, 179, 0.1);
+}
+
+/* Button Styling (from profile.css) */
+.btn {
+  display: inline-flex; /* Use inline-flex for better button sizing */
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 0.5rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: transform 0.2s ease, background-color 0.2s ease;
+  text-decoration: none; /* In case it's an <a> tag */
+  justify-content: center; /* Center content horizontally */
+}
+
+.btn:hover {
+  transform: scale(1.03); /* Slightly less aggressive hover for non-edit/save */
+}
+
+.btn.primary {
+  background-color: var(--mint);
+  color: var(--deepBlue);
+}
+
+.btn.primary:hover {
+  background-color: #37d0b1; /* Slightly darker mint on hover */
+}
+
+.btn.secondary {
+  background-color: var(--skyBlue);
+  color: white;
+}
+
+.btn.secondary:hover {
+  background-color: #266b96; /* Slightly darker sky blue on hover */
+}
+
+
+.ask-btn {
+  margin-top: 1rem;
+  width: auto; /* Allow button to size based on content */
+  align-self: flex-end; /* Align button to the right if form is flex column */
+}
+
+/* Questions List */
+.questions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.question-item {
+  background-color: var(--cream);
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  border: 1px solid var(--mint);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.question-header h3 {
+  font-size: 1.25rem;
+  color: var(--deepBlue);
+  margin-top: 0;
+  margin-bottom: 0.5rem;
+}
+
+.question-meta {
+  font-size: 0.85rem;
+  color: var(--skyBlue);
+  display: block;
+  margin-bottom: 1rem;
+}
+
+.answers-list {
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px dashed var(--mint);
+}
+
+.answers-list h4 {
+  font-size: 1rem;
+  color: var(--deepBlue);
+  margin-bottom: 0.75rem;
+}
+
+.answer-item {
+  background-color: white;
+  border-left: 3px solid var(--skyBlue);
+  padding: 0.75rem 1rem;
+  margin-bottom: 0.75rem;
+  border-radius: 0.4rem;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+}
+
+.answer-item p {
+  margin: 0 0 0.5rem 0;
+  color: var(--deepBlue);
+}
+
+.answer-meta {
+  font-size: 0.75rem;
+  color: #666;
+  display: block;
+  text-align: right;
+}
+
+.answer-form {
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--cream);
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.answer-btn {
+  align-self: flex-end;
+}
+
+/* Responsive Design (adapting from profile.css) */
+@media (max-width: 768px) {
+  .help-container {
+    padding: 1rem 0.5rem;
+  }
+  
+  .help-header {
+    padding: 1.5rem;
+  }
+  
+  .help-header .header-content {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .help-content {
+    padding: 1.5rem;
+  }
+
+  .section-title {
+    font-size: 1.25rem;
+  }
+
+  .btn {
+    width: 100%; /* Full width buttons on small screens */
+  }
+
+  .ask-btn, .answer-btn {
+    align-self: stretch; /* Stretch buttons to full width */
+  }
+}
+
+@media (max-width: 480px) {
+  .help-header .header-text h1 {
+    font-size: 1.5rem;
+  }
+}
+
+.h1-text {
+  display: inline-block;
+  vertical-align: middle;
+  margin-left: 10px;
+  font-family: "Nunito", sans-serif;
+  font-weight: bold;  
+  letter-spacing: 0.5px;
+  color: var(--mint);
+  transition: color 0.4s ease;
+  font-optical-sizing: auto;
+  font-style: normal;
+  
+  }
+.h1-text:hover {
+  color: var(--cream); 
+  text-shadow: #216491 0px 0px 5px; 
+  
+  transform: scale(1.01); 
+}

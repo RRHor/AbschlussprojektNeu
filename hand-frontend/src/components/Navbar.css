@@ -1,13 +1,36 @@
 /* client/src/components/Navbar.css */
+:root {
+  /* Semantic Colors */
+  --text-color: #05004E;         /* deepBlue */
+  --bg-primary: #F8E8C3;         /* cream */
+  --bg-secondary: #2E7EB3;       /* skyBlue */
+  --bg-tertiary: #4FE3C1;        /* mint */
+  --warning-color: #DE887B;      /* coral */
+  /* Optional: Alias names if needed */
+  --deepBlue: #05004E;
+  --skyBlue: #2E7EB3;
+  --mint: #4FE3C1;
+  --cream: #F8E8C3;
+  --coral: #DE887B;
+}
+
+.nunito-font {
+  font-family: "Nunito", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 400;
+  font-style: normal;
+}
+
+
 
 .navbar {
-  background-color: #3498DB;
+  background-color: #4FE3C1;
   padding: 15px 30px;
   color: white;
   display: flex;
   justify-content: center;
   align-items: center;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+ 
 }
 
 .navbar-container {
@@ -20,11 +43,86 @@
 }
 
 .navbar-logo {
-  color: #05004E;
+  display: flex;
+  align-items: center;
+  color: white;
   text-decoration: none;
   font-size: 1.8rem;
   font-weight: bold;
   letter-spacing: 0.5px;
+  height : 20px; /* Höhe des Logos */
+  transition: color 0.4s ease;
+}
+
+.logo {
+ margin-right: 10px;
+ vertical-align: middle;
+ height: 70px;
+ width: auto; 
+
+  transition: transform 0.4s ease;
+}
+.logo:hover {
+  transform: scale(1.05); 
+}
+
+navbar-logo:hover {
+  color: #05004E; /* deepBlue 
+  transform: scale(1.05); /* Leichtes Vergrößern beim Hover */}
+   
+
+
+.logo-text {
+  display: inline-block;
+  vertical-align: middle;
+  margin-left: 10px; /* Abstand zwischen Logo und Text */
+  /* Schriftart und Stil für den Logo-Text */
+  font-family: "Nunito", sans-serif;
+  font-size: 1.8rem;
+  font-weight: bold;  
+  letter-spacing: 0.5px;
+  color: #05004E; /* deepBlue */
+  transition: color 0.4s ease;
+  font-optical-sizing: auto;
+  font-style: normal;
+  
+  }
+.logo-text:hover {
+  color: var(--cream); /* cream */
+  text-shadow: #216491 0px 0px 5px; /* Leichter Schatteneffekt */
+  
+  transform: scale(1.05); /* Leichtes Vergrößern beim Hover */
+}
+.navbar-links {
+  display: flex;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  flex-grow: 1; /* Nimmt den verfügbaren Platz ein */
+  justify-content: center; /* Zentriert die Links */
+}
+.navbar-links .nav-item {
+  margin: 0 15px; /* Abstand zwischen den Links */
+}
+.navbar-links .nav-links {
+  color: white;
+  text-decoration: none;
+  font-size: 1rem;
+  font-weight: 600;
+  transition: color 0.3s ease;
+}
+.navbar-links .nav-links:hover {
+  color: #05004E; /* deepBlue */
+}
+.navbar-links .nav-links.active {
+  color: #DE887B; /* coral */
+}
+.navbar-links .nav-links.active:hover {
+  color: #05004E; /* deepBlue */
+}
+.navbar-links .nav-links:focus {
+  outline: none; /* Entfernt den Standard-Fokus-Rahmen */
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.5); /* Optional: Leichter Fokus-Effekt */
 }
 
 /* ------------------------------------- */
@@ -51,21 +149,47 @@
 }
 
 .nav-links-primary {
-  background-color: #2ECC71;
-  color: white;
-  padding: 8px 15px;
-  border-radius: 5px;
-  transition: background-color 0.3s ease;
+  color: var(--deepBlue);
+  text-decoration: none;
+  padding: 10px 20px;
+  font-size: 1rem;
+  font-weight: 600;
+  background-color: #F8E8C3; /* cream */
+  border: 2px solid #DE887B; /* coral */
+  border-radius: 50px; /* Runde Ecken */
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+  display: inline-block; /* Damit der Link wie ein Button aussieht */
+  text-align: center; /* Zentriert den Text im Link */
+  min-width: 120px; /* Mindestbreite für den Button */
+  box-sizing: border-box; /* Damit Padding und Border in der Breite enthalten sind */
+  cursor: pointer; /* Zeigt an, dass es klickbar ist */
+  font-family: "Nunito", sans-serif; /* Schriftart für den Link */
+  font-optical-sizing: auto;
+  font-weight: 600;
+  font-style: normal;
+  /* Optional: Schatten für den Button */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  /* Optional: Leichtes Hover-Effekt */
+  border: none; /* Entfernt den Standardrahmen */
+  /* Optional: Leichtes Hover-Effekt */
+  /* border: 2px solid transparent; */
+  /* border-radius: 50px; */
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 .nav-links-primary:hover {
-  background-color: #003a61;
-  color: white;
-}
-.navbar-logo:hover {
-  color: #F8E8C3;  
+  background-color: #DE887B;
 }
 
+.nav-links .nav-links-primary {
+  background-color: var(--skyBlue);
+  color: white;
+}
+
+.nav-links .nav-links-primary:hover {
+  background-color: var(--deepBlue);
+  color: white;
+}
 
 /* ------------------------------------- */
 /* Stile für das Burger-Menü */
@@ -77,15 +201,19 @@
 }
 
 .burger-icon {
-  font-size: 2rem;
+  width: 40px; /* Breite des Burger-Icons */
+  height: 40px; /* Höhe des Burger-Icons */
+  background-color: var(--skyBlue);
+  border-radius: 50%; /* Runde Form */
+  display: flex;
+  justify-content: center;
+  align-items: center;
   cursor: pointer;
-  padding: 5px 10px;
-  border-radius: 5px;
-  transition: background-color 0.3s ease;
+  transition: background-color 0.4s ease;
 }
 
 .burger-icon:hover {
-  background-color: #003a617e;
+  background-color: rgba(255, 255, 255, 0.2);
 }
 
 .burger-nav-menu {
@@ -93,7 +221,10 @@
   position: absolute;
   top: 100%;
   right: 0; /* Bleibt rechtsbündig zum Burger-Icon */
-  background-color: #333;
+  background-color: var(--skyBlue);
+  color:var(--deepBlue);
+  width: 200px; /* Feste Breite für das Dropdown-Menü */
+  padding: 10px;
   list-style: none;
   margin: 0;
   padding: 10px 0;
@@ -103,6 +234,8 @@
   border-radius: 5px;
   flex-direction: column;
   align-items: flex-start;
+  transition: display 0.3s ease;
+
 }
 
 .burger-menu-container:hover .burger-nav-menu {
@@ -117,12 +250,19 @@
 .burger-nav-menu .nav-links {
   padding: 12px 20px;
   display: block;
+  text-decoration: none;
   text-align: left;
   color: white;
   transition: background-color 0.3s ease;
 }
 
 .burger-nav-menu .nav-links:hover {
-  background-color: #575757;
+  background-color: var(--coral);
   border-radius: 0;
+}
+.burger-nav-menu .nav-links.active {
+  background-color: var(--skyBlue);
+}
+.burger-nav-menu .nav-links.active:hover {
+  background-color: var(--deepBlue);
 }
