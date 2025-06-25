@@ -1,114 +1,31 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import './Profile.css';
-import { API_URL } from '../config';
 
 const Profile = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [profileData, setProfileData] = useState({
-    username: '',
-    email: '',
+    username: 'max_mustermann',
+    email: 'max.mustermann@email.com',
     password: '••••••••••',
-    firstName: '',
-    lastName: '',
-    state: '',
-    city: '',
-    zip: '',
-    street: '',
+    firstName: 'Max',
+    lastName: 'Mustermann',
+    state: 'Bayern',
+    city: 'München',
+    zip: '80331',
+    street: 'Musterstraße 123',
     profileImage: null
   });
+
   const [editData, setEditData] = useState({ ...profileData });
-  const [isLoading, setIsLoading] = useState(true);
-
-  // Lade User-Daten beim Komponenten-Start
-  useEffect(() => {
-    const fetchUserData = async () => {
-      try {
-        const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-        
-        if (!token) {
-          window.location.href = '/login';
-          return;
-        }
-
-        const response = await fetch(`${API_URL}/auth/users/me`, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
-        });
-
-        if (response.ok) {
-          const userData = await response.json();
-          const formattedData = {
-            username: userData.nickname || '',
-            email: userData.email || '',
-            password: '••••••••••',
-            firstName: userData.adress?.[0]?.firstName || '',
-            lastName: userData.adress?.[0]?.lastName || '',
-            state: userData.adress?.[0]?.state || '',
-            city: userData.adress?.[0]?.city || '',
-            zip: userData.adress?.[0]?.zip || '',
-            street: userData.adress?.[0]?.street || '',
-            profileImage: userData.profileImage || null
-          };
-          setProfileData(formattedData);
-          setEditData(formattedData);
-        } else {
-          // Token ungültig, zur Login-Seite weiterleiten
-          localStorage.removeItem('token');
-          sessionStorage.removeItem('token');
-          window.location.href = '/login';
-        }
-      } catch (error) {
-        console.error('Fehler beim Laden der User-Daten:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchUserData();
-  }, []);
 
   const handleEdit = () => {
     setIsEditing(true);
     setEditData({ ...profileData });
   };
 
-  const handleSave = async () => {
-    try {
-      const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-      
-      const response = await fetch(`${API_URL}/auth/users/me`, {
-        method: 'PUT',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          nickname: editData.username,
-          email: editData.email,
-          adress: [{
-            firstName: editData.firstName,
-            lastName: editData.lastName,
-            street: editData.street,
-            city: editData.city,
-            state: editData.state,
-            zip: parseInt(editData.zip, 10)
-          }]
-        })
-      });
-
-      if (response.ok) {
-        setProfileData({ ...editData });
-        setIsEditing(false);
-        alert('Profil erfolgreich aktualisiert!');
-      } else {
-        alert('Fehler beim Speichern der Änderungen');
-      }
-    } catch (error) {
-      console.error('Fehler beim Speichern:', error);
-      alert('Verbindungsfehler');
-    }
+  const handleSave = () => {
+    setProfileData({ ...editData });
+    setIsEditing(false);
   };
 
   const handleCancel = () => {
@@ -132,14 +49,6 @@ const Profile = () => {
       reader.readAsDataURL(file);
     }
   };
-
-  if (isLoading) {
-    return (
-      <div className="profile-container">
-        <div className="loading">Lade Profildaten...</div>
-      </div>
-    );
-  }
 
   return (
     <div className="profile-container">
@@ -247,7 +156,6 @@ const Profile = () => {
                 <div className="input-group">
                   <label>Passwort</label>
                   <div className="input-container">
-                    <span className="input-icon">🔒</span>
                     {isEditing ? (
                       <input
                         type="password"

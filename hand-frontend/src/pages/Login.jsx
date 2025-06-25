@@ -1,17 +1,16 @@
 import React, { useState } from 'react';
 import { Eye, EyeOff, Mail, Lock, User, ArrowLeft } from 'lucide-react'; 
 import './Login.css'; 
-import { API_URL } from '../config';
 
 function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [formData, setFormData] = useState({
-    email: '',
+    username: '',
     password: '',
+    email: ''
   });
   const [isLoading, setIsLoading] = useState(false);
-  const [rememberMe, setRememberMe] = useState(false);
 
   const handleInputChange = (e) => {
     setFormData({
@@ -21,7 +20,7 @@ function Login() {
   };
 
   const handleLogin = async () => {
-    if (!formData.email || !formData.password) {
+    if (!formData.username || !formData.password) {
       alert('Bitte alle Felder ausfüllen');
       return;
     }
@@ -29,30 +28,25 @@ function Login() {
     setIsLoading(true);
     
     try {
-      const response = await fetch(`${API_URL}/auth/login`, {
+      // ECHTE API-Anfrage an Ihr Backend
+      const response = await fetch('http://your-backend-url/api/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          email: formData.email,
-          password: formData.password,
-          rememberMe
+          username: formData.username,
+          password: formData.password
         })
       });
 
       const data = await response.json();
       
       if (response.ok) {
-        if (rememberMe) {
-          localStorage.setItem('token', data.token);
-          localStorage.setItem('rememberMe', 'true');
-        } else {
-          sessionStorage.setItem('token', data.token);
-          localStorage.removeItem('rememberMe');
-        }
-        
-        window.location.href = '/profile'; // <-- geändert von '/dashboard' zu '/profile'
+        // Token speichern
+        localStorage.setItem('token', data.token);
+        // Weiterleiten
+        window.location.href = '/dashboard';
       } else {
         alert(data.message || 'Login fehlgeschlagen');
       }
@@ -71,6 +65,8 @@ function Login() {
     }
 
     setIsLoading(true);
+    
+    // Hier würdest du deine Passwort-Reset-Logik implementieren
     setTimeout(() => {
       console.log('Password reset for:', formData.email);
       setIsLoading(false);
@@ -78,6 +74,13 @@ function Login() {
       setShowForgotPassword(false);
     }, 1500);
   };
+
+  // resetForm wird im JSX nicht direkt verwendet, kann aber für interne Logik nützlich sein
+  // const resetForm = () => {
+  //   setFormData({ username: '', password: '', email: '' });
+  //   setShowForgotPassword(false);
+  //   setShowPassword(false);
+  // };
 
   const handleKeyPress = (e) => {
     if (e.key === 'Enter') {
@@ -134,14 +137,14 @@ function Login() {
             {/* Login Form */}
             {!showForgotPassword ? (
               <div className="form-section login-form">
-                {/* Email Field - KORRIGIERT */}
+                {/* Username Field */}
                 <div className="input-group">
                   <User size={20} className="input-icon" />
                   <input
-                    type="email"
-                    name="email" // <-- KORRIGIERT von "username" zu "email"
-                    placeholder="E-Mail"
-                    value={formData.email} // <-- KORRIGIERT von formData.username
+                    type="text"
+                    name="username"
+                    placeholder="Benutzername"
+                    value={formData.username}
                     onChange={handleInputChange}
                     onKeyPress={handleKeyPress}
                     required
@@ -172,11 +175,7 @@ function Login() {
                 {/* Remember Me & Forgot Password */}
                 <div className="form-options">
                   <label className="remember-me-checkbox">
-                    <input 
-                      type="checkbox" 
-                      checked={rememberMe}
-                      onChange={(e) => setRememberMe(e.target.checked)}
-                    />
+                    <input type="checkbox" />
                     <span>Angemeldet bleiben</span>
                   </label>
                   <button

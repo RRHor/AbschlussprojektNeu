@@ -14,50 +14,49 @@ body {
 
 /* Haupt-Wrapper für die gesamte Seite */
 .login-page-wrapper {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
-    padding: 20px;
-    box-sizing: border-box;
-    position: relative; 
-    background: linear-gradient(-45deg,#05004E , #F8E8C3, #05004E, #F8E8C3);
-    background-size: 400% 400%;
-    animation: gradientShift 15s ease infinite;
-    overflow: hidden;
+  min-height: 100vh;
+  background: var(--bg-primary);
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
 }
 
-@keyframes gradientShift {
-    0% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
-}
-
-/* Hintergrundmuster */
+/* Animated Background Pattern */
 .background-pattern-container {
-    position: absolute;
-    inset: 0;
-    opacity: 0.05; 
-    overflow: hidden;
-    pointer-events: none;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  overflow: hidden;
+  z-index: 0;
 }
 
-.background-pattern-container::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: radial-gradient(circle at 20% 50%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
-                radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
-                radial-gradient(circle at 40% 80%, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
-    animation: float 6s ease-in-out infinite;
+.background-pattern {
+  position: absolute;
+  width: 200%;
+  height: 200%;
+  background: 
+    radial-gradient(circle at 20% 50%, rgba(79, 227, 193, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(46, 126, 179, 0.08) 0%, transparent 50%),
+    radial-gradient(circle at 40% 80%, rgba(222, 136, 123, 0.06) 0%, transparent 50%);
+  animation: float 20s ease-in-out infinite;
 }
 
 @keyframes float {
-    0%, 100% { transform: translateY(0px) rotate(0deg); }
-    50% { transform: translateY(-20px) rotate(5deg); }
+  0%, 100% {
+    transform: translate(-10%, -10%) rotate(0deg);
+  }
+  33% {
+    transform: translate(-15%, -5%) rotate(1deg);
+  }
+  66% {
+    transform: translate(-5%, -15%) rotate(-1deg);
+  }
 }
 
 /* Haupt-Container für die Login-Box und zusätzliche Info */
@@ -90,7 +89,7 @@ body {
     align-items: center;
     color: rgba(255, 255, 255, 0.9);
     text-decoration: none;
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(0, 0, 0, 0.35);
     backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 255, 255, 0.2); 
     border-radius: 50px;
@@ -103,9 +102,11 @@ body {
 }
 
 .back-button:hover {
-    background: rgba(255, 255, 255, 0.2);
-    transform: translateX(-50%) translateY(-5px); /* Maintain centering */
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    font-weight: 600;
+    color: #DE887B;
+    background: #f8e8c3;
+    transform: translateX(-50%) translateY(-3px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
 }
 
 .back-button-icon {
@@ -507,10 +508,10 @@ body {
 }
 
 .register-link {
-    color:  #DE887B; 
+    color:  #f8e8c3; 
     background-color: rgba(5, 0, 78, 0.6);
     border-radius: 24px;
-    padding: 3px 5px;
+    padding: 6px 10px;
     text-decoration: underline;
     font-weight: 600; 
     margin-left: 4px;
@@ -518,7 +519,7 @@ body {
 }
 
 .register-link:hover {
-    color: white; 
+    color:  #DE887B;  
 }
 
 /* Zusätzliche Informationen unter der Karte */
