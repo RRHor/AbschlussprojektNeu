@@ -2,13 +2,13 @@
 
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import Navbar from './components/Navbar.jsx';
-import LandingPage from './pages/LandingPage.jsx';
-import Login from './pages/Login.jsx';
-import Register from './pages/Register.jsx';
-import Profile from './pages/Profile.jsx';
-import Exchange from './pages/Exchange/Exchange.jsx';
-import Help from './pages/Help.jsx';
+import Navbar from './components/Navbar';
+import LandingPage from './pages/LandingPage';
+import Login from './pages/Login';
+import Register from './pages/Register';
+import Profile from './pages/Profile';
+import Help from './pages/Help'; 
+import Exchange from './pages/Exchange/Exchange.jsx'; // oder wo auch immer die Datei ist
 
 
 function App() {
@@ -19,7 +19,7 @@ function App() {
         <Routes>
           <Route path="/" element={<LandingPage/>} /> 
           <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register onSuccess={(data) => console.log('Registrierung erfolgreich', data)} />} />
+          <Route path="/register" element={<Register />} />
           <Route path="/help" element={<Help/>} />
           <Route path="/events" />
           <Route path="/profile" element={<Profile />} />

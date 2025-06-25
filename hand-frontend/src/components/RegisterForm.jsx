@@ -82,9 +82,9 @@ const RegisterForm = ({ onSuccess }) => {
           nickname: formData.nickname,
           email: formData.email,
           password: formData.password,
+          firstName: formData.firstName,    // ✅ Auf Root-Ebene
+          lastName: formData.lastName,      // ✅ Auf Root-Ebene
           adress: {
-            firstName: formData.firstName,
-            lastName: formData.lastName,
             street: formData.street,
             city: formData.city,
             district: formData.district,

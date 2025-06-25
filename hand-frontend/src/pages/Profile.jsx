@@ -19,7 +19,7 @@ const Profile = () => {
   const [editData, setEditData] = useState({ ...profileData });
   const [isLoading, setIsLoading] = useState(true);
 
-  // Lade User-Daten beim Komponenten-Start
+  // Echte User-Daten beim Laden der Komponente abrufen
   useEffect(() => {
     const fetchUserData = async () => {
       try {
@@ -54,7 +54,6 @@ const Profile = () => {
           setProfileData(formattedData);
           setEditData(formattedData);
         } else {
-          // Token ungültig, zur Login-Seite weiterleiten
           localStorage.removeItem('token');
           sessionStorage.removeItem('token');
           window.location.href = '/login';
@@ -247,7 +246,6 @@ const Profile = () => {
                 <div className="input-group">
                   <label>Passwort</label>
                   <div className="input-container">
-                    <span className="input-icon">🔒</span>
                     {isEditing ? (
                       <input
                         type="password"

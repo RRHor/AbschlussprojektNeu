@@ -6,7 +6,7 @@ import landingphoto1 from '../assets/landingphoto/landingphoto1.png';
 import landingphoto2 from '../assets/landingphoto/landingphoto2.png';
 import landingphoto3 from '../assets/landingphoto/landingphoto3.png';
 import landingphoto4 from '../assets/landingphoto/landingphoto4.png';
-import landingphoto5 from '../assets/landingphoto/landingphoto5.avif';
+import landingphoto5 from '../assets/landingphoto/landingphoto5.avif'
 
 const landingphoto = [
   landingphoto1,
@@ -20,17 +20,14 @@ function LandingPage() {
   return (
     <div className="landing-container">
       <ImageCarousel images={landingphoto} />
-      
       <section className="landing-content">
         <h1>Willkommen in Hand in Hand</h1>
         <p>Gemeinsam in der Nachbarschaft helfen und verbunden bleiben.</p>
         <div className="cta-buttons">
-          <a href="#!" className="btn primary">Jetzt Registrieren</a>
+          <a href="#!" className="btn primary">Jetzt Registieren</a>
           <a href="#!" className="btn secondary">Mehr Erfahren</a>
-        </div>
-      </section>
-
-      {/* Events */}
+                  </div>
+ {/* Events */}
       <section id="events" className="section-block section-colored">
         <h2>🎉 Events in deiner Nähe</h2>
         <img src={landingphoto1} alt="nachbarschafts-event" />
@@ -72,7 +69,7 @@ function LandingPage() {
         <button className="btn primary">Hilfeseite öffnen</button>
       </section>
       
-      {/* Footer */}
+     {/* Footer */}
       <footer className="app-footer">
         <div className="footer-content">
           <div className="footer-links">
@@ -81,9 +78,10 @@ function LandingPage() {
             <a href="#blog">Blog</a>
             <a href="#hilfe">Hilfe</a>
           </div>
-          <p>&copy; {new Date().getFullYear()} Hand in Hand – Nachbarschaft verbindet. All rights reserved by Rea, Dominik, Nazli, Dogmar, Brian, Arben.</p>
-        </div>
-      </footer>
+     <p>&copy; {new Date().getFullYear()} Hand in Hand – Nachbarschaft verbindet. All rights reserved by Rea,Dominik,Nazli,Dogmar,Brian,Arben.</p>
+  </div>
+</footer>
+      </section>
     </div>
   );
 }
