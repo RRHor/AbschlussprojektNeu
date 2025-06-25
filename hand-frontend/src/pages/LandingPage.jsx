@@ -1,6 +1,7 @@
 import ImageCarousel from '../components/ImageCarousel';
 import './LandingPage.css';
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 
 import landingphoto1 from '../assets/landingphoto/landingphoto1.png';
 import landingphoto2 from '../assets/landingphoto/landingphoto2.png';
@@ -17,6 +18,24 @@ const landingphoto = [
 ];
 
 function LandingPage() {
+  const navigate = useNavigate();
+
+  const handleRegister = () => {
+    navigate('/register');
+  };
+
+  const handleLogin = () => {
+    navigate('/login');
+  };
+
+  const handleEvents = () => {
+    navigate('/events');
+  };
+
+  const handleProfile = () => {
+    navigate('/profile');
+  };
+
   return (
     <div className="landing-container">
       <ImageCarousel images={landingphoto} />
@@ -25,8 +44,12 @@ function LandingPage() {
         <h1>Willkommen in Hand in Hand</h1>
         <p>Gemeinsam in der Nachbarschaft helfen und verbunden bleiben.</p>
         <div className="cta-buttons">
-          <a href="#!" className="btn primary">Jetzt Registrieren</a>
-          <a href="#!" className="btn secondary">Mehr Erfahren</a>
+          <button className="btn primary" onClick={handleRegister}>
+            Jetzt Registrieren
+          </button>
+          <button className="btn secondary" onClick={() => {/* Hier kannst du später eine "Mehr erfahren" Seite verlinken */}}>
+            Mehr Erfahren
+          </button>
         </div>
       </section>
 
@@ -35,7 +58,9 @@ function LandingPage() {
         <h2>🎉 Events in deiner Nähe</h2>
         <img src={landingphoto1} alt="nachbarschafts-event" />
         <p>Entdecke lokale Veranstaltungen und triff Nachbarn.</p>
-        <button className="btn primary">Alle Events ansehen</button>
+        <button className="btn primary" onClick={handleEvents}>
+          Alle Events ansehen
+        </button>
       </section>
 
       {/* Verschenke */}
@@ -43,7 +68,9 @@ function LandingPage() {
         <h2>🎁 Verschenke & Tausche</h2>
         <img src={landingphoto2} alt="verschenke-event" />
         <p>Gib Dingen ein zweites Leben – verschenke oder tausche mit Nachbarn.</p>
-        <button className="btn primary">Angebote ansehen</button>
+        <button className="btn primary" onClick={() => navigate('/marketplace')}>
+          Angebote ansehen
+        </button>
       </section>
 
       {/* Blog */}
@@ -51,7 +78,9 @@ function LandingPage() {
         <h2>📝 Blog & Geschichten</h2>
         <img src={landingphoto3} alt="blog-event" />
         <p>Erfahre mehr über inspirierende Nachbarschaftsprojekte und Tipps.</p>
-        <button className="btn primary">Zum Blog</button>
+        <button className="btn primary" onClick={() => navigate('/blog')}>
+          Zum Blog
+        </button>
       </section>
 
       {/* Ask */}
@@ -72,6 +101,22 @@ function LandingPage() {
         <button className="btn primary">Hilfeseite öffnen</button>
       </section>
       
+      {/* Beispiel für einen "Jetzt registrieren" Button */}
+      <button 
+        className="register-button" 
+        onClick={handleRegister}
+      >
+        Jetzt registrieren
+      </button>
+
+      {/* Beispiel für einen "Anmelden" Button */}
+      <button 
+        className="login-button" 
+        onClick={handleLogin}
+      >
+        Anmelden
+      </button>
+
       {/* Footer */}
       <footer className="app-footer">
         <div className="footer-content">
