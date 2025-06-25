@@ -51,22 +51,21 @@ router.post('/users/me/adress', protect, async (req, res) => {
  */
 router.put('/users/me/adress', protect, async (req, res) => {
   try {
-    const { street, city, district, zip } = req.body;
+    const { firstName, lastName, street, city, district, zip, state } = req.body;
 
-    // Prüfen, ob alle Felder vorhanden sind
-    if (!street || !city || !district || !zip) {
+    if (!firstName || !lastName || !street || !city || !district || !zip || !state) {
       return res.status(400).json({ message: "Alle Felder sind erforderlich." });
     }
 
-    // Ersetzt das gesamte Adress-Array durch eine neue Adresse
     const user = await User.findByIdAndUpdate(
       req.user._id,
-      { adress: [{ street, city, district, zip }] },
+      { adress: [{ firstName, lastName, street, city, district, zip, state }] },
       { new: true }
     );
 
     res.json({ message: "Adresse aktualisiert", adress: user.adress });
   } catch (error) {
+    console.error(error);
     res.status(500).json({ message: "Fehler beim Aktualisieren der Adresse", error: error.message });
   }
 });

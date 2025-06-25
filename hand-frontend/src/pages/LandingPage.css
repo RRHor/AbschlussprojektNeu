@@ -1,0 +1,335 @@
+:root {
+  --text-color: #05004E;         /* deepBlue */
+  --bg-primary: #F8E8C3;         /* cream */
+  --bg-secondary: #2E7EB3;       /* skyBlue */
+  --bg-tertiary: #4FE3C1;        /* mint */
+  --warning-color: #DE887B;      /* coral */
+
+  --deepBlue: #05004E;
+  --skyBlue: #2E7EB3;
+  --mint: #4FE3C1;
+  --cream: #F8E8C3;
+  --coral: #DE887B;
+}
+
+body {
+  margin: 0;
+  font-family: "Nunito", sans-serif;
+  background-color: var(--bg-primary);
+  color: var(--text-color);
+}
+
+section {
+  padding: 2rem;
+  margin: 0 auto;
+  max-width: 1200px;
+  box-sizing: border-box;
+}
+
+/* Container for the entire landing page */
+.landing-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+    width: 80%;
+  margin: 0;
+  box-sizing: border-box;
+  padding: 1rem;
+  background-color: var(--bg-primary);
+}
+
+/* Content block */
+.landing-content {
+  text-align: center;
+  max-width: 800px;
+  padding: 1rem;  
+
+  }
+
+.landing-content h1 {
+  font-size: 3rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  transition: color 0.4s ease;
+}
+
+.landing-content p {
+  font-size: 1.25rem;
+  margin-bottom: 2rem;
+}
+.landing-content h1:hover {
+  color: var(--skyBlue);
+}
+.landing-content p:hover {
+  color: var(--skyBlue);
+}
+
+
+
+
+/* Buttons container */
+.cta-buttons {
+  display: flex;
+  justify-content: center;
+    gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 5rem;
+ 
+}
+
+/* Base button style */
+.btn {
+  font-family: "Nunito", sans-serif;
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  text-decoration: none;
+  text-align: center;
+  min-width: 140px;
+  border-radius: 50px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Primary Button */
+.btn.primary {
+  background-color: var(--mint);
+  color: var(--deepBlue);
+  border-radius: 50px;
+  text-align: center;
+  padding-top: 20px;
+  padding-bottom: 20px;
+  display: inline-block;
+        }
+
+.btn.primary:hover {
+  background-color: var(--coral);
+  color: white;
+}
+
+/* Secondary Button */
+.btn.secondary {
+  background-color: var(--skyBlue);
+  color: var(--deepBlue);
+  border-radius: 50px;
+  text-align: center;
+  padding-top: 20px;
+  padding-bottom: 20px;
+  display: inline-block;
+
+  }
+
+.btn.secondary:hover {
+  background-color: white;
+  color: var(--deepBlue);
+  border-color: var(--deepBlue);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .landing-content h1 {
+    font-size: 2rem;
+  }
+
+  .landing-content p {
+    font-size: 1rem;
+  }
+
+  .cta-buttons {
+    flex-direction: column;
+    gap: 0.75rem;
+    align-items: center;
+    width: 100%;
+  }
+
+  .btn {
+    width: 100%;
+    max-width: 300px;
+    align-content: center;
+  }
+        .btn.primary, .btn.secondary {
+            min-width: 100%;
+        }
+    }
+
+/* Footer */
+.app-footer {
+  background-color: #DE887B;
+  color: var(--deepBlue);
+  text-align: center;
+  padding: 40px 0 20px 0; /* oben mehr padding */
+  position: relative;
+  font-family: "Nunito", sans-serif;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* ====== Root Variables ====== */
+:root {
+  --deepBlue: #05004E;
+  --skyBlue: #2E7EB3;
+  --mint: #4FE3C1;
+  --cream: #F8E8C3;
+  --coral: #DE887B;
+  --text-color: var(--deepBlue);
+  --bg-primary: var(--cream);
+}
+
+/* ====== Layout ====== */
+body {
+  margin: 0;
+  font-family: "Nunito", sans-serif;
+  background-color: var(--bg-primary);
+  color: var(--text-color);
+}
+
+.landing-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 1rem;
+  background-color: var(--bg-primary);
+}
+
+.landing-content {
+  text-align: center;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+/* ====== Buttons ====== */
+.cta-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 2rem;
+}
+
+.btn {
+  font-family: inherit;
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  text-decoration: none;
+  border-radius: 50px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  min-width: 140px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.btn.primary {
+  background-color: var(--mint);
+  color: var(--deepBlue);
+  border: 2px solid var(--coral);
+}
+
+.btn.primary:hover {
+  background-color: var(--coral);
+  color: #fff;
+}
+
+.btn.secondary {
+  background-color: var(--skyBlue);
+  color: var(--deepBlue);
+  border: 2px solid var(--skyBlue);
+}
+
+.btn.secondary:hover {
+  background-color: #fff;
+  color: var(--deepBlue);
+  border-color: var(--deepBlue);
+}
+
+/* ====== Footer ====== */
+.app-footer {
+  background-color: var(--coral);
+  color: var(--deepBlue);
+  text-align: center;
+  padding: 20x 0;
+  font-family: inherit;
+  position: relative;
+  left: 50%;
+  right: 50%;
+  margin-left: -50vw;
+  margin-top: 30px;
+  margin-bottom: 0;
+  margin-right: -50vw;
+  width: 100vw;
+  max-width: 100vw;
+  box-sizing: border-box;
+}
+
+.footer-content {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 0 2rem;
+}
+
+.footer-links {
+  display: flex;
+  justify-content: center;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+
+.footer-links a {
+  color: #fff;
+  text-decoration: none;
+  font-size: 1rem;
+  transition: color 0.3s;
+}
+
+.footer-links a:hover {
+  color: var(--deepBlue);
+}
+
+.footer-content p {
+  margin-bottom: 1rem;
+  font-weight: 100;
+  font-size: 1rem;
+  color: rgba(255,255,255,0.7);
+  line-height: 1.5;
+}
+
+/* ====== Responsive ====== */
+@media (max-width: 900px) {
+  .footer-content { padding: 0 1rem; }
+}
+
+@media (max-width: 768px) {
+  .landing-content h1 { font-size: 2rem; }
+  .landing-content p { font-size: 1rem; }
+  .cta-buttons { flex-direction: column; gap: 0.75rem; }
+  .btn { width: 100%; max-width: 300px; }
+  .app-footer { padding: 32px 0 16px 0; font-size: 0.95rem; }
+}
+
+@media (max-width: 600px) {
+  .footer-content { padding: 0 0.5rem; }
+  .footer-links { flex-direction: column; gap: 0.75rem; }
+  .footer-content p { font-size: 0.85rem; }
+  .app-footer { padding: 24px 0 8px 0; font-size: 0.9rem; }
+}
+
+/* ======Images ====== */
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 0 auto;
+  border-radius: 10px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: transform 0.5 ease;
+
+}

@@ -17,6 +17,8 @@ router.post('/register', async (req, res) => {
     try {
         const { nickname, email, password, adress } = req.body;
 
+        console.log("Register-Request erhalten", req.body);
+
         // Prüfen, ob Nickname oder E-Mail schon vergeben sind
         const existingUser = await User.findOne({ $or: [{ email }, { nickname }] });
         if (existingUser) {
@@ -34,7 +36,7 @@ router.post('/register', async (req, res) => {
             nickname,
             email,
             password,
-            adress,
+            adress: [adress], // Als Array speichern (wie in deiner ursprünglichen Version)
             isVerify: false, // User ist anfangs nicht verifiziert
             verificationCode,
             isAdmin: !adminExists, // Erster User wird Admin
@@ -62,51 +64,56 @@ router.post('/register', async (req, res) => {
 
 /**
  * Login eines Users
- * - Authentifiziert mit Nickname und Passwort
+ * - Authentifiziert mit E-Mail und Passwort (wie in deiner Version)
+ * - Unterstützt rememberMe-Funktion
  * - Gibt bei Erfolg ein JWT-Token als httpOnly-Cookie zurück
  */
-router.post('/login', async (req, res) => {
-    try {
-        const { nickname, password } = req.body;
+router.post("/login", async (req, res) => {
+  try {
+    const { email, password, rememberMe } = req.body;
+    const user = await User.findOne({ email });
 
-        // User anhand des Nicknames suchen
-        const user = await User.findOne({ nickname });
-        if (!user ){ 
-            return res.status(404).json({ message: 'User nicht gefunden' });
-        }
-
-        // Passwort prüfen
-        const isMatch = await user.matchPassword(password);
-        if (!isMatch) {
-            return res.status(401).json({ message: 'Ungültige Anmeldedaten' });
-        }
-
-        // JWT-Token erstellen
-        const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '30d' });
-
-        // Token als httpOnly-Cookie setzen
-        res.cookie('token', token, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production', // in Produktion nur über HTTPS
-            sameSite: 'strict',
-            maxAge: 30 * 24 * 60 * 60 * 1000 // 30 Tage
-        });
-
-        // Erfolgreiche Anmeldung, Userdaten und Token zurückgeben
-        res.json({
-            message: 'Login erfolgreich',
-            token,
-            _id: user._id,
-            nickname: user.nickname,
-            email: user.email,
-            adress: user.adress,
-            isAdmin: user.isAdmin,
-            isActive: user.isActive, // Stelle sicher, dass dieses Feld im Model existiert
-        });
-    } catch (error) {
-        console.error('Login error:', error);
-        res.status(500).json({ message: 'Serverfehler' });
+    if (!user) {
+      return res.status(401).json({ message: "User nicht gefunden" });
     }
+
+    const isMatch = await user.matchPassword(password);
+    if (!isMatch) {
+      return res.status(401).json({ message: "Ungültige E-Mail oder Passwort" });
+    }
+
+    // Token-Gültigkeit je nach rememberMe
+    const expiresIn = rememberMe ? "30d" : "1d";
+    
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+      expiresIn,
+    });
+
+    // Cookie-Lebensdauer anpassen
+    const maxAge = rememberMe ? 30 * 24 * 60 * 60 * 1000 : 24 * 60 * 60 * 1000;
+
+    res.cookie('token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge
+    });
+
+    res.json({
+      message: "Login erfolgreich",
+      token,
+      user: {
+        _id: user._id,
+        nickname: user.nickname,
+        email: user.email,
+        adress: user.adress,
+        isAdmin: user.isAdmin,
+        isVerify: user.isVerify,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Login fehlgeschlagen", error: error.message });
+  }
 });
 
 /**
@@ -115,6 +122,27 @@ router.post('/login', async (req, res) => {
  */
 router.get("/users/me", protect, async (req, res) => {
   res.json(req.user);
+});
+
+/**
+ * Eigene Userdaten aktualisieren (geschützt)
+ * - Aktualisiert die Daten des eingeloggten Users
+ */
+router.put("/users/me", protect, async (req, res) => {
+  console.log("PUT /users/me aufgerufen", req.body);
+  console.log("User aus Token:", req.user);
+  try {
+    const user = await User.findByIdAndUpdate(req.user._id, req.body, {
+      new: true,
+    }).select("-password");
+    if (!user) {
+      return res.status(404).json({ message: "User nicht gefunden" });
+    }
+    res.json(user);
+  } catch (error) {
+    console.error("FEHLER in PUT /users/me:", error);
+    res.status(500).json({ message: "Aktualisierung fehlgeschlagen", error: error.message });
+  }
 });
 
 /**
