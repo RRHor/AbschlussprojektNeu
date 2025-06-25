@@ -16,6 +16,7 @@ import testEmailRoutes from './routes/testEmailRoutes.js'
 import postRoutes from './routes/postRoutes.js';
 import passwordRequestRoute from './routes/passwordResetRequestRoute.js';
 import passwordResetRoutes from './routes/passwordResetRoute.js';
+import publicUserRoutes from './routes/publicUserRoutes.js';
 
 
 
@@ -71,6 +72,9 @@ app.use('/api/posts', postRoutes);
 app.use('/api/auth', passwordRequestRoute);
 
 app.use('/api/auth', passwordResetRoutes);
+
+// User sucht User
+app.use('/api', publicUserRoutes);
 
 // Root-Route (Startseite)
 app.get('/', (req, res) => {
