@@ -98,7 +98,7 @@ const RegisterForm = ({ onSuccess }) => {
       if (response.ok) {
         localStorage.setItem('token', data.token);
         onSuccess(data);
-        navigate('/auth/login');
+        navigate('/login'); // statt navigate('/auth/login')
       } else {
         setMessage(`❌ Fehler: ${data.message || 'Unbekannter Fehler'}`);
       }

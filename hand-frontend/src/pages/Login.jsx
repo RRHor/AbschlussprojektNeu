@@ -11,6 +11,7 @@ function Login() {
     password: '',
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
 
   const handleInputChange = (e) => {
     setFormData({
@@ -34,16 +35,24 @@ function Login() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          email: formData.email, // oder besser: formData.email
-          password: formData.password
+          email: formData.email,
+          password: formData.password,
+          rememberMe
         })
       });
 
       const data = await response.json();
       
       if (response.ok) {
-        localStorage.setItem('token', data.token);
-        window.location.href = '/dashboard';
+        if (rememberMe) {
+          localStorage.setItem('token', data.token);
+          localStorage.setItem('rememberMe', 'true');
+        } else {
+          sessionStorage.setItem('token', data.token);
+          localStorage.removeItem('rememberMe');
+        }
+        
+        window.location.href = '/profile'; // <-- geändert von '/dashboard' zu '/profile'
       } else {
         alert(data.message || 'Login fehlgeschlagen');
       }
@@ -125,14 +134,14 @@ function Login() {
             {/* Login Form */}
             {!showForgotPassword ? (
               <div className="form-section login-form">
-                {/* Username Field */}
+                {/* Email Field - KORRIGIERT */}
                 <div className="input-group">
                   <User size={20} className="input-icon" />
                   <input
-                    type="text"
-                    name="username"
-                    placeholder="Benutzername"
-                    value={formData.username}
+                    type="email"
+                    name="email" // <-- KORRIGIERT von "username" zu "email"
+                    placeholder="E-Mail"
+                    value={formData.email} // <-- KORRIGIERT von formData.username
                     onChange={handleInputChange}
                     onKeyPress={handleKeyPress}
                     required
@@ -163,7 +172,11 @@ function Login() {
                 {/* Remember Me & Forgot Password */}
                 <div className="form-options">
                   <label className="remember-me-checkbox">
-                    <input type="checkbox" />
+                    <input 
+                      type="checkbox" 
+                      checked={rememberMe}
+                      onChange={(e) => setRememberMe(e.target.checked)}
+                    />
                     <span>Angemeldet bleiben</span>
                   </label>
                   <button

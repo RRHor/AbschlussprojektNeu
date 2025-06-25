@@ -19,7 +19,7 @@ function App() {
         <Routes>
           <Route path="/" element={<LandingPage/>} /> 
           <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
+          <Route path="/register" element={<Register onSuccess={(data) => console.log('Registrierung erfolgreich', data)} />} />
           <Route path="/help" element={<Help/>} />
           <Route path="/events" />
           <Route path="/profile" element={<Profile />} />

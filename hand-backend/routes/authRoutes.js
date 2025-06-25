@@ -46,44 +46,34 @@ router.post("/register", async (req, res) => {
 // Login
 router.post("/login", async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { email, password, rememberMe } = req.body;
     const user = await User.findOne({ email });
 
     if (!user) {
-      return res
-        .status(401)
-        .json({ message: "User nicht gefunden" });
+      return res.status(401).json({ message: "User nicht gefunden" });
     }
 
     const isMatch = await user.matchPassword(password);
     if (!isMatch) {
-      return res
-        .status(401)
-        .json({ message: "Ungültige E-Mail oder Passwort" });
+      return res.status(401).json({ message: "Ungültige E-Mail oder Passwort" });
     }
 
-    // if (!user.isVerify) {
-    //   return res
-    //     .status(401)
-    //     .json({ message: "Bitte verifiziere zuerst deine E-Mail." });
-    // }
-
+    // Token-Gültigkeit je nach rememberMe
+    const expiresIn = rememberMe ? "30d" : "1d";
+    
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
-      expiresIn: "30d",
+      expiresIn,
     });
 
-    // Token als httpOnly-Cookie setzen im Browser
-         // Cookie für die Atuhentifizierung
-        res.cookie('token', token, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production', // in Produktion nur über HTTPS
-            sameSite: 'strict',
-            maxAge: 30 * 24 * 60 * 60 * 1000 // 30 Tage
-        });
+    // Cookie-Lebensdauer anpassen
+    const maxAge = rememberMe ? 30 * 24 * 60 * 60 * 1000 : 24 * 60 * 60 * 1000;
 
-        // Erfolgreiche Anmeldung
-        // Sendet die User-Daten und den Token als JSON-Antwort
-        // Das JSON für die Rückmeldung an das Frontend
+    res.cookie('token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge
+    });
 
     res.json({
       message: "Login erfolgreich",
@@ -98,15 +88,31 @@ router.post("/login", async (req, res) => {
       },
     });
   } catch (error) {
-    res
-      .status(500)
-      .json({ message: "Login fehlgeschlagen", error: error.message });
+    res.status(500).json({ message: "Login fehlgeschlagen", error: error.message });
   }
 });
 
 // Eigene Userdaten abrufen
 router.get("/users/me", authMiddleware, async (req, res) => {
   res.json(req.user);
+});
+
+// NEUE Route für PUT /users/me
+router.put("/users/me", authMiddleware, async (req, res) => {
+  console.log("PUT /users/me aufgerufen", req.body);
+  console.log("User aus Token:", req.user);
+  try {
+    const user = await User.findByIdAndUpdate(req.user._id, req.body, {
+      new: true,
+    }).select("-password");
+    if (!user) {
+      return res.status(404).json({ message: "User nicht gefunden" });
+    }
+    res.json(user);
+  } catch (error) {
+    console.error("FEHLER in PUT /users/me:", error);
+    res.status(500).json({ message: "Aktualisierung fehlgeschlagen", error: error.message });
+  }
 });
 
 // Userdaten aktualisieren
@@ -125,6 +131,8 @@ router.put("/users/:id", authMiddleware, async (req, res) => {
       .json({ message: "Aktualisierung fehlgeschlagen", error: error.message });
   }
 });
+
+
 
 // Verifizierungscode prüfen
 router.post("/verify", async (req, res) => {
