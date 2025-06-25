@@ -1,3 +1,4 @@
+
 import nodemailer from 'nodemailer';
 import dotenv from 'dotenv';
 // Lade Umgebungsvariablen
@@ -15,9 +16,9 @@ const transporter = nodemailer.createTransport({
  * Funktion zum Versenden einer Verifizierungs-E-Mail
  * @param {string} to - E-Mail-Adresse des Empfängers
  * @param {string} verificationCode - Der Verifizierungscode
- * @returns {Promise<Object>} - Erfolgs- oder Fehlerstatus
+ * @returns {Promise<Object>} - Erfolgs- oder Fehlerstatus Das gib die Funktion zurück
  */
-export const sendVerificationEmail = async (to, verificationCode) => {
+export const sendVerificationEmail = async (to, verificationCode,userId) => {
   try {
     const mailOptions = {
       from: process.env.EMAIL_FROM,
@@ -32,7 +33,9 @@ export const sendVerificationEmail = async (to, verificationCode) => {
             <strong>${verificationCode}</strong>
           </div>
           <p>Oder klicke auf diesen Link, um deine E-Mail direkt zu bestätigen:</p>
-          <p><a href="http://localhost:5173/verify?email=${to}&code=${verificationCode}" style="background-color: #4CAF50; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px; display: inline-block;">E-Mail bestätigen</a></p>
+          <p><a href="http://localhost:4000/api/auth/verify-link?userId=${userId}&code=${verificationCode}" style="background-color: #4CAF50; 
+          color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px; display: inline-block;">
+          E-Mail bestätigen</a></p>
           <p>Dieser Code ist 24 Stunden gültig.</p>
           <p>Viele Grüße,<br>Dein Hand-Hand Team</p>
         </div>

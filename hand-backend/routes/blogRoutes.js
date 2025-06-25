@@ -1,6 +1,7 @@
 import express from 'express';
-import authMiddleware from '../middleware/authMiddleware.js';
+import { protect } from '../middleware/authMiddleware.js';
 import Blog from '../models/blogModel.js';
+import User from '../models/userSchema.js';
 
 const router = express.Router();
 
@@ -35,7 +36,7 @@ router.get('/:id', async (req, res) => {
 });
 
 // Blogpost erstellen
-router.post('/', authMiddleware, async (req, res) => {
+router.post('/', protect, async (req, res) => {
   try {
     const blog = new Blog({ ...req.body, user: req.user._id });
     await blog.save();
@@ -46,7 +47,7 @@ router.post('/', authMiddleware, async (req, res) => {
 });
 
 // Blogpost bearbeiten
-router.put('/:id', authMiddleware, async (req, res) => {
+router.put('/:id', protect, async (req, res) => {
   try {
     const blog = await Blog.findByIdAndUpdate(req.params.id, req.body, { new: true });
     if (!blog) return res.status(404).json({ message: 'Blogpost nicht gefunden' });
@@ -57,10 +58,22 @@ router.put('/:id', authMiddleware, async (req, res) => {
 });
 
 // Blogpost löschen
-router.delete('/:id', authMiddleware, async (req, res) => {
+router.delete('/:id', protect, async (req, res) => {
   const blog = await Blog.findByIdAndDelete(req.params.id);
   if (!blog) return res.status(404).json({ message: 'Blogpost nicht gefunden' });
   res.json({ message: 'Blogpost gelöscht' });
+});
+
+// Suche nach User anhand von E-Mail oder Nickname
+router.post('/searchUser', async (req, res) => {
+  const user = await User.findOne({ 
+    $or: [
+      { email: req.body.email }, 
+      { nickname: req.body.nickname }
+    ] 
+  });
+  if (!user) return res.status(404).json({ message: 'User nicht gefunden' });
+  res.json(user);
 });
 
 export default router;

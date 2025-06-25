@@ -13,6 +13,11 @@ import eventRoutes from './routes/eventRoutes.js';
 import commentRoutes from './routes/commentRoutes.js';
 import adressRoutes from './routes/adressRoutes.js';
 import testEmailRoutes from './routes/testEmailRoutes.js'
+import postRoutes from './routes/postRoutes.js';
+import passwordRequestRoute from './routes/passwordResetRequestRoute.js';
+import passwordResetRoutes from './routes/passwordResetRoute.js';
+
+
 
 // Lade Umgebungsvariablen aus .env-Datei
 dotenv.config();
@@ -45,7 +50,7 @@ app.use('/api', verifyRoutes);
 app.use('/api', userRoutes);
 
 // Blog-Routen (z.B. /api/blog)
-app.use('/api/blog', blogRoutes);
+app.use('/api/blogs', blogRoutes);
 
 // Kleinanzeigen-Routen (z.B. /api/ads)
 app.use('/api/ads', adRoutes);
@@ -58,6 +63,14 @@ app.use('/api/comments', commentRoutes);
 
 // Adress-Routen (z.B. /api/users/me/adress)
 app.use('/api', adressRoutes);
+
+// Post-Routen (z.B. /api/posts)
+app.use('/api/posts', postRoutes);
+
+// Passwort-Zurücksetzen-Routen (z.B. /api/password-reset)
+app.use('/api/auth', passwordRequestRoute);
+
+app.use('/api/auth', passwordResetRoutes);
 
 // Root-Route (Startseite)
 app.get('/', (req, res) => {

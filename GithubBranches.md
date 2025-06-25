@@ -1,6 +1,7 @@
 # Git Branch-Workflow: Branches erstellen, mergen & Konflikte lösen
 
 ## 1. Neuen Branch erstellen und wechseln
+Mit diesem Befehl richten wir die Branch ein
 ```bash
 git checkout -b <branchname>
 ```
@@ -11,7 +12,7 @@ git add .
 git commit -m "Beschreibung der Änderungen"
 ```
 
-## 3. Branch mit Remote-Repository verknüpfen (nur 1mal notwendig)
+## 3. Branch mit Remote-Repository verknüpfen (nur 1mal  '-u origin <branchname>' notwendig)
 ```bash
 git push -u origin <branchname>
 ```

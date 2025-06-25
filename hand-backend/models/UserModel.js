@@ -5,7 +5,7 @@ import bcrypt from "bcryptjs";
 const userSchema = new mongoose.Schema(
   {
     // Name des Users (Pflichtfeld)
-    nickname: { type: String, required: true },
+    nickname: { type: String, required: true, unique: true }, // unique hinzugefügt
 
     // Array von Adress-Objekten für mehrere Wohnsitze
     adress: [
@@ -31,6 +31,9 @@ const userSchema = new mongoose.Schema(
 
     // Aktivitätsstatus (Standard: true)
     isActive: { type: Boolean, default: true },
+
+    // E-Mail-Verifizierungsstatus (Standard: false)
+    isVerify: { type: Boolean, default: false },
 
     // Verifizierungscode für E-Mail-Bestätigung (optional)
     verificationCode: { type: String, required: false, default: null },

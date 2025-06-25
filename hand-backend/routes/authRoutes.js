@@ -1,49 +1,73 @@
 import express from "express";
 import jwt from "jsonwebtoken";
-import User from "../models/UserModel.js";
+import User from "../models/userSchema.js";
 import { sendVerificationEmail } from "../utils/emailService.js";
-import authMiddleware from "../middleware/authMiddleware.js";
+import { protect } from "../middleware/authMiddleware.js"; // Middleware für geschützte Routen
 
 const router = express.Router();
 
-// Registrierung
-router.post("/register", async (req, res) => {
-  try {
-    const { nickname, email, password, adress } = req.body;
+/**
+ * Registrierung eines neuen Users
+ * - Prüft, ob Nickname oder E-Mail bereits vergeben sind
+ * - Generiert einen Verifizierungscode
+ * - Setzt den ersten User als Admin
+ * - Sendet eine Verifizierungs-E-Mail
+ */
+router.post('/register', async (req, res) => {
+    try {
+        const { nickname, email, password, adress } = req.body;
 
-    console.log("Register-Request erhalten", req.body);
+        console.log("Register-Request erhalten", req.body);
 
-    // Prüfe, ob User existiert
-    const existingUser = await User.findOne({ email });
-    if (existingUser) {
-      return res.status(400).json({ message: "E-Mail bereits vergeben" });
+        // Prüfen, ob Nickname oder E-Mail schon vergeben sind
+        const existingUser = await User.findOne({ $or: [{ email }, { nickname }] });
+        if (existingUser) {
+            return res.status(400).json({ message: 'E-Mail oder Nickname bereits vergeben' });
+        }
+
+        // Prüfen, ob schon ein Admin existiert (erster User wird Admin)
+        const adminExists = await User.findOne({ isAdmin: true });
+
+        // Verifizierungscode generieren (6-stellig, als String)
+        const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+
+        // Neuen User anlegen
+        const newUser = new User({
+            nickname,
+            email,
+            password,
+            adress: [adress], // Als Array speichern (wie in deiner ursprünglichen Version)
+            isVerify: false, // User ist anfangs nicht verifiziert
+            verificationCode,
+            isAdmin: !adminExists, // Erster User wird Admin
+        });
+        await newUser.save();
+
+        // Verifizierungs-E-Mail senden
+        await sendVerificationEmail(newUser.email, newUser.verificationCode, newUser._id);
+
+        // Erfolgreiche Registrierung
+        res.status(201).json({
+            message: 'User erfolgreich erstellt',
+            _id: newUser._id,
+            nickname: newUser.nickname,
+            email: newUser.email,
+            adress: newUser.adress,
+            isAdmin: newUser.isAdmin,
+            isVerify: newUser.isVerify
+        });
+    } catch (error) {
+        console.error('Register error:', error);
+        res.status(500).json({ message: 'Serverfehler' });
     }
-
-    // Verifizierungscode generieren (z.B. 6-stellige Zahl)
-    const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
-
-    // User anlegen
-    const newUser = new User({
-      nickname,
-      email,
-      password,
-      adress: [adress], // <-- adress ist ein Objekt, wird als Array gespeichert
-      verificationCode, // <-- hier wird der Code gesetzt!
-    });
-
-    await newUser.save();
-
-    // Verifizierungs-E-Mail senden
-    await sendVerificationEmail(email, verificationCode);
-
-    res.status(201).json({ message: "User erfolgreich registriert", user: newUser });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Registrierung fehlgeschlagen", error: error.message });
-  }
 });
 
-// Login
+/**
+ * Login eines Users
+ * - Authentifiziert mit E-Mail und Passwort (wie in deiner Version)
+ * - Unterstützt rememberMe-Funktion
+ * - Gibt bei Erfolg ein JWT-Token als httpOnly-Cookie zurück
+ */
 router.post("/login", async (req, res) => {
   try {
     const { email, password, rememberMe } = req.body;
@@ -92,13 +116,19 @@ router.post("/login", async (req, res) => {
   }
 });
 
-// Eigene Userdaten abrufen
-router.get("/users/me", authMiddleware, async (req, res) => {
+/**
+ * Eigene Userdaten abrufen (geschützt)
+ * - Gibt die im Token gespeicherten Userdaten zurück
+ */
+router.get("/users/me", protect, async (req, res) => {
   res.json(req.user);
 });
 
-// NEUE Route für PUT /users/me
-router.put("/users/me", authMiddleware, async (req, res) => {
+/**
+ * Eigene Userdaten aktualisieren (geschützt)
+ * - Aktualisiert die Daten des eingeloggten Users
+ */
+router.put("/users/me", protect, async (req, res) => {
   console.log("PUT /users/me aufgerufen", req.body);
   console.log("User aus Token:", req.user);
   try {
@@ -115,8 +145,11 @@ router.put("/users/me", authMiddleware, async (req, res) => {
   }
 });
 
-// Userdaten aktualisieren
-router.put("/users/:id", authMiddleware, async (req, res) => {
+/**
+ * Userdaten aktualisieren (geschützt)
+ * - Aktualisiert die Daten des Users mit der angegebenen ID
+ */
+router.put("/users/:id", protect, async (req, res) => {
   try {
     const user = await User.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
@@ -132,9 +165,10 @@ router.put("/users/:id", authMiddleware, async (req, res) => {
   }
 });
 
-
-
-// Verifizierungscode prüfen
+/**
+ * Verifizierungscode prüfen
+ * - Setzt isVerify auf true, wenn der Code korrekt ist
+ */
 router.post("/verify", async (req, res) => {
   try {
     const { email, code } = req.body;
@@ -157,3 +191,4 @@ router.post("/verify", async (req, res) => {
 });
 
 export default router;
+
