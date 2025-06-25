@@ -12,73 +12,52 @@ import adRoutes from './routes/adRoutes.js';
 import eventRoutes from './routes/eventRoutes.js';
 import commentRoutes from './routes/commentRoutes.js';
 import adressRoutes from './routes/adressRoutes.js';
-import testEmailRoutes from './routes/testEmailRoutes.js'
+import testEmailRoutes from './routes/testEmailRoutes.js';
 import postRoutes from './routes/postRoutes.js';
 import passwordRequestRoute from './routes/passwordResetRequestRoute.js';
 import passwordResetRoutes from './routes/passwordResetRoute.js';
-
-
 
 // Lade Umgebungsvariablen aus .env-Datei
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 4000; // Nur Port geändert
 
 // Stelle Verbindung zur Datenbank her
 connectDB();
 
-// Middleware für CORS (Cross-Origin Resource Sharing)
+// Einfache CORS (keine erweiterte Konfiguration)
 app.use(cors());
-
-// Middleware zum Parsen von JSON-Bodies
 app.use(express.json());
-
-// Middleware zum Parsen von Cookies
 app.use(cookieParser());
 
-// Authentifizierungs-Routen (Registrierung, Login, Verifizierung)
+// Authentifizierungs-Routen (gruppiert)
 app.use('/api/auth', authRoutes);
+app.use('/api/auth', verifyRoutes);
+app.use('/api/auth', passwordRequestRoute);
+app.use('/api/auth', passwordResetRoutes);
 
 // Test-Route zum Versenden von E-Mails
 app.use('/api/test-email', testEmailRoutes);
 
-// Verifizierungs-Routen (z.B. /api/auth/verify)
-app.use('/api', verifyRoutes);
-
-// User-Routen (z.B. /api/users/me, /api/users/:id)
+// User-Routen
 app.use('/api', userRoutes);
-
-// Blog-Routen (z.B. /api/blog)
-app.use('/api/blogs', blogRoutes);
-
-// Kleinanzeigen-Routen (z.B. /api/ads)
-app.use('/api/ads', adRoutes);
-
-// Event-Routen (z.B. /api/events)
-app.use('/api/events', eventRoutes);
-
-// Kommentar-Routen (z.B. /api/comments)
-app.use('/api/comments', commentRoutes);
-
-// Adress-Routen (z.B. /api/users/me/adress)
 app.use('/api', adressRoutes);
 
-// Post-Routen (z.B. /api/posts)
+// Content-Routen
+app.use('/api/blogs', blogRoutes);
+app.use('/api/ads', adRoutes);
+app.use('/api/events', eventRoutes);
 app.use('/api/posts', postRoutes);
+app.use('/api/comments', commentRoutes);
 
-// Passwort-Zurücksetzen-Routen (z.B. /api/password-reset)
-app.use('/api/auth', passwordRequestRoute);
-
-app.use('/api/auth', passwordResetRoutes);
-
-// Root-Route (Startseite)
+// Einfache Root-Route
 app.get('/', (req, res) => {
   res.send('Willkommen im "Hand in Hand"-Backend!');
 });
 
 // Starte den Server
 app.listen(PORT, () => {
-  console.log(`Server läuft auf http://localhost:${PORT}`);
+  console.log(`🚀 Server läuft auf http://localhost:${PORT}`);
 });
 
