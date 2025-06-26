@@ -1,99 +1,106 @@
 import React, { useState } from 'react';
-import { Eye, EyeOff, Mail, Lock, User, ArrowLeft } from 'lucide-react'; 
+import { useNavigate, Link } from 'react-router-dom';
+import { Eye, EyeOff, Mail, Lock, User, ArrowLeft, Loader } from 'lucide-react'; 
+import { useAuth } from '../context/AuthContext';
 import './Login.css'; 
 
 function Login() {
+  const navigate = useNavigate();
+  const { login } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [formData, setFormData] = useState({
-    username: '',
+    email: '',
     password: '',
-    email: ''
+    resetEmail: ''
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
 
   const handleInputChange = (e) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value
     });
+    // Clear error when user types
+    if (error) setError('');
   };
 
-  const handleLogin = async () => {
-    if (!formData.username || !formData.password) {
-      alert('Bitte alle Felder ausfüllen');
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    
+    if (!formData.email || !formData.password) {
+      setError('Bitte alle Felder ausfüllen');
       return;
     }
 
     setIsLoading(true);
+    setError('');
     
     try {
-      // ECHTE API-Anfrage an Ihr Backend
-      const response = await fetch('http://your-backend-url/api/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          username: formData.username,
-          password: formData.password
-        })
-      });
-
-      const data = await response.json();
+      const result = await login(formData.email, formData.password);
       
-      if (response.ok) {
-        // Token speichern
-        localStorage.setItem('token', data.token);
-        // Weiterleiten
-        window.location.href = '/dashboard';
+      if (result.success) {
+        // Successful login - AuthContext will handle user state
+        navigate('/profile', { replace: true });
       } else {
-        alert(data.message || 'Login fehlgeschlagen');
+        setError(result.message || 'Login fehlgeschlagen');
       }
     } catch (error) {
       console.error('Login error:', error);
-      alert('Verbindungsfehler');
+      setError('Ein unerwarteter Fehler ist aufgetreten');
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleForgotPassword = async () => {
-    if (!formData.email) {
-      alert('Bitte E-Mail-Adresse eingeben');
+  const handleForgotPassword = async (e) => {
+    e.preventDefault();
+    
+    if (!formData.resetEmail) {
+      setError('Bitte E-Mail-Adresse eingeben');
       return;
     }
 
     setIsLoading(true);
+    setError('');
     
-    // Hier würdest du deine Passwort-Reset-Logik implementieren
-    setTimeout(() => {
-      console.log('Password reset for:', formData.email);
-      setIsLoading(false);
+    try {
+      // TODO: Implement actual password reset API call
+      // const response = await api.post('/auth/forgot-password', { 
+      //   email: formData.resetEmail 
+      // });
+      
+      // Simulate API call for now
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
       alert('E-Mail zum Zurücksetzen des Passworts wurde gesendet!');
       setShowForgotPassword(false);
-    }, 1500);
+      setFormData(prev => ({ ...prev, resetEmail: '' }));
+    } catch (error) {
+      console.error('Password reset error:', error);
+      setError('Fehler beim Senden der Reset-E-Mail');
+    } finally {
+      setIsLoading(false);
+    }
   };
-
-  // resetForm wird im JSX nicht direkt verwendet, kann aber für interne Logik nützlich sein
-  // const resetForm = () => {
-  //   setFormData({ username: '', password: '', email: '' });
-  //   setShowForgotPassword(false);
-  //   setShowPassword(false);
-  // };
 
   const handleKeyPress = (e) => {
     if (e.key === 'Enter') {
       if (showForgotPassword) {
-        handleForgotPassword();
+        handleForgotPassword(e);
       } else {
-        handleLogin();
+        handleLogin(e);
       }
     }
   };
 
   const goBack = () => {
-    window.history.back();
+    if (window.history.length > 1) {
+      navigate(-1);
+    } else {
+      navigate('/');
+    }
   };
 
   return (
@@ -109,6 +116,7 @@ function Login() {
         <button
           onClick={goBack}
           className="back-button"
+          type="button"
         >
           <ArrowLeft size={20} className="back-button-icon" />
           Zurück
@@ -126,28 +134,36 @@ function Login() {
             </h1>
             <p className="header-subtitle">
               {showForgotPassword 
-                ? 'Gib deine E-Mail-Adresse ein'
+                ? 'Gib deine E-Mail-Adresse ein, um dein Passwort zurückzusetzen'
                 : 'Logge dich ein, um fortzufahren und der Nachbartschaft zu helfen.'
               }
             </p>
           </div>
 
+          {/* Error Message */}
+          {error && (
+            <div className="error-message">
+              <p>{error}</p>
+            </div>
+          )}
+
           {/* Form Content */}
           <div className="login-card-content">
             {/* Login Form */}
             {!showForgotPassword ? (
-              <div className="form-section login-form">
-                {/* Username Field */}
+              <form onSubmit={handleLogin} className="form-section login-form">
+                {/* Email Field */}
                 <div className="input-group">
-                  <User size={20} className="input-icon" />
+                  <Mail size={20} className="input-icon" />
                   <input
-                    type="text"
-                    name="username"
-                    placeholder="Benutzername"
-                    value={formData.username}
+                    type="email"
+                    name="email"
+                    placeholder="E-Mail-Adresse"
+                    value={formData.email}
                     onChange={handleInputChange}
                     onKeyPress={handleKeyPress}
                     required
+                    autoComplete="email"
                   />
                 </div>
 
@@ -162,11 +178,13 @@ function Login() {
                     onChange={handleInputChange}
                     onKeyPress={handleKeyPress}
                     required
+                    autoComplete="current-password"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
                     className="password-toggle"
+                    aria-label={showPassword ? "Passwort verbergen" : "Passwort anzeigen"}
                   >
                     {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                   </button>
@@ -175,7 +193,7 @@ function Login() {
                 {/* Remember Me & Forgot Password */}
                 <div className="form-options">
                   <label className="remember-me-checkbox">
-                    <input type="checkbox" />
+                    <input type="checkbox" name="rememberMe" />
                     <span>Angemeldet bleiben</span>
                   </label>
                   <button
@@ -189,34 +207,35 @@ function Login() {
 
                 {/* Login Button */}
                 <button
-                  onClick={handleLogin}
+                  type="submit"
                   disabled={isLoading}
                   className="submit-button primary-button"
                 >
                   {isLoading ? (
                     <div className="spinner-container">
-                      <div className="spinner"></div>
+                      <Loader size={20} className="spinner" />
                       Anmelden...
                     </div>
                   ) : (
                     'Anmelden'
                   )}
                 </button>
-              </div>
+              </form>
             ) : (
               /* Forgot Password Form */
-              <div className="form-section forgot-password-form">
+              <form onSubmit={handleForgotPassword} className="form-section forgot-password-form">
                 {/* Email Field */}
                 <div className="input-group">
                   <Mail size={20} className="input-icon" />
                   <input
                     type="email"
-                    name="email"
+                    name="resetEmail"
                     placeholder="E-Mail-Adresse"
-                    value={formData.email}
+                    value={formData.resetEmail}
                     onChange={handleInputChange}
                     onKeyPress={handleKeyPress}
                     required
+                    autoComplete="email"
                   />
                 </div>
 
@@ -230,13 +249,13 @@ function Login() {
                 {/* Buttons */}
                 <div className="button-group">
                   <button
-                    onClick={handleForgotPassword}
+                    type="submit"
                     disabled={isLoading}
                     className="submit-button primary-button"
                   >
                     {isLoading ? (
                       <div className="spinner-container">
-                        <div className="spinner"></div>
+                        <Loader size={20} className="spinner" />
                         Senden...
                       </div>
                     ) : (
@@ -245,13 +264,19 @@ function Login() {
                   </button>
                   
                   <button
-                    onClick={() => setShowForgotPassword(false)}
+                    type="button"
+                    onClick={() => {
+                      setShowForgotPassword(false);
+                      setError('');
+                      setFormData(prev => ({ ...prev, resetEmail: '' }));
+                    }}
                     className="submit-button secondary-button"
+                    disabled={isLoading}
                   >
                     Zurück zum Login
                   </button>
                 </div>
-              </div>
+              </form>
             )}
 
             {/* Footer */}
@@ -261,9 +286,9 @@ function Login() {
               </div>
               <p className="register-prompt">
                 Noch kein Konto? 
-                <a href="/register" className="register-link">
+                <Link to="/register" className="register-link">
                   Jetzt registrieren
-                </a>
+                </Link>
               </p>
             </div>
           </div>

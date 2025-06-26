@@ -1,6 +1,6 @@
 // context/AuthContext.jsx
 import { createContext, useContext, useState, useEffect } from 'react';
-import api from '../api'; // zentrale axios-Instanz
+import api from '../api';
 
 const AuthContext = createContext();
 
@@ -20,17 +20,16 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (token) {
-      api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
       fetchUser();
     } else {
       setLoading(false);
     }
-    // eslint-disable-next-line
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchUser = async () => {
     try {
-      const response = await api.get('/users/profile');
+      const response = await api.get('/users/me'); // Besserer Endpoint
       setUser(response.data.data);
     } catch (error) {
       console.error('Token verification failed:', error);
@@ -44,9 +43,10 @@ export const AuthProvider = ({ children }) => {
     try {
       const response = await api.post('/auth/login', { email, password });
       const { token, user } = response.data;
+      
       localStorage.setItem('token', token);
-      api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
       setUser(user);
+      
       return { success: true };
     } catch (error) {
       return {
@@ -60,9 +60,10 @@ export const AuthProvider = ({ children }) => {
     try {
       const response = await api.post('/auth/register', userData);
       const { token, user } = response.data;
+      
       localStorage.setItem('token', token);
-      api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
       setUser(user);
+      
       return { success: true };
     } catch (error) {
       return {
@@ -74,7 +75,6 @@ export const AuthProvider = ({ children }) => {
 
   const logout = () => {
     localStorage.removeItem('token');
-    delete api.defaults.headers.common['Authorization'];
     setUser(null);
   };
 
