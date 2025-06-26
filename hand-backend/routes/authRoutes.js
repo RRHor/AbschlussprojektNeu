@@ -59,8 +59,8 @@ router.post('/register', async (req, res) => {
             return res.status(400).json({ message: 'E-Mail oder Nickname bereits vergeben' });
         }
 
-        // **OPTIONALE** Adress-Validierung
-        const isValidAddress = await validateAddress(adress);
+        // OPTIONALE Adress-Validierung - temporär deaktiviert
+        const isValidAddress = true; // await validateAddress(adress);
         if (!isValidAddress) {
             return res.status(400).json({ 
                 message: 'Die eingegebene Adresse konnte nicht gefunden werden. Bitte überprüfen Sie Ihre Eingabe.',
@@ -75,7 +75,8 @@ router.post('/register', async (req, res) => {
         const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
 
         // Neuen User anlegen
-        const { firstName, lastName, street, city, state, zip } = adress;
+        const { firstName, lastName } = req.body;
+        const { street, city, state, zip } = adress || {};
         const newUser = new User({
             nickname,
             email,
@@ -186,18 +187,24 @@ router.get("/users/me", protect, async (req, res) => {
  * - Aktualisiert die Daten des eingeloggten Users
  */
 router.put("/users/me", protect, async (req, res) => {
-  console.log("PUT /users/me aufgerufen", req.body);
-  console.log("User aus Token:", req.user);
+  console.log("🔥 PUT /users/me ROUTE ERREICHT");
+  console.log("🔍 req.user:", req.user ? req.user.nickname : 'NICHT VORHANDEN');
+  console.log("🔍 Request Body:", req.body);
+  
   try {
     const user = await User.findByIdAndUpdate(req.user._id, req.body, {
       new: true,
     }).select("-password");
+    
     if (!user) {
+      console.log("❌ User nicht gefunden bei Update");
       return res.status(404).json({ message: "User nicht gefunden" });
     }
+    
+    console.log("✅ User erfolgreich aktualisiert:", user.nickname);
     res.json(user);
   } catch (error) {
-    console.error("FEHLER in PUT /users/me:", error);
+    console.error("❌ FEHLER in PUT /users/me:", error);
     res.status(500).json({ message: "Aktualisierung fehlgeschlagen", error: error.message });
   }
 });

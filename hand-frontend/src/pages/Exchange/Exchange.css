@@ -6,3 +6,148 @@ body {
     background-color: #F8E8C3; /* beige */
     /* background-color: #4FE3C1;  mint  */
 }
+
+/* Header */
+.exchange-header {
+  text-align: center;
+  margin-bottom: 2rem;
+  padding: 1rem;
+}
+
+.exchange-header h1 {
+  margin-bottom: 0.5rem;
+  color: var(--deepBlue);
+}
+
+.exchange-header p {
+  color: var(--deepBlue);
+  opacity: 0.8;
+  font-size: 1.1rem;
+}
+
+/* Navigation */
+.exchange-nav {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  padding: 0 1rem;
+  flex-wrap: wrap;
+}
+
+.exchange-nav-link {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  background-color: var(--mint);
+  color: var(--deepBlue);
+  text-decoration: none;
+  border-radius: 25px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  border: 2px solid transparent;
+}
+
+.exchange-nav-link:hover {
+  background-color: var(--coral);
+  color: white;
+  transform: translateY(-2px);
+}
+
+.exchange-nav-link.active {
+  background-color: var(--skyBlue);
+  color: white;
+  border-color: var(--deepBlue);
+}
+
+/* Welcome Section */
+.exchange-welcome {
+  padding: 2rem;
+  text-align: center;
+}
+
+.welcome-content h2 {
+  color: var(--deepBlue);
+  margin-bottom: 1rem;
+}
+
+.welcome-content p {
+  color: var(--deepBlue);
+  opacity: 0.8;
+  margin-bottom: 2rem;
+  font-size: 1.1rem;
+}
+
+/* Category Cards */
+.category-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.5rem;
+  margin-top: 2rem;
+  max-width: 800px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.category-card {
+  background: white;
+  border-radius: 15px;
+  padding: 2rem;
+  text-decoration: none;
+  color: var(--deepBlue);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  border: 2px solid transparent;
+}
+
+.category-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  border-color: var(--mint);
+}
+
+.card-icon {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1rem;
+  color: var(--skyBlue);
+}
+
+.category-card h3 {
+  margin-bottom: 0.5rem;
+  color: var(--deepBlue);
+}
+
+.category-card p {
+  opacity: 0.8;
+  font-size: 0.9rem;
+}
+
+/* Content Area */
+.exchange-content {
+  min-height: 400px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .exchange-nav {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .exchange-nav-link {
+    width: 100%;
+    max-width: 300px;
+    justify-content: center;
+  }
+  
+  .category-cards {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  .exchange-welcome {
+    padding: 1rem;
+  }
+}

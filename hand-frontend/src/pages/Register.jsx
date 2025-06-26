@@ -1,8 +1,9 @@
+import React from 'react';
 import RegisterForm from '../components/RegisterForm.jsx';
 
 const Register = ({ onSuccess }) => {
   return (
-    <div>
+    <div className="register-page">
       <RegisterForm onSuccess={onSuccess} />
     </div>
   );

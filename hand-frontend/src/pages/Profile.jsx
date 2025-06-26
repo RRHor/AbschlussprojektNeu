@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react';
+import { useAuth } from '../context/AuthContext';
+import { User, Mail, Lock, MapPin, Edit3, Save, X, Camera, Loader } from 'lucide-react';
+import api from '../api';
 import './Profile.css';
-import { API_URL } from '../config';
 
 const Profile = () => {
+  const { user, loading: authLoading } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [profileData, setProfileData] = useState({
     username: '',
     email: '',
-    password: '••••••••••',
     firstName: '',
     lastName: '',
     state: '',
@@ -18,55 +20,43 @@ const Profile = () => {
   });
   const [editData, setEditData] = useState({ ...profileData });
   const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [error, setError] = useState(null);
 
-  // Echte User-Daten beim Laden der Komponente abrufen
+  // User-Daten laden
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+        setIsLoading(true);
+        const response = await api.get('/auth/users/me');
         
-        if (!token) {
-          window.location.href = '/login';
-          return;
-        }
-
-        const response = await fetch(`${API_URL}/auth/users/me`, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
-        });
-
-        if (response.ok) {
-          const userData = await response.json();
-          const formattedData = {
-            username: userData.nickname || '',
-            email: userData.email || '',
-            password: '••••••••••',
-            firstName: userData.adress?.[0]?.firstName || '',
-            lastName: userData.adress?.[0]?.lastName || '',
-            state: userData.adress?.[0]?.state || '',
-            city: userData.adress?.[0]?.city || '',
-            zip: userData.adress?.[0]?.zip || '',
-            street: userData.adress?.[0]?.street || '',
-            profileImage: userData.profileImage || null
-          };
-          setProfileData(formattedData);
-          setEditData(formattedData);
-        } else {
-          localStorage.removeItem('token');
-          sessionStorage.removeItem('token');
-          window.location.href = '/login';
-        }
+        const formattedData = {
+          username: response.data.nickname || '',
+          email: response.data.email || '',
+          firstName: response.data.adress?.[0]?.firstName || '',
+          lastName: response.data.adress?.[0]?.lastName || '',
+          state: response.data.adress?.[0]?.state || '',
+          city: response.data.adress?.[0]?.city || '',
+          zip: response.data.adress?.[0]?.zip || '',
+          street: response.data.adress?.[0]?.street || '',
+          profileImage: response.data.profileImage || null
+        };
+        
+        setProfileData(formattedData);
+        setEditData(formattedData);
+        setError(null);
       } catch (error) {
         console.error('Fehler beim Laden der User-Daten:', error);
+        setError('Fehler beim Laden der Profildaten');
       } finally {
         setIsLoading(false);
       }
     };
 
-    fetchUserData();
-  }, []);
+    if (!authLoading && user) {
+      fetchUserData();
+    }
+  }, [user, authLoading]);
 
   const handleEdit = () => {
     setIsEditing(true);
@@ -75,53 +65,71 @@ const Profile = () => {
 
   const handleSave = async () => {
     try {
-      const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+      setIsSaving(true);
       
-      const response = await fetch(`${API_URL}/auth/users/me`, {
-        method: 'PUT',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          nickname: editData.username,
-          email: editData.email,
-          adress: [{
-            firstName: editData.firstName,
-            lastName: editData.lastName,
-            street: editData.street,
-            city: editData.city,
-            state: editData.state,
-            zip: parseInt(editData.zip, 10)
-          }]
-        })
-      });
+      // DEBUG: Prüfe die tatsächliche API-URL
+      console.log('🔍 API Base URL:', api.defaults.baseURL);
+      
+      const token = localStorage.getItem('token');
+      console.log('🔍 Frontend Token:', token ? 'VORHANDEN' : 'NICHT VORHANDEN');
+      console.log('🔍 Token Inhalt:', token);
+      console.log('🔍 AuthContext User:', user);
+      
+      const updateData = {
+        nickname: editData.username,
+        email: editData.email,
+      };
 
-      if (response.ok) {
+      if (editData.firstName || editData.lastName || editData.street || editData.city) {
+        updateData.adress = [{
+          firstName: editData.firstName,
+          lastName: editData.lastName,
+          street: editData.street,
+          city: editData.city,
+          state: editData.state,
+          zip: editData.zip ? parseInt(editData.zip, 10) : null
+        }];
+      }
+
+      console.log('🔍 Update Data:', updateData);
+      
+      const response = await api.put('/auth/users/me', updateData);
+      
+      if (response.status === 200) {
         setProfileData({ ...editData });
         setIsEditing(false);
+        setError(null);
         alert('Profil erfolgreich aktualisiert!');
-      } else {
-        alert('Fehler beim Speichern der Änderungen');
       }
     } catch (error) {
-      console.error('Fehler beim Speichern:', error);
-      alert('Verbindungsfehler');
+      console.error('🚨 Fehler beim Speichern:', error);
+      console.error('🚨 Error Response:', error.response?.data);
+      console.error('🚨 Error Status:', error.response?.status);
+      setError('Fehler beim Speichern der Änderungen');
+    } finally {
+      setIsSaving(false);
     }
   };
 
   const handleCancel = () => {
     setEditData({ ...profileData });
     setIsEditing(false);
+    setError(null);
   };
 
   const handleInputChange = (field, value) => {
     setEditData(prev => ({ ...prev, [field]: value }));
   };
 
-  const handleImageUpload = (e) => {
+  const handleImageUpload = async (e) => {
     const file = e.target.files[0];
     if (file) {
+      // Validierung
+      if (file.size > 5 * 1024 * 1024) { // 5MB
+        setError('Bild ist zu groß (max. 5MB)');
+        return;
+      }
+
       const reader = new FileReader();
       reader.onload = (e) => {
         if (isEditing) {
@@ -132,10 +140,28 @@ const Profile = () => {
     }
   };
 
-  if (isLoading) {
+  // Loading State
+  if (authLoading || isLoading) {
     return (
       <div className="profile-container">
-        <div className="loading">Lade Profildaten...</div>
+        <div className="loading">
+          <Loader className="spinner" />
+          Lade Profildaten...
+        </div>
+      </div>
+    );
+  }
+
+  // Error State
+  if (error) {
+    return (
+      <div className="profile-container">
+        <div className="error">
+          <p>{error}</p>
+          <button onClick={() => window.location.reload()} className="btn btn-primary">
+            Erneut versuchen
+          </button>
+        </div>
       </div>
     );
   }
@@ -153,17 +179,25 @@ const Profile = () => {
             <div className="header-buttons">
               {!isEditing ? (
                 <button onClick={handleEdit} className="btn btn-edit">
-                  <span className="btn-icon"></span>
+                  <Edit3 size={18} />
                   Bearbeiten
                 </button>
               ) : (
                 <div className="btn-group">
-                  <button onClick={handleSave} className="btn btn-save">
-                    <span className="btn-icon"></span>
-                    Speichern
+                  <button 
+                    onClick={handleSave} 
+                    disabled={isSaving}
+                    className="btn btn-save"
+                  >
+                    {isSaving ? <Loader size={18} className="spinner" /> : <Save size={18} />}
+                    {isSaving ? 'Speichern...' : 'Speichern'}
                   </button>
-                  <button onClick={handleCancel} className="btn btn-cancel">
-                    <span className="btn-icon"></span>
+                  <button 
+                    onClick={handleCancel} 
+                    disabled={isSaving}
+                    className="btn btn-cancel"
+                  >
+                    <X size={18} />
                     Abbrechen
                   </button>
                 </div>
@@ -185,11 +219,13 @@ const Profile = () => {
                       alt="Profilbild" 
                     />
                   ) : (
-                    <div className="default-avatar">👤</div>
+                    <div className="default-avatar">
+                      <User size={48} />
+                    </div>
                   )}
                   {isEditing && (
                     <label className="image-upload-btn">
-                      <span className="upload-icon">📷</span>
+                      <Camera size={20} />
                       <input
                         type="file"
                         accept="image/*"
@@ -200,10 +236,13 @@ const Profile = () => {
                   )}
                 </div>
                 <h2 className="profile-name">
-                  {isEditing ? editData.firstName : profileData.firstName} {isEditing ? editData.lastName : profileData.lastName}
+                  {profileData.firstName || profileData.lastName 
+                    ? `${profileData.firstName} ${profileData.lastName}`.trim()
+                    : 'Unbekannter Benutzer'
+                  }
                 </h2>
                 <p className="profile-username">
-                  @{isEditing ? editData.username : profileData.username}
+                  @{profileData.username || 'unbekannt'}
                 </p>
               </div>
             </div>
@@ -212,7 +251,10 @@ const Profile = () => {
             <div className="profile-form-section">
               {/* Account Information */}
               <div className="form-group">
-                <h3 className="section-title">Account Informationen</h3>
+                <h3 className="section-title">
+                  <User size={20} />
+                  Account Informationen
+                </h3>
                 <div className="form-row">
                   <div className="input-group">
                     <label>Benutzername</label>
@@ -222,46 +264,38 @@ const Profile = () => {
                           type="text"
                           value={editData.username}
                           onChange={(e) => handleInputChange('username', e.target.value)}
+                          placeholder="Benutzername eingeben"
                         />
                       ) : (
-                        <div className="input-display">{profileData.username}</div>
+                        <div className="input-display">{profileData.username || 'Nicht angegeben'}</div>
                       )}
                     </div>
                   </div>
                   <div className="input-group">
                     <label>E-Mail</label>
                     <div className="input-container">
+                      <Mail size={16} className="input-icon" />
                       {isEditing ? (
                         <input
                           type="email"
                           value={editData.email}
                           onChange={(e) => handleInputChange('email', e.target.value)}
+                          placeholder="E-Mail eingeben"
                         />
                       ) : (
-                        <div className="input-display">{profileData.email}</div>
+                        <div className="input-display">{profileData.email || 'Nicht angegeben'}</div>
                       )}
                     </div>
-                  </div>
-                </div>
-                <div className="input-group">
-                  <label>Passwort</label>
-                  <div className="input-container">
-                    {isEditing ? (
-                      <input
-                        type="password"
-                        value={editData.password}
-                        onChange={(e) => handleInputChange('password', e.target.value)}
-                      />
-                    ) : (
-                      <div className="input-display">••••••••••</div>
-                    )}
                   </div>
                 </div>
               </div>
 
               {/* Personal Information */}
               <div className="form-group">
-                <h3 className="section-title">Persönliche Daten</h3>
+                <h3 className="section-title">
+                  <User size={20} />
+                  Persönliche Daten
+                </h3>
                 <div className="form-row">
                   <div className="input-group">
                     <label>Vorname</label>
@@ -271,9 +305,10 @@ const Profile = () => {
                           type="text"
                           value={editData.firstName}
                           onChange={(e) => handleInputChange('firstName', e.target.value)}
+                          placeholder="Vorname eingeben"
                         />
                       ) : (
-                        <div className="input-display">{profileData.firstName}</div>
+                        <div className="input-display">{profileData.firstName || 'Nicht angegeben'}</div>
                       )}
                     </div>
                   </div>
@@ -285,9 +320,10 @@ const Profile = () => {
                           type="text"
                           value={editData.lastName}
                           onChange={(e) => handleInputChange('lastName', e.target.value)}
+                          placeholder="Nachname eingeben"
                         />
                       ) : (
-                        <div className="input-display">{profileData.lastName}</div>
+                        <div className="input-display">{profileData.lastName || 'Nicht angegeben'}</div>
                       )}
                     </div>
                   </div>
@@ -296,7 +332,10 @@ const Profile = () => {
 
               {/* Address Information */}
               <div className="form-group">
-                <h3 className="section-title">Adresse</h3>
+                <h3 className="section-title">
+                  <MapPin size={20} />
+                  Adresse
+                </h3>
                 <div className="input-group">
                   <label>Straße</label>
                   <div className="input-container">
@@ -305,9 +344,10 @@ const Profile = () => {
                         type="text"
                         value={editData.street}
                         onChange={(e) => handleInputChange('street', e.target.value)}
+                        placeholder="Straße und Hausnummer"
                       />
                     ) : (
-                      <div className="input-display">{profileData.street}</div>
+                      <div className="input-display">{profileData.street || 'Nicht angegeben'}</div>
                     )}
                   </div>
                 </div>
@@ -320,9 +360,11 @@ const Profile = () => {
                           type="text"
                           value={editData.zip}
                           onChange={(e) => handleInputChange('zip', e.target.value)}
+                          placeholder="PLZ"
+                          maxLength="5"
                         />
                       ) : (
-                        <div className="input-display">{profileData.zip}</div>
+                        <div className="input-display">{profileData.zip || 'Nicht angegeben'}</div>
                       )}
                     </div>
                   </div>
@@ -334,9 +376,10 @@ const Profile = () => {
                           type="text"
                           value={editData.city}
                           onChange={(e) => handleInputChange('city', e.target.value)}
+                          placeholder="Stadt"
                         />
                       ) : (
-                        <div className="input-display">{profileData.city}</div>
+                        <div className="input-display">{profileData.city || 'Nicht angegeben'}</div>
                       )}
                     </div>
                   </div>
@@ -348,9 +391,10 @@ const Profile = () => {
                           type="text"
                           value={editData.state}
                           onChange={(e) => handleInputChange('state', e.target.value)}
+                          placeholder="Bundesland"
                         />
                       ) : (
-                        <div className="input-display">{profileData.state}</div>
+                        <div className="input-display">{profileData.state || 'Nicht angegeben'}</div>
                       )}
                     </div>
                   </div>
