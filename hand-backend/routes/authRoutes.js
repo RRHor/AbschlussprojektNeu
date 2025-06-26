@@ -1,6 +1,6 @@
 import express from "express";
 import jwt from "jsonwebtoken";
-import User from "../models/userSchema.js";
+import User from "../models/UserModel.js";
 import { sendVerificationEmail } from "../utils/emailService.js";
 import { protect } from "../middleware/authMiddleware.js";
 
@@ -49,10 +49,19 @@ const validateAddress = async (adress) => {
  */
 router.post('/register', async (req, res) => {
     try {
-        const { nickname, email, password, adress } = req.body;
-
-        console.log("Register-Request erhalten", req.body);
-
+        console.log("🔥 VOLLSTÄNDIGER REGISTER-REQUEST:", req.body);
+        console.log("🔍 Nickname:", req.body.nickname);
+        console.log("🔍 Email:", req.body.email);
+        console.log("🔍 FirstName:", req.body.firstName);
+        console.log("🔍 LastName:", req.body.lastName);
+        console.log("🔍 Adress Object:", req.body.adress);
+        
+        const { nickname, email, password, adress, firstName, lastName } = req.body;
+        
+        // Prüfen, ob alle Daten vorhanden sind
+        console.log("🔍 Destructured firstName:", firstName);
+        console.log("🔍 Destructured lastName:", lastName);
+        
         // Prüfen, ob Nickname oder E-Mail schon vergeben sind
         const existingUser = await User.findOne({ $or: [{ email }, { nickname }] });
         if (existingUser) {
@@ -75,15 +84,21 @@ router.post('/register', async (req, res) => {
         const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
 
         // Neuen User anlegen
-        const { firstName, lastName } = req.body;
-        const { street, city, state, zip } = adress || {};
+        const { street, city, state, zip, district } = adress || {};
+
         const newUser = new User({
             nickname,
             email,
             password,
-            firstName,
-            lastName,
-            adress: { street, city, state, zip },
+            adress: [{  // ARRAY mit einem Adress-Objekt
+                firstName: firstName || '', // Aus req.body
+                lastName: lastName || '',   // Aus req.body
+                street: street || '',
+                city: city || '',
+                district: district || city || '', // Falls district nicht vorhanden
+                state: state || '',
+                zip: zip || 0
+            }],
             isVerify: false,
             verificationCode,
             isAdmin: !adminExists,
@@ -157,12 +172,14 @@ router.post("/login", async (req, res) => {
     });
 
     res.json({
-      message: "Login erfolgreich", // Brians konsistente Response
+      message: "Login erfolgreich",
       token,
       user: {
         _id: user._id,
         nickname: user.nickname,
         email: user.email,
+        firstName: user.adress?.[0]?.firstName || '', // Aus adress-Array
+        lastName: user.adress?.[0]?.lastName || '',   // Aus adress-Array
         adress: user.adress,
         isAdmin: user.isAdmin,
         isVerify: user.isVerify,
@@ -179,7 +196,9 @@ router.post("/login", async (req, res) => {
  * - Gibt die im Token gespeicherten Userdaten zurück
  */
 router.get("/users/me", protect, async (req, res) => {
-  res.json(req.user);
+  // Vollständige User-Daten zurückgeben
+  const user = await User.findById(req.user._id).select('-password');
+  res.json(user);
 });
 
 /**
