@@ -28,7 +28,7 @@ const Profile = () => {
     const fetchUserData = async () => {
       try {
         setIsLoading(true);
-        const response = await api.get('/users/me');
+        const response = await api.get('/auth/users/me');
         
         const formattedData = {
           username: response.data.nickname || '',
@@ -67,12 +67,19 @@ const Profile = () => {
     try {
       setIsSaving(true);
       
+      // DEBUG: Prüfe die tatsächliche API-URL
+      console.log('🔍 API Base URL:', api.defaults.baseURL);
+      
+      const token = localStorage.getItem('token');
+      console.log('🔍 Frontend Token:', token ? 'VORHANDEN' : 'NICHT VORHANDEN');
+      console.log('🔍 Token Inhalt:', token);
+      console.log('🔍 AuthContext User:', user);
+      
       const updateData = {
         nickname: editData.username,
         email: editData.email,
       };
 
-      // Nur Adresse hinzufügen, wenn Daten vorhanden
       if (editData.firstName || editData.lastName || editData.street || editData.city) {
         updateData.adress = [{
           firstName: editData.firstName,
@@ -84,17 +91,20 @@ const Profile = () => {
         }];
       }
 
-      const response = await api.put('/users/me', updateData);
+      console.log('🔍 Update Data:', updateData);
+      
+      const response = await api.put('/auth/users/me', updateData);
       
       if (response.status === 200) {
         setProfileData({ ...editData });
         setIsEditing(false);
         setError(null);
-        // Optional: Toast-Notification statt Alert
         alert('Profil erfolgreich aktualisiert!');
       }
     } catch (error) {
-      console.error('Fehler beim Speichern:', error);
+      console.error('🚨 Fehler beim Speichern:', error);
+      console.error('🚨 Error Response:', error.response?.data);
+      console.error('🚨 Error Status:', error.response?.status);
       setError('Fehler beim Speichern der Änderungen');
     } finally {
       setIsSaving(false);

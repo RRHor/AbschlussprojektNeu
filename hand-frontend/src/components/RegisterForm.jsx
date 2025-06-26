@@ -102,10 +102,15 @@ const RegisterForm = ({ onSuccess }) => {
   const validateForm = () => {
     const errors = {};
     
-    // Required fields
-    const requiredFields = ['nickname', 'email', 'password', 'confirmPassword', 'firstName', 'lastName'];
+    // Required fields - ALLE Felder jetzt required
+    const requiredFields = [
+      'nickname', 'email', 'password', 'confirmPassword', 
+      'firstName', 'lastName',
+      'street', 'city', 'zip', 'state'  // ← Adressfelder auch required
+    ];
+    
     requiredFields.forEach((field) => {
-      if (!formData[field].trim()) {
+      if (!formData[field] || !formData[field].toString().trim()) {
         errors[field] = 'Dieses Feld ist erforderlich.';
       }
     });
@@ -147,6 +152,7 @@ const RegisterForm = ({ onSuccess }) => {
     }
 
     try {
+      // 🔧 OPTION 3: Nur Top-Level-Felder, KEIN adress-Objekt
       const registrationData = {
         nickname: formData.nickname,
         email: formData.email,
@@ -156,11 +162,13 @@ const RegisterForm = ({ onSuccess }) => {
         adress: {
           street: formData.street,
           city: formData.city,
-          district: formData.district,
-          zip: formData.zip ? parseInt(formData.zip, 10) : null,
-          state: formData.state,
-        },
+          district: formData.district || "",  // Optional
+          zip: parseInt(formData.zip, 10),
+          state: formData.state
+        }
       };
+
+      console.log('🔍 Sending complete registration data:', registrationData);
 
       const result = await register(registrationData);
       
@@ -171,7 +179,6 @@ const RegisterForm = ({ onSuccess }) => {
           onSuccess(result);
         }
         
-        // Successful registration, redirect after short delay
         setTimeout(() => {
           navigate('/profile', { replace: true });
         }, 1500);
@@ -187,17 +194,17 @@ const RegisterForm = ({ onSuccess }) => {
   };
 
   const fieldLabels = {
-    nickname: 'Spitzname',
-    email: 'E-Mail',
-    password: 'Passwort',
-    confirmPassword: 'Passwort bestätigen',
-    firstName: 'Vorname',
-    lastName: 'Nachname',
-    street: 'Straße',
-    city: 'Stadt',
+    nickname: 'Spitzname *',
+    email: 'E-Mail *',
+    password: 'Passwort *',
+    confirmPassword: 'Passwort bestätigen *',
+    firstName: 'Vorname *',
+    lastName: 'Nachname *',
+    street: 'Straße *',           // ← Jetzt required
+    city: 'Stadt *',              // ← Jetzt required
     district: 'Landkreis oder Stadtteil',
-    zip: 'PLZ',
-    state: 'Bundesland',
+    zip: 'PLZ *',                 // ← Jetzt required
+    state: 'Bundesland *',        // ← Jetzt required
   };
 
   const getFieldIcon = (field) => {
@@ -248,7 +255,10 @@ const RegisterForm = ({ onSuccess }) => {
                     value={formData[field]}
                     onChange={handleChange}
                     onBlur={handleBlur}
-                    required={['nickname', 'email', 'password', 'confirmPassword', 'firstName', 'lastName'].includes(field)}
+                    required={[
+                      'nickname', 'email', 'password', 'confirmPassword', 
+                      'firstName', 'lastName', 'street', 'city', 'zip', 'state'
+                    ].includes(field)}  // ← Erweiterte Liste
                     className={`register-input ${
                       touchedFields[field] ? 'touched' : ''
                     } ${formErrors[field] ? 'error' : ''}`}

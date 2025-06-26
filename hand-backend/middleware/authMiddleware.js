@@ -1,43 +1,56 @@
 import jwt from 'jsonwebtoken';
-import User from '../models/userSchema.js'; // Passe ggf. den Pfad/Dateinamen an
+import User from '../models/userSchema.js';
 
-/**
- * Middleware zum Schutz von Routen (JWT-Authentifizierung)
- * - Prüft Token aus Cookie oder Authorization-Header
- * - Lädt den User aus der Datenbank und hängt ihn an req.user an
- */
 export async function protect(req, res, next) {
-    // Debug-Logging für Cookies und Authorization-Header
-    console.log('Cookies:', req.cookies);
-    console.log('Authorization Header:', req.headers.authorization);
+    console.log('🔥 AUTH MIDDLEWARE GESTARTET');
+    console.log('🔍 Request URL:', req.method, req.originalUrl);
+    console.log('🔍 Cookies:', req.cookies);
+    console.log('🔍 Authorization Header:', req.headers.authorization);
 
     let token = null;
 
-    // Token aus Cookie lesen (falls vorhanden)
+    // Token aus Cookie lesen
     if (req.cookies && req.cookies.token) {
         token = req.cookies.token;
+        console.log('✅ Token aus Cookie gefunden');
     }
 
-    // Oder Token aus Authorization-Header lesen (falls vorhanden)
+    // Token aus Authorization-Header lesen
     if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
         token = req.headers.authorization.split(' ')[1];
+        console.log('✅ Token aus Authorization Header gefunden');
     }
 
-    // Wenn kein Token gefunden wurde, Zugriff verweigern
+    console.log('🔍 Finaler Token:', token ? 'VORHANDEN' : 'NICHT VORHANDEN');
+
     if (!token) {
+        console.log('❌ FEHLER: Kein Token gefunden');
         return res.status(401).json({ message: 'Nicht autorisiert, Token fehlt' });
     }
 
     try {
-        // Token verifizieren
+        console.log('🔍 Versuche Token zu verifizieren...');
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        console.log('✅ Token erfolgreich dekodiert:', decoded);
 
-        // User anhand der ID aus dem Token laden (ohne Passwort)
-        req.user = await User.findById(decoded.id).select('-password');
-
-        // Weiter zur nächsten Middleware/Route
+        const userId = decoded.id || decoded._id;
+        console.log('🔍 Suche User mit ID:', userId);
+        
+        const user = await User.findById(userId).select('-password');
+        
+        if (!user) {
+            console.log('❌ FEHLER: User nicht gefunden für ID:', userId);
+            return res.status(401).json({ message: 'User nicht gefunden' });
+        }
+        
+        console.log('✅ User erfolgreich gefunden:', user.nickname);
+        req.user = user;
+        
+        console.log('🚀 AUTH MIDDLEWARE ERFOLGREICH - Weiter zur Route');
         next();
     } catch (err) {
-        return res.status(401).json({ message: 'Token ungültig' });
+        console.log('❌ TOKEN-FEHLER:', err.message);
+        console.log('❌ TOKEN-STACK:', err.stack);
+        return res.status(401).json({ message: 'Token ungültig', error: err.message });
     }
 }
