@@ -196,13 +196,6 @@ function Login() {
                     <input type="checkbox" name="rememberMe" />
                     <span>Angemeldet bleiben</span>
                   </label>
-                  <button
-                    type="button"
-                    onClick={() => setShowForgotPassword(true)}
-                    className="forgot-password-link"
-                  >
-                    Passwort vergessen?
-                  </button>
                 </div>
 
                 {/* Login Button */}
@@ -220,6 +213,13 @@ function Login() {
                     'Anmelden'
                   )}
                 </button>
+
+                {/* Forgot Password Link */}
+                <div className="form-footer">
+                  <Link to="/forgot-password" className="forgot-password-link">
+                    Passwort vergessen?
+                  </Link>
+                </div>
               </form>
             ) : (
               /* Forgot Password Form */

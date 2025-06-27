@@ -10,6 +10,7 @@ import Register from './pages/Register';
 import Profile from './pages/Profile';
 import Help from './pages/Help'; 
 import Exchange from './pages/Exchange/Exchange.jsx';
+import ForgotPassword from './components/ForgotPassword';
 
 function App() {
   return (
@@ -24,6 +25,7 @@ function App() {
             <Route path="/help" element={<Help />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/exchange/*" element={<Exchange />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
             {/* 404 Route */}
             <Route path="*" element={<div>Seite nicht gefunden</div>} />
           </Routes>
