@@ -1,7 +1,6 @@
-// client/src/components/Navbar.jsx
-
 import React from 'react';
 import './Navbar.css';
+import logo from '../assets/logo.png'; // Importiere das Logo, falls du es in der Navbar verwenden möchtest
 
 function Navbar() {
   return (
@@ -9,18 +8,12 @@ function Navbar() {
       <div className="navbar-container">
         {/* Logo oder App-Name (ganz links) */}
         <a href="/" className="navbar-logo">
-          NachbarschaftsApp
+          <img className="logo" src={logo} alt="Hand in Hand"/>
+          <span className="logo-text">Hand in Hand</span>
         </a>
-
-        {/* Gruppe für die rechten Elemente: Register/Login und Burger-Menü */}
         <div className="nav-right-group">
           {/* Direkte Links: Register und Login (links in dieser Gruppe) */}
           <ul className="direct-nav-menu">
-            <li className="nav-item">
-              <a href="/register" className="nav-links nav-links-primary">
-                Neu registrieren
-              </a>
-            </li>
             <li className="nav-item">
               <a href="/login" className="nav-links nav-links-primary">
                 Login
@@ -38,17 +31,22 @@ function Navbar() {
             <ul className="burger-nav-menu">
               <li className="nav-item">
                 <a href="/home" className="nav-links">
-                  Biete
+                  Home
+                </a>
+              </li>
+              <li className='nav-item'>
+                <a href="/exchange" className="nav-links">
+                  Verschenken & Tauschen
                 </a>
               </li>
               <li className="nav-item">
                 <a href="/events" className="nav-links">
-                  Suche
+                  Events
                 </a>
               </li>
               <li className="nav-item">
                 <a href="/blog" className="nav-links">
-                  Verschenke
+                  Blog
                 </a>
               </li>
               <li className="nav-item">
@@ -58,12 +56,7 @@ function Navbar() {
               </li>
               <li className="nav-item">
                 <a href="/profile" className="nav-links">
-                  Events
-                </a>
-              </li>
-              <li className="nav-item">
-                <a href="/help" className="nav-links">
-                  Blogs
+                  Profil
                 </a>
               </li>
             </ul>

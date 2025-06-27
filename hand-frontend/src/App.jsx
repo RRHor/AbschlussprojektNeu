@@ -1,25 +1,36 @@
-// client/src/App.jsx
 
 import React from 'react';
-import Navbar from './components/Navbar'; // Importiere deine Navbar-Komponente
-import './App.css'; // Oder dein globales CSS, falls vorhanden
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import Navbar from './components/Navbar';
+import LandingPage from './pages/LandingPage';
+import Login from './pages/Login';
+import Register from './pages/Register';
+import Profile from './pages/Profile';
+import Help from './pages/Help'; 
+import Exchange from './pages/Exchange/Exchange'; 
+import ForgotPassword from './components/ForgotPassword';
+import Home from './pages/Home';
+
 
 function App() {
   return (
-    <>
-      <Navbar /> {/* Die Navbar wird hier ganz oben gerendert */}
-      <main>
-        {/* Hier werden später deine verschiedenen Seiten (pages/) oder Module (modules/) gerendert */}
-        {/* Zum Beispiel mit React Router Dom: */}
-        {/* <Routes> */}
-        {/* <Route path="/" element={<HomePage />} /> */}
-        {/* <Route path="/events" element={<EventsPage />} /> */}
-        {/* ... */}
-        {/* </Routes> */}
-        <h1>Willkommen in deiner NachbarschaftsApp!</h1>
-        <p>Dies ist der Hauptbereich deiner Anwendung.</p>
-      </main>
-    </>
+    <Router>
+      <Navbar /> {/* Die Navbar wird immer angezeigt, unabhängig von der Route */}
+      <div className="container"> {/* Optional: Ein Container für deinen Seiteninhalt */}
+        <Routes>
+          <Route path="/" element={<LandingPage/>} /> 
+          <Route path="/Home" element={<LandingPage />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/help" element={<Help/>} />
+          <Route path="/events" />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/exchange" element={<Exchange />} /> 
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+
+        </Routes>
+      </div>
+    </Router>
   );
 }
 

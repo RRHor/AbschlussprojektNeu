@@ -1,6 +1,10 @@
-const Register = () => {
+import RegisterForm from '../components/RegisterForm.jsx';
+
+const Register = ({ onSuccess }) => {
   return (
-    <div>Register</div>
-  )
-}
-export default Register
+    <div>
+      <RegisterForm onSuccess={onSuccess} />
+    </div>
+  );
+};
+export default Register;
