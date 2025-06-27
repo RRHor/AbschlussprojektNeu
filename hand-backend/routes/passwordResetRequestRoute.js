@@ -1,6 +1,6 @@
 
 import express from 'express';
-import User from '../models/userSchema.js';
+import User from '../models/UserModel.js';
 import crypto from 'crypto';
 // import sendMail from '../utils/sendMail.js'; // Optional: Mailversand
 

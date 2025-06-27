@@ -40,6 +40,10 @@ const userSchema = new mongoose.Schema(
 
     // Ablaufdatum des Verifizierungscodes (optional)
     verificationCodeExpires: { type: Date, default: null },
+
+    // Reset-Code für Passwort-Reset
+    resetCode: { type: String, required: false, default: null },
+    resetCodeExpires: { type: Date, default: null },
   },
   { timestamps: true } // Erstellt automatisch createdAt und updatedAt Felder
 );

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import './ForgotPassword.css';
+import api from '../api';
 
 const ForgotPassword = () => {
   const [step, setStep] = useState('email'); // 'email', 'verification', 'reset', 'success'
@@ -45,11 +46,15 @@ const ForgotPassword = () => {
     }
 
     setIsLoading(true);
-    // Simulate API call
-    setTimeout(() => {
-      setIsLoading(false);
+    try {
+      // HIER: Ändere die URL von '/auth/password-reset-request' zu '/auth/forgot-password'
+      await api.post('/auth/forgot-password', { email: formData.email });
       setStep('verification');
-    }, 2000);
+    } catch (error) {
+      setErrors({ email: error.response?.data?.message || 'Fehler beim Senden der E-Mail' });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleVerificationSubmit = async (e) => {
@@ -97,19 +102,30 @@ const ForgotPassword = () => {
     }
 
     setIsLoading(true);
-    // Simulate API call
-    setTimeout(() => {
-      setIsLoading(false);
+    try {
+      await api.post('/auth/password-reset', {
+        email: formData.email,
+        resetCode: formData.verificationCode,
+        newPassword: formData.newPassword
+      });
       setStep('success');
-    }, 2000);
+    } catch (error) {
+      setErrors({ newPassword: error.response?.data?.message || 'Fehler beim Zurücksetzen des Passworts' });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const resendCode = () => {
+  const resendCode = async () => {
     setIsLoading(true);
-    // Simulate resend API call
-    setTimeout(() => {
+    try {
+      // HIER: Auch hier die URL ändern
+      await api.post('/auth/forgot-password', { email: formData.email });
+    } catch (error) {
+      console.error('Fehler beim erneuten Senden:', error);
+    } finally {
       setIsLoading(false);
-    }, 1000);
+    }
   };
 
   const goBackToLogin = () => {

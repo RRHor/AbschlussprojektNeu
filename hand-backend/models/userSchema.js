@@ -46,6 +46,9 @@ const userSchema = new mongoose.Schema({
     verificationCode: {
         type: Number,
     },
+    // Reset-Code für Passwort-Reset
+    resetCode: { type: String, required: false, default: null },
+    resetCodeExpires: { type: Date, default: null },
 }, {
     timestamps: true,
 });
