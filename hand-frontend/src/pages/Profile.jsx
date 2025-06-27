@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { User, Mail, Lock, MapPin, Edit3, Save, X, Camera, Loader } from 'lucide-react';
+import { User, Lock, MapPin, Edit3, Save, X, Camera, Loader } from 'lucide-react';
 import api from '../api';
 import './Profile.css';
 
@@ -264,7 +264,7 @@ const Profile = () => {
                           type="text"
                           value={editData.username}
                           onChange={(e) => handleInputChange('username', e.target.value)}
-                          placeholder="Benutzername eingeben"
+                          
                         />
                       ) : (
                         <div className="input-display">{profileData.username || 'Nicht angegeben'}</div>
@@ -274,13 +274,11 @@ const Profile = () => {
                   <div className="input-group">
                     <label>E-Mail</label>
                     <div className="input-container">
-                      <Mail size={16} className="input-icon" />
                       {isEditing ? (
                         <input
                           type="email"
                           value={editData.email}
                           onChange={(e) => handleInputChange('email', e.target.value)}
-                          placeholder="E-Mail eingeben"
                         />
                       ) : (
                         <div className="input-display">{profileData.email || 'Nicht angegeben'}</div>
@@ -305,7 +303,7 @@ const Profile = () => {
                           type="text"
                           value={editData.firstName}
                           onChange={(e) => handleInputChange('firstName', e.target.value)}
-                          placeholder="Vorname eingeben"
+                          
                         />
                       ) : (
                         <div className="input-display">{profileData.firstName || 'Nicht angegeben'}</div>
@@ -320,7 +318,7 @@ const Profile = () => {
                           type="text"
                           value={editData.lastName}
                           onChange={(e) => handleInputChange('lastName', e.target.value)}
-                          placeholder="Nachname eingeben"
+                          
                         />
                       ) : (
                         <div className="input-display">{profileData.lastName || 'Nicht angegeben'}</div>
@@ -337,14 +335,14 @@ const Profile = () => {
                   Adresse
                 </h3>
                 <div className="input-group">
-                  <label>Straße</label>
+                  <label>Straße und Hausnummer</label>
                   <div className="input-container">
                     {isEditing ? (
                       <input
                         type="text"
                         value={editData.street}
                         onChange={(e) => handleInputChange('street', e.target.value)}
-                        placeholder="Straße und Hausnummer"
+                       
                       />
                     ) : (
                       <div className="input-display">{profileData.street || 'Nicht angegeben'}</div>
@@ -360,7 +358,7 @@ const Profile = () => {
                           type="text"
                           value={editData.zip}
                           onChange={(e) => handleInputChange('zip', e.target.value)}
-                          placeholder="PLZ"
+                      
                           maxLength="5"
                         />
                       ) : (
@@ -376,7 +374,7 @@ const Profile = () => {
                           type="text"
                           value={editData.city}
                           onChange={(e) => handleInputChange('city', e.target.value)}
-                          placeholder="Stadt"
+                          
                         />
                       ) : (
                         <div className="input-display">{profileData.city || 'Nicht angegeben'}</div>
@@ -391,7 +389,7 @@ const Profile = () => {
                           type="text"
                           value={editData.state}
                           onChange={(e) => handleInputChange('state', e.target.value)}
-                          placeholder="Bundesland"
+                          
                         />
                       ) : (
                         <div className="input-display">{profileData.state || 'Nicht angegeben'}</div>
