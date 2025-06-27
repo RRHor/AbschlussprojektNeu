@@ -17,6 +17,8 @@ import postRoutes from './routes/postRoutes.js';
 import passwordRequestRoute from './routes/passwordResetRequestRoute.js';
 import passwordResetRoutes from './routes/passwordResetRoute.js';
 import publicUserRoutes from './routes/publicUserRoutes.js';
+import forgotRoute from './routes/forgotPasswordRoute.js'
+import loginRoutes from './routes/loginRoutes.js';
 
 
 
@@ -34,6 +36,9 @@ app.use(cors());
 
 // Middleware zum Parsen von JSON-Bodies
 app.use(express.json());
+
+// Login
+app.use('/api/auth', loginRoutes);
 
 // Middleware zum Parsen von Cookies
 app.use(cookieParser());
@@ -75,6 +80,12 @@ app.use('/api/auth', passwordResetRoutes);
 
 // User sucht User
 app.use('/api', publicUserRoutes);
+
+// Passwort vergessen
+app.use('/api/auth', forgotRoute)
+
+// Login
+app.use('/api/auth', loginRoutes);
 
 // Root-Route (Startseite)
 app.get('/', (req, res) => {
