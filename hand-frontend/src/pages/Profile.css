@@ -275,6 +275,188 @@
   align-items: center;
 }
 
+/* Exchange Posts Styles */
+.exchange-posts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 1.5rem;
+  margin-top: 1rem;
+}
+
+.exchange-post-card {
+  background: white;
+  border: 2px solid var(--mint);
+  border-radius: 1rem;
+  overflow: hidden;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.exchange-post-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 12px rgba(0, 0, 0, 0.15);
+}
+
+.post-image {
+  position: relative;
+  height: 200px;
+  overflow: hidden;
+}
+
+.post-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.status-badge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  padding: 0.25rem 0.75rem;
+  border-radius: 1rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: white;
+}
+
+.status-aktiv {
+  background-color: #28a745;
+}
+
+.status-reserviert {
+  background-color: #ffc107;
+  color: #212529;
+}
+
+.status-abgeschlossen {
+  background-color: #6c757d;
+}
+
+.post-content {
+  padding: 1rem;
+}
+
+.post-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 0.75rem;
+}
+
+.post-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--deepBlue);
+  margin: 0;
+  flex: 1;
+}
+
+.category-badge {
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  margin-left: 0.5rem;
+}
+
+.category-verschenken {
+  background-color: #e8f5e8;
+  color: #2d5a2d;
+}
+
+.category-tauschen {
+  background-color: #e3f2fd;
+  color: #1565c0;
+}
+
+.category-suchen {
+  background-color: #fff3e0;
+  color: #ef6c00;
+}
+
+.post-description {
+  color: #666;
+  margin-bottom: 0.75rem;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.post-trade {
+  background-color: var(--cream);
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+  margin-bottom: 0.75rem;
+  font-size: 0.9rem;
+}
+
+.post-meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.8rem;
+  color: #888;
+  margin-bottom: 1rem;
+}
+
+.post-actions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.status-select {
+  padding: 0.25rem 0.5rem;
+  border: 1px solid var(--mint);
+  border-radius: 0.25rem;
+  font-size: 0.8rem;
+  background-color: white;
+  color: var(--deepBlue);
+}
+
+.btn-action {
+  padding: 0.25rem 0.5rem;
+  border: none;
+  border-radius: 0.25rem;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.btn-edit-post {
+  background-color: var(--mint);
+  color: var(--deepBlue);
+}
+
+.btn-delete-post {
+  background-color: var(--coral);
+  color: white;
+}
+
+.btn-action:hover {
+  opacity: 0.8;
+}
+
+.no-posts {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: #666;
+}
+
+.no-posts p {
+  margin-bottom: 1rem;
+  font-size: 1.1rem;
+}
+
+.loading-spinner {
+  text-align: center;
+  padding: 2rem;
+  color: var(--skyBlue);
+  font-size: 1.1rem;
+}
+
 /* Responsive Design */
 @media (max-width: 1024px) {
   .profile-grid {
@@ -326,6 +508,20 @@
   
   .default-avatar {
     font-size: 3rem;
+  }
+  
+  .exchange-posts-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .post-actions {
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+  
+  .status-select,
+  .btn-action {
+    width: 100%;
   }
 }
 

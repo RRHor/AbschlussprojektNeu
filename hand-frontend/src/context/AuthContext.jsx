@@ -29,10 +29,18 @@ export const AuthProvider = ({ children }) => {
 
   const fetchUser = async () => {
     try {
-      const response = await api.get('/users/me'); // Besserer Endpoint
-      setUser(response.data.data);
+      console.log('🔍 Fetching user data...');
+      const response = await api.get('/auth/users/me');
+      setUser(response.data); // Ändere zu response.data (nicht .data.data)
     } catch (error) {
       console.error('Token verification failed:', error);
+      
+      // Bei 401 (Unauthorized) Token automatisch löschen
+      if (error.response?.status === 401) {
+        console.log('🗑️ Token abgelaufen - lösche automatisch');
+        localStorage.removeItem('token');
+      }
+      
       logout();
     } finally {
       setLoading(false);

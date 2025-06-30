@@ -7,32 +7,36 @@ body {
     /* background-color: #4FE3C1;  mint  */
 }
 
+/* Exchange.css */
+.exchange-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
 /* Header */
 .exchange-header {
   text-align: center;
   margin-bottom: 2rem;
-  padding: 1rem;
 }
 
 .exchange-header h1 {
-  margin-bottom: 0.5rem;
   color: var(--deepBlue);
+  margin-bottom: 0.5rem;
 }
 
 .exchange-header p {
-  color: var(--deepBlue);
-  opacity: 0.8;
+  color: #666;
   font-size: 1.1rem;
 }
 
 /* Navigation */
 .exchange-nav {
   display: flex;
-  justify-content: center;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
   gap: 1rem;
-  margin-bottom: 2rem;
-  padding: 0 1rem;
-  flex-wrap: wrap;
 }
 
 .exchange-nav-link {
@@ -124,6 +128,94 @@ body {
   font-size: 0.9rem;
 }
 
+/* Action Buttons */
+.action-buttons {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.btn {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 2rem;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.btn-create {
+  background: var(--coral);
+  color: white;
+}
+
+.btn-login {
+  background: var(--mint);
+  color: var(--deepBlue);
+}
+
+.btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+/* Search Section */
+.search-section {
+  margin-bottom: 2rem;
+}
+
+.search-bar {
+  display: flex;
+  max-width: 500px;
+  margin: 0 auto;
+  background: white;
+  border: 2px solid var(--mint);
+  border-radius: 2rem;
+  overflow: hidden;
+}
+
+.search-input {
+  flex: 1;
+  padding: 0.75rem 1rem;
+  border: none;
+  outline: none;
+  font-size: 1rem;
+}
+
+.search-button {
+  padding: 0.75rem 1rem;
+  background: var(--mint);
+  border: none;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.search-button:hover {
+  background: var(--skyBlue);
+}
+
+/* Auth Required Section */
+.auth-required {
+  text-align: center;
+  padding: 3rem 1rem;
+  background: white;
+  border-radius: 1rem;
+  border: 2px solid var(--mint);
+}
+
+.auth-required h2 {
+  color: var(--deepBlue);
+  margin-bottom: 1rem;
+}
+
+.auth-required p {
+  color: #666;
+  margin-bottom: 1.5rem;
+}
+
 /* Content Area */
 .exchange-content {
   min-height: 400px;
@@ -133,21 +225,16 @@ body {
 @media (max-width: 768px) {
   .exchange-nav {
     flex-direction: column;
-    align-items: center;
+    align-items: stretch;
   }
   
-  .exchange-nav-link {
-    width: 100%;
-    max-width: 300px;
+  .category-tabs {
     justify-content: center;
+    flex-wrap: wrap;
   }
   
-  .category-cards {
-    grid-template-columns: 1fr;
-    gap: 1rem;
-  }
-  
-  .exchange-welcome {
-    padding: 1rem;
+  .tab {
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
   }
 }
