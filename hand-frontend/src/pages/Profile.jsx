@@ -2,7 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { User, Mail, Lock, MapPin, Edit3, Save, X, Camera, Loader } from 'lucide-react';
 import api from '../api';
+import exchangeService from '../services/exchangeService';
 import './Profile.css';
+import ExchangeEditModal from '../components/ExchangeEditModal';
 
 const Profile = () => {
   const { user, loading: authLoading } = useAuth();
@@ -22,6 +24,12 @@ const Profile = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState(null);
+
+  // Exchange Posts States
+  const [myExchangePosts, setMyExchangePosts] = useState([]);
+  const [loadingPosts, setLoadingPosts] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editingPost, setEditingPost] = useState(null);
 
   // User-Daten laden
   useEffect(() => {
@@ -57,6 +65,27 @@ const Profile = () => {
       fetchUserData();
     }
   }, [user, authLoading]);
+
+  // Fetch Exchange Posts
+  useEffect(() => {
+    const fetchMyExchangePosts = async () => {
+      setLoadingPosts(true);
+      try {
+        const result = await exchangeService.getMyPosts();
+        if (result.success) {
+          setMyExchangePosts(result.data);
+        }
+      } catch (error) {
+        console.error('Fehler beim Laden der Exchange-Posts:', error);
+      } finally {
+        setLoadingPosts(false);
+      }
+    };
+
+    if (profileData) {
+      fetchMyExchangePosts();
+    }
+  }, [profileData]);
 
   const handleEdit = () => {
     setIsEditing(true);
@@ -137,6 +166,67 @@ const Profile = () => {
         }
       };
       reader.readAsDataURL(file);
+    }
+  };
+
+  // Delete Post
+  const handleDeletePost = async (postId) => {
+    if (!window.confirm('Sind Sie sicher, dass Sie diese Anzeige löschen möchten?')) {
+      return;
+    }
+
+    try {
+      const result = await exchangeService.deletePost(postId);
+      if (result.success) {
+        setMyExchangePosts(prev => prev.filter(post => post._id !== postId));
+        alert('Anzeige erfolgreich gelöscht!');
+      }
+    } catch (error) {
+      console.error('Fehler beim Löschen:', error);
+      alert('Fehler beim Löschen der Anzeige');
+    }
+  };
+
+  // Update Post Status
+  const handleStatusChange = async (postId, newStatus) => {
+    try {
+      const result = await exchangeService.updateStatus(postId, newStatus);
+      if (result.success) {
+        setMyExchangePosts(prev => 
+          prev.map(post => 
+            post._id === postId ? { ...post, status: newStatus } : post
+          )
+        );
+      }
+    } catch (error) {
+      console.error('Fehler beim Status-Update:', error);
+      alert('Fehler beim Ändern des Status');
+    }
+  };
+
+  // Edit Post
+  const handleEditPost = (post) => {
+    setEditingPost(post);
+    setShowEditModal(true);
+  };
+
+  // Update Post
+  const handleUpdatePost = async (postId, updatedData) => {
+    try {
+      const result = await exchangeService.updatePost(postId, updatedData);
+      if (result.success) {
+        setMyExchangePosts(prev => 
+          prev.map(post => 
+            post._id === postId ? result.data : post
+          )
+        );
+        setShowEditModal(false);
+        setEditingPost(null);
+        alert('Anzeige erfolgreich aktualisiert!');
+      }
+    } catch (error) {
+      console.error('Fehler beim Update:', error);
+      alert('Fehler beim Aktualisieren der Anzeige');
     }
   };
 
@@ -400,9 +490,145 @@ const Profile = () => {
                   </div>
                 </div>
               </div>
+
+              {/* Meine Exchange-Anzeigen */}
+              <div className="profile-form-section">
+                <h2 className="section-title">Meine Exchange-Anzeigen</h2>
+                
+                {loadingPosts ? (
+                  <div className="loading-spinner">Lade Anzeigen...</div>
+                ) : myExchangePosts.length === 0 ? (
+                  <div className="no-posts">
+                    <p>Sie haben noch keine Exchange-Anzeigen erstellt.</p>
+                    <button 
+                      className="btn btn-edit"
+                      onClick={() => window.location.href = '/exchange'}
+                    >
+                      Erste Anzeige erstellen
+                    </button>
+                  </div>
+                ) : (
+                  <div className="exchange-posts-grid">
+                    {myExchangePosts.map(post => (
+                      <div key={post._id} className="exchange-post-card">
+                        <div className="post-image">
+                          <img src={post.picture} alt={post.title} />
+                          <div className={`status-badge status-${post.status}`}>
+                            {post.status === 'aktiv' ? 'Aktiv' : 
+                             post.status === 'reserviert' ? 'Reserviert' : 'Abgeschlossen'}
+                          </div>
+                        </div>
+                        
+                        <div className="post-content">
+                          <div className="post-header">
+                            <h3 className="post-title">{post.title}</h3>
+                            <span className={`category-badge category-${post.category}`}>
+                              {post.category === 'verschenken' ? '🎁 Verschenken' :
+                               post.category === 'tauschen' ? '🔄 Tauschen' : '🔍 Suchen'}
+                            </span>
+                          </div>
+                          
+                          <p className="post-description">{post.description}</p>
+                          
+                          {post.tauschGegen && (
+                            <p className="post-trade">
+                              <strong>Tausche gegen:</strong> {post.tauschGegen}
+                            </p>
+                          )}
+                          
+                          <div className="post-meta">
+                            <span className="post-date">
+                              Erstellt: {new Date(post.createdAt).toLocaleDateString('de-DE')}
+                            </span>
+                            <span className="post-views">👁 {post.views} Aufrufe</span>
+                          </div>
+                          
+                          <div className="post-actions">
+                            <select 
+                              value={post.status}
+                              onChange={(e) => handleStatusChange(post._id, e.target.value)}
+                              className="status-select"
+                            >
+                              <option value="aktiv">Aktiv</option>
+                              <option value="reserviert">Reserviert</option>
+                              <option value="abgeschlossen">Abgeschlossen</option>
+                            </select>
+                            
+                            <button 
+                              className="btn-action btn-edit-post"
+                              onClick={() => handleEditPost(post)}
+                            >
+                              ✏️ Bearbeiten
+                            </button>
+                            
+                            <button 
+                              className="btn-action btn-delete-post"
+                              onClick={() => handleDeletePost(post._id)}
+                            >
+                              🗑️ Löschen
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
+
+        {/* Edit Post Modal */}
+        {showEditModal && editingPost && (
+          <div className="edit-post-modal">
+            <div className="modal-content">
+              <h3>Anzeige bearbeiten</h3>
+              <div className="modal-body">
+                <div className="input-group">
+                  <label>Titel</label>
+                  <input
+                    type="text"
+                    value={editingPost.title}
+                    onChange={(e) => setEditingPost(prev => ({ ...prev, title: e.target.value }))}
+                    placeholder="Titel der Anzeige"
+                  />
+                </div>
+                <div className="input-group">
+                  <label>Beschreibung</label>
+                  <textarea
+                    value={editingPost.description}
+                    onChange={(e) => setEditingPost(prev => ({ ...prev, description: e.target.value }))}
+                    placeholder="Beschreibung der Anzeige"
+                  />
+                </div>
+                <div className="input-group">
+                  <label>Status</label>
+                  <select
+                    value={editingPost.status}
+                    onChange={(e) => setEditingPost(prev => ({ ...prev, status: e.target.value }))}
+                  >
+                    <option value="active">Aktiv</option>
+                    <option value="inactive">Inaktiv</option>
+                  </select>
+                </div>
+              </div>
+              <div className="modal-actions">
+                <button 
+                  onClick={() => handleUpdatePost(editingPost._id, editingPost)} 
+                  className="btn btn-save"
+                >
+                  Speichern
+                </button>
+                <button 
+                  onClick={() => setShowEditModal(false)} 
+                  className="btn btn-cancel"
+                >
+                  Abbrechen
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
