@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+
+import { useState } from 'react';
 import './Help.css'; // Import the CSS file
 
 function Help() {
@@ -123,9 +124,9 @@ function Help() {
           </div>
         </section>
       </div>
+
     </div>
   );
 }
-
 
 export default Help;

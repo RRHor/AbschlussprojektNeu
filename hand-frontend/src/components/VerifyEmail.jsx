@@ -1,13 +1,15 @@
 import { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { API_URL } from '../config';
+
 function VerifyEmail() {
   const [status, setStatus] = useState('Verifiziere...');
   const [error, setError] = useState(null);
   const location = useLocation();
   const navigate = useNavigate();
+
   useEffect(() => {
     const verifyEmail = async () => {
-      // Verifizierungscode aus der URL lesen
       const params = new URLSearchParams(location.search);
       const code = params.get('code');
       if (!code) {
@@ -15,8 +17,7 @@ function VerifyEmail() {
         return;
       }
       try {
-        // Anfrage an das Backend senden
-        const response = await fetch('http://localhost:5000/api/auth/verify', {
+        const response = await fetch(`${API_URL}/auth/verify`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -26,7 +27,6 @@ function VerifyEmail() {
         const data = await response.json();
         if (response.ok) {
           setStatus('E-Mail erfolgreich verifiziert!');
-          // Nach 3 Sekunden zur Startseite weiterleiten
           setTimeout(() => navigate('/'), 3000);
         } else {
           setError(data.message || 'Verifizierung fehlgeschlagen');
@@ -38,6 +38,7 @@ function VerifyEmail() {
     };
     verifyEmail();
   }, [location.search, navigate]);
+
   return (
     <div className="verify-container">
       <h2>E-Mail-Verifizierung</h2>
@@ -57,4 +58,5 @@ function VerifyEmail() {
     </div>
   );
 }
+
 export default VerifyEmail;

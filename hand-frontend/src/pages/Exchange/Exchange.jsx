@@ -10,9 +10,11 @@ const Exchange = () => {
       <h1>🎁 Verschenken & Tauschen</h1>
 
       <nav className="exchange-nav">
-        <NavLink to="verschenken">Verschenken</NavLink>
-        <NavLink to="tauschen">Tauschen</NavLink>
-        <NavLink to="suchen">Suchen</NavLink>
+
+        <NavLink to="verschenken" className={({ isActive }) => isActive ? "active" : ""}>Verschenken</NavLink>
+        <NavLink to="tauschen" className={({ isActive }) => isActive ? "active" : ""}>Tauschen</NavLink>
+        <NavLink to="suchen" className={({ isActive }) => isActive ? "active" : ""}>Suchen</NavLink>
+
       </nav>
 
       <div className="exchange-content">

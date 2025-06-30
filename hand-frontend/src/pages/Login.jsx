@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Eye, EyeOff, Mail, Lock, User, ArrowLeft } from 'lucide-react'; 
+
 import { useNavigate } from 'react-router-dom';
 import './Login.css'; 
 
@@ -10,17 +11,20 @@ function Login() {
   const [formData, setFormData] = useState({
     nickname: '',
     password: '',
-    // email: ''
+    email: ''
   });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
+  const [rememberMe, setRememberMe] = useState(false);
+
 
   const handleInputChange = (e) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value
     });
+
     // Clear errors when user starts typing
     if (error) setError('');
   };
@@ -65,24 +69,7 @@ function Login() {
   }
 };
 
-  // const handleLogin = async () => {
-  //   if (!formData.nickname || !formData.password) {
-  //     setError('Bitte alle Felder ausfüllen');
-  //     return;
-  //   }
-
-  //   setIsLoading(true);
-  //   setError('');
-    
-  //   // Simulation für Demo
-  //   setTimeout(() => {
-  //     console.log('Login attempt:', { nickname: formData.nickname, password: formData.password });
-  //     setIsLoading(false);
-  //     alert('Login erfolgreich! (Demo)');
-  //     // Nach erfolgreichem Login weiterleiten:
-  //     // navigate('/dashboard');
-  //   }, 1500);
-  // };
+  
 
   const handleForgotPassword = async () => {
     if (!formData.email) {
@@ -94,10 +81,12 @@ function Login() {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(formData.email)) {
       setError('Bitte geben Sie eine gültige E-Mail-Adresse ein');
+
       return;
     }
 
     setIsLoading(true);
+
     setError('');
     
     try {
@@ -117,10 +106,28 @@ function Login() {
       
     } catch (error) {
       setError('Fehler beim Senden der E-Mail. Bitte versuchen Sie es erneut.');
+
     } finally {
       setIsLoading(false);
     }
   };
+
+
+  // const handleForgotPassword = async () => {
+  //   if (!formData.email) {
+  //     alert('Bitte E-Mail-Adresse eingeben');
+  //     return;
+  //   }
+
+  //   setIsLoading(true);
+  //   setTimeout(() => {
+  //     console.log('Password reset for:', formData.email);
+  //     setIsLoading(false);
+  //     alert('E-Mail zum Zurücksetzen des Passworts wurde gesendet!');
+  //     setShowForgotPassword(false);
+  //   }, 1500);
+  // };
+
 
   const handleKeyPress = (e) => {
     if (e.key === 'Enter') {
@@ -166,7 +173,9 @@ function Login() {
             </h1>
             <p className="header-subtitle">
               {showForgotPassword 
+
                 ? 'Gib deine E-Mail-Adresse ein um fortzufahren'
+
                 : 'Logge dich ein, um fortzufahren und der Nachbartschaft zu helfen.'
               }
             </p>
@@ -177,14 +186,16 @@ function Login() {
             {/* Login Form */}
             {!showForgotPassword ? (
               <div className="form-section login-form">
-                {/* Username Field */}
+
+                {/* Email Field - KORRIGIERT */}
                 <div className="input-group">
                   <User size={20} className="input-icon" />
                   <input
-                    type="text"
-                    name="nickname"
-                    placeholder="Benutzername"
-                    value={formData.nickname}
+                    type="email"
+                    name="email" // <-- KORRIGIERT von "username" zu "email"
+                    placeholder="E-Mail"
+                    value={formData.email} // <-- KORRIGIERT von formData.username
+
                     onChange={handleInputChange}
                     onKeyPress={handleKeyPress}
                     required
@@ -212,6 +223,7 @@ function Login() {
                   </button>
                 </div>
 
+
                 {/* Error Message */}
                 {error && (
                   <div className="error-message">
@@ -219,10 +231,17 @@ function Login() {
                   </div>
                 )}
 
+                
+
                 {/* Remember Me & Forgot Password */}
                 <div className="form-options">
                   <label className="remember-me-checkbox">
-                    <input type="checkbox" />
+                    <input 
+                      type="checkbox" 
+                      checked={rememberMe}
+                      onChange={(e) => setRememberMe(e.target.checked)}
+                    />
+
                     <span>Angemeldet bleiben</span>
                   </label>
                   <button
@@ -260,12 +279,15 @@ function Login() {
                     type="email"
                     name="email"
                     placeholder="E-Mail-Adresse"
+
                     value={formData.email || ""}
+
                     onChange={handleInputChange}
                     onKeyPress={handleKeyPress}
                     required
                   />
                 </div>
+
 
                 {/* Error/Success Messages */}
                 {error && (
@@ -280,6 +302,7 @@ function Login() {
                   </div>
                 )}
 
+
                 {/* Info Text */}
                 <div className="info-box">
                   <p>
@@ -291,7 +314,9 @@ function Login() {
                 <div className="button-group">
                   <button
                     onClick={handleForgotPassword}
+
                     disabled={isLoading || successMessage}
+
                     className="submit-button primary-button"
                   >
                     {isLoading ? (
@@ -299,14 +324,17 @@ function Login() {
                         <div className="spinner"></div>
                         Senden...
                       </div>
+
                     ) : successMessage ? (
                       'Weiterleitung...'
                     ) : (
                       'E-Mail senden'
+
                     )}
                   </button>
                   
                   <button
+
                     onClick={() => {
                       setShowForgotPassword(false);
                       setError('');
@@ -326,6 +354,7 @@ function Login() {
                   >
                     Zur ausführlichen Passwort-Zurücksetzen-Seite →
                   </button>
+
                 </div>
               </div>
             )}

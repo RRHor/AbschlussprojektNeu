@@ -7,4 +7,5 @@ const Register = ({ onSuccess }) => {
     </div>
   );
 };
+
 export default Register;

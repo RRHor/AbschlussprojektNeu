@@ -1,6 +1,6 @@
 
-import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+
 import Navbar from './components/Navbar';
 import LandingPage from './pages/LandingPage';
 import Login from './pages/Login';
@@ -11,6 +11,8 @@ import Exchange from './pages/Exchange/Exchange';
 import ForgotPassword from './components/ForgotPassword';
 import Home from './pages/Home';
 
+i
+
 
 function App() {
   return (
@@ -19,6 +21,7 @@ function App() {
       <div className="container"> {/* Optional: Ein Container für deinen Seiteninhalt */}
         <Routes>
           <Route path="/" element={<LandingPage/>} /> 
+
           <Route path="/Home" element={<LandingPage />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
@@ -27,6 +30,7 @@ function App() {
           <Route path="/profile" element={<Profile />} />
           <Route path="/exchange" element={<Exchange />} /> 
           <Route path="/forgot-password" element={<ForgotPassword />} />
+
 
         </Routes>
       </div>
