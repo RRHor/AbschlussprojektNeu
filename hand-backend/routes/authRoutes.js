@@ -10,42 +10,31 @@ const router = express.Router();
  * Optionale Adress-Validierung mit Google Maps API
  * Funktioniert nur, wenn GOOGLE_MAPS_API_KEY in .env gesetzt ist
  */
-const validateAddress = async (adress) => {
-    // Wenn kein API Key vorhanden, Validierung überspringen
+const validateAddress = async (address) => {
     if (!process.env.GOOGLE_MAPS_API_KEY) {
         console.log('Google Maps API Key nicht gefunden - Adress-Validierung übersprungen');
-        return true; // Als gültig betrachten
+        return true;
     }
-
     try {
-        // Dynamischer Import von node-fetch (falls installiert)
         const fetch = await import('node-fetch').then(module => module.default);
-        
-        const { street, city, state, zip } = adress;
-        const addressString = `${street}, ${city}, ${state} ${zip}`;
+        const { street, city, district, zipCode } = address;
+        const addressString = `${street}, ${city}, ${district} ${zipCode}`;
         const API_KEY = process.env.GOOGLE_MAPS_API_KEY;
-
         const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(addressString)}&key=${API_KEY}`;
         const response = await fetch(url);
         const data = await response.json();
-
         if (data.status !== 'OK' || data.results.length === 0) {
-            return false; // Adresse ist ungültig
+            return false;
         }
         return true;
     } catch (error) {
-        // Bei Fehlern (z.B. node-fetch nicht installiert), Validierung überspringen
         console.log('Adress-Validierung übersprungen:', error.message);
-        return true; // Als gültig betrachten
+        return true;
     }
 };
 
 /**
  * Registrierung eines neuen Users
- * - Prüft, ob Nickname oder E-Mail bereits vergeben sind
- * - Generiert einen Verifizierungscode
- * - Setzt den ersten User als Admin
- * - Sendet eine Verifizierungs-E-Mail
  */
 router.post('/register', async (req, res) => {
   try {
@@ -60,7 +49,7 @@ router.post('/register', async (req, res) => {
       adress
     } = req.body;
 
-    // Validierung...
+    // Validierung
     if (!nickname || !email || !password) {
       return res.status(400).json({
         success: false,
@@ -68,7 +57,7 @@ router.post('/register', async (req, res) => {
       });
     }
 
-    // Prüfe ob User bereits existiert...
+    // Prüfe ob User bereits existiert
     const existingUser = await User.findOne({
       $or: [{ email }, { nickname }, { username: nickname }]
     });
@@ -113,7 +102,7 @@ router.post('/register', async (req, res) => {
     await user.save();
     console.log('💾 User gespeichert mit ID:', user._id);
 
-    // E-MAIL VERSENDEN - AKTIV!
+    // E-MAIL VERSENDEN
     console.log('📧 Starte E-Mail-Versand...');
     try {
       const emailResult = await sendVerificationEmail(email, verificationToken);
@@ -153,9 +142,6 @@ router.post('/register', async (req, res) => {
 
 /**
  * Login eines Users
- * - Authentifiziert mit E-Mail und Passwort (wie in deiner Version)
- * - Unterstützt rememberMe-Funktion
- * - Gibt bei Erfolg ein JWT-Token als httpOnly-Cookie zurück
  */
 router.post("/login", async (req, res) => {
   try {
@@ -171,7 +157,7 @@ router.post("/login", async (req, res) => {
       return res.status(401).json({ message: "Ungültige E-Mail oder Passwort" });
     }
 
-    // NEU: Prüfe E-Mail-Verifizierung
+    // Prüfe E-Mail-Verifizierung
     if (!user.isVerified) {
       return res.status(401).json({ 
         message: "Bitte verifizieren Sie zuerst Ihre E-Mail-Adresse",
@@ -180,7 +166,7 @@ router.post("/login", async (req, res) => {
       });
     }
 
-    // Token generieren...
+    // Token generieren
     const expiresIn = rememberMe ? "30d" : "1d";
     const token = jwt.sign(
       { 
@@ -192,7 +178,6 @@ router.post("/login", async (req, res) => {
       { expiresIn }
     );
 
-    // Rest bleibt gleich...
     res.json({
       message: "Login erfolgreich",
       token,
@@ -213,85 +198,138 @@ router.post("/login", async (req, res) => {
 });
 
 /**
+ * E-Mail-Verifizierung über Token-Link
+ */
+router.get('/verify/:token', async (req, res) => {
+  try {
+    const { token } = req.params;
+    console.log('🔍 Verifizierung gestartet für Token:', token);
+
+    // Token suchen und prüfen
+    const user = await User.findOne({
+      verificationToken: token,
+      verificationTokenExpires: { $gt: Date.now() }
+    });
+
+    if (!user) {
+      console.log('❌ Ungültiger oder abgelaufener Token');
+      return res.status(400).json({
+        success: false,
+        message: 'Ungültiger oder abgelaufener Verifizierungstoken'
+      });
+    }
+
+    console.log('👤 User gefunden:', user.email);
+
+    // Prüfe ob es ein neuer User ist
+    const isNewUser = !user.firstVerifiedAt;
+    console.log('🆕 Ist neuer User:', isNewUser);
+    console.log('✅ War bereits verifiziert:', user.isVerified);
+
+    // User verifizieren
+    if (!user.firstVerifiedAt) {
+      user.firstVerifiedAt = new Date();
+      console.log('📅 FirstVerifiedAt gesetzt:', user.firstVerifiedAt);
+    }
+
+    user.isVerified = true;
+    user.verificationToken = undefined;
+    user.verificationTokenExpires = undefined;
+
+    await user.save();
+    console.log('💾 User gespeichert');
+
+    // JWT Token für Login generieren
+    const jwtToken = jwt.sign(
+      { 
+        id: user._id,
+        _id: user._id,
+        nickname: user.nickname
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: '7d' }
+    );
+    console.log('🎫 JWT Token generiert');
+
+    console.log('✅ Verifizierung erfolgreich abgeschlossen');
+
+    res.status(200).json({
+      success: true,
+      message: isNewUser 
+        ? 'E-Mail erfolgreich verifiziert! Bitte loggen Sie sich ein.'
+        : 'E-Mail erfolgreich bestätigt!',
+      isNewUser,
+      user: {
+        id: user._id,
+        nickname: user.nickname,
+        email: user.email,
+        isVerified: user.isVerified
+      },
+      token: jwtToken
+    });
+
+  } catch (error) {
+    console.error('❌ Verifizierungsfehler:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Serverfehler bei der Verifizierung'
+    });
+  }
+});
+
+/**
  * Eigene Userdaten abrufen (geschützt)
- * - Gibt die im Token gespeicherten Userdaten zurück
  */
 router.get("/users/me", protect, async (req, res) => {
-  // Vollständige User-Daten zurückgeben
-  const user = await User.findById(req.user._id).select('-password');
-  res.json(user);
+    const user = await User.findById(req.user._id).select('-password');
+    res.json(user);
 });
 
 /**
  * Eigene Userdaten aktualisieren (geschützt)
- * - Aktualisiert die Daten des eingeloggten Users
  */
 router.put("/users/me", protect, async (req, res) => {
-  console.log("🔥 PUT /users/me ROUTE ERREICHT");
-  console.log("🔍 req.user:", req.user ? req.user.nickname : 'NICHT VORHANDEN');
-  console.log("🔍 Request Body:", req.body);
-  
-  try {
-    const user = await User.findByIdAndUpdate(req.user._id, req.body, {
-      new: true,
-    }).select("-password");
-    
-    if (!user) {
-      console.log("❌ User nicht gefunden bei Update");
-      return res.status(404).json({ message: "User nicht gefunden" });
+    try {
+        const user = await User.findByIdAndUpdate(req.user._id, req.body, {
+            new: true,
+        }).select("-password");
+
+        if (!user) {
+            return res.status(404).json({ message: "User nicht gefunden" });
+        }
+        res.json(user);
+    } catch (error) {
+        res.status(500).json({ message: "Aktualisierung fehlgeschlagen", error: error.message });
     }
-    
-    console.log("✅ User erfolgreich aktualisiert:", user.nickname);
-    res.json(user);
-  } catch (error) {
-    console.error("❌ FEHLER in PUT /users/me:", error);
-    res.status(500).json({ message: "Aktualisierung fehlgeschlagen", error: error.message });
-  }
 });
 
 /**
  * Userdaten aktualisieren (geschützt)
- * - Aktualisiert die Daten des Users mit der angegebenen ID
  */
 router.put("/users/:id", protect, async (req, res) => {
-  try {
-    const user = await User.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-    }).select("-password");
-    if (!user) {
-      return res.status(404).json({ message: "User nicht gefunden" });
+    try {
+        const user = await User.findByIdAndUpdate(req.params.id, req.body, {
+            new: true,
+        }).select("-password");
+        if (!user) {
+            return res.status(404).json({ message: "User nicht gefunden" });
+        }
+        res.json(user);
+    } catch (error) {
+        res.status(500).json({ message: "Aktualisierung fehlgeschlagen", error: error.message });
     }
-    res.json(user);
-  } catch (error) {
-    res
-      .status(500)
-      .json({ message: "Aktualisierung fehlgeschlagen", error: error.message });
-  }
 });
 
 /**
- * Verifizierungscode prüfen
- * - Setzt isVerify auf true, wenn der Code korrekt ist
+ * Alle User anzeigen (nur für Debug)
  */
-router.post("/verify", async (req, res) => {
-  try {
-    const { email, code } = req.body;
-    const user = await User.findOne({ email, verificationCode: code });
-
-    if (!user) {
-      return res.status(400).json({ message: "Ungültiger Code oder E-Mail" });
+router.get("/users", async (req, res) => {
+    try {
+        const users = await User.find({}).select('-password -verificationToken');
+        res.json(users);
+    } catch (error) {
+        res.status(500).json({ message: "Fehler beim Laden der User", error: error.message });
     }
-
-    user.isVerify = true;
-    user.verificationCode = null;
-    await user.save();
-
-    res.json({ message: "E-Mail erfolgreich verifiziert" });
-  } catch (error) {
-    res
-      .status(500)
-      .json({ message: "Verifizierung fehlgeschlagen", error: error.message });
-  }
 });
 
 export default router;
