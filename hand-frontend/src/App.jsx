@@ -11,7 +11,7 @@ import Exchange from './pages/Exchange/Exchange';
 import ForgotPassword from './components/ForgotPassword';
 import Home from './pages/Home';
 
-i
+
 
 
 function App() {

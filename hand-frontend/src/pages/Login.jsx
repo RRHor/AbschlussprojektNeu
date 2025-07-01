@@ -9,7 +9,7 @@ function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [formData, setFormData] = useState({
-    nickname: '',
+    // nickname: '',
     password: '',
     email: ''
   });
@@ -30,7 +30,7 @@ function Login() {
   };
 
   const handleLogin = async () => {
-  if (!formData.nickname || !formData.password) {
+  if (!formData.email || !formData.password) {
     setError('Bitte alle Felder ausfüllen');
     return;
   }
@@ -43,7 +43,7 @@ function Login() {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        nickname: formData.nickname,
+        email: formData.email,
         password: formData.password
       })
     });

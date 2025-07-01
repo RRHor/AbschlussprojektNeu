@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './RegisterForm.css';
 import logo from '../assets/logo.png';
-// import { API_URL } from '../config';
+import { API_URL } from '../config';
 
 const RegisterForm = ({ onSuccess = () => {} }) => {
 
@@ -87,15 +87,17 @@ const RegisterForm = ({ onSuccess = () => {} }) => {
           nickname: formData.nickname,
           email: formData.email,
           password: formData.password,
-          adress: {
+          addresses: [
+            {
 
             street: formData.street,
             city: formData.city,
             district: formData.district,
-            zipCode: parseInt(formData.zip, 10),// <-- Wichtig: "zip" statt "zipCode"
+            zipCode: parseInt(formData.zipCode, 10),// <-- Wichtig: "zip" statt "zipCode"
             firstName: formData.firstName,
             lastName: formData.lastName
           }
+        ]
 
     
         }),
