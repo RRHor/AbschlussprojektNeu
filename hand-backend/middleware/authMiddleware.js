@@ -21,12 +21,13 @@ export async function protect(req, res, next) {
             });
         }
 
+        // Token verifizieren und User laden
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         console.log('✅ Token decoded, User ID:', decoded.id);
-        
+
         req.user = await User.findById(decoded.id).select('-password');
         console.log('👤 User found:', req.user ? req.user.username : 'User not found');
-        
+
         if (!req.user) {
             console.log('❌ User not found in database');
             return res.status(401).json({
@@ -43,4 +44,4 @@ export async function protect(req, res, next) {
             message: 'Nicht autorisiert - Token ungültig'
         });
     }
-};
+}

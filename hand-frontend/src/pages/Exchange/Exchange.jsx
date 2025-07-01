@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Routes, Route, Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import exchangeService from '../../services/exchangeService';
@@ -58,11 +58,13 @@ const Exchange = () => {
   const isOnCreatePage = location.pathname.includes('/exchange/create');
 
   return (
+
     <div className="exchange-container">
       {/* Header */}
       <div className="exchange-header">
         <h1>Exchange - Tauschen, Verschenken, Suchen</h1>
         <p>Teile mit deiner Nachbarschaft! Verschenke, tausche oder suche nach Gegenständen.</p>
+
       </div>
 
       {/* Navigation - nur anzeigen wenn NICHT auf Create-Seite */}

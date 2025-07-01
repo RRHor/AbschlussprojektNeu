@@ -5,7 +5,8 @@ import dotenv from 'dotenv';
 dotenv.config();
 // E-Mail-Transporter konfigurieren
 const transporter = nodemailer.createTransport({
-  service: 'gmail',
+  // service: 'gmail',
+  service: process.env.EMAIL_SERVICE,
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS,
@@ -49,14 +50,25 @@ export const sendVerificationEmail = async (to, verificationCode,userId) => {
     return { success: false, error: error.message };
   }
 };
+
 /**
  * Funktion zum Versenden einer Passwort-Reset-E-Mail
  * @param {string} to - E-Mail-Adresse des Empfängers
  * @param {string} resetToken - Der Reset-Token
  * @returns {Promise<Object>} - Erfolgs- oder Fehlerstatus
  */
-export const sendPasswordResetEmail = async (to, resetToken) => {
+export const sendPasswordResetEmail = async (to, resetToken, verificationCode) => {
   try {
+    let codeHtml = '';
+    if (verificationCode) {
+      codeHtml = `
+        <p>Dein Bestätigungscode zum Zurücksetzen des Passworts:</p>
+        <div style="background-color: #F5F5F5; padding: 10px; border-radius: 4px; font-size: 20px; letter-spacing: 2px; text-align: center; margin: 20px 0;">
+          <strong>${verificationCode}</strong>
+        </div>
+        <p>Du kannst alternativ auch den Link unten nutzen.</p>
+      `;
+    }
     const mailOptions = {
       from: process.env.EMAIL_FROM,
       to,
@@ -65,6 +77,7 @@ export const sendPasswordResetEmail = async (to, resetToken) => {
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #E1E1E1; border-radius: 5px;">
           <h2 style="color: #333;">Passwort zurücksetzen</h2>
           <p>Du erhältst diese E-Mail, weil du (oder jemand anderes) ein Zurücksetzen deines Passworts angefordert hat.</p>
+          ${codeHtml}
           <p>Klicke auf den folgenden Link, um dein Passwort zurückzusetzen:</p>
           <p><a href="http://localhost:5173/reset-password?token=${resetToken}" style="background-color: #4CAF50; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px; display: inline-block;">Passwort zurücksetzen</a></p>
           <p>Dieser Link ist 1 Stunde gültig.</p>
@@ -81,6 +94,34 @@ export const sendPasswordResetEmail = async (to, resetToken) => {
     return { success: false, error: error.message };
   }
 };
+
+// export const sendPasswordResetEmail = async (to, resetToken) => {
+//   try {
+//     const mailOptions = {
+//       from: process.env.EMAIL_FROM,
+//       to,
+//       subject: 'Passwort zurücksetzen für Hand-Hand',
+//       html: `
+//         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #E1E1E1; border-radius: 5px;">
+//           <h2 style="color: #333;">Passwort zurücksetzen</h2>
+//           <p>Du erhältst diese E-Mail, weil du (oder jemand anderes) ein Zurücksetzen deines Passworts angefordert hat.</p>
+//           <p>Klicke auf den folgenden Link, um dein Passwort zurückzusetzen:</p>
+//           <p><a href="http://localhost:5173/reset-password?token=${resetToken}" style="background-color: #4CAF50; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px; display: inline-block;">Passwort zurücksetzen</a></p>
+//           <p>Dieser Link ist 1 Stunde gültig.</p>
+//           <p>Wenn du das nicht angefordert hast, ignoriere diese E-Mail bitte.</p>
+//           <p>Viele Grüße,<br>Dein Hand-Hand Team</p>
+//         </div>
+//       `,
+//     };
+//     const info = await transporter.sendMail(mailOptions);
+//     console.log('Passwort-Reset-E-Mail gesendet:', info.messageId);
+//     return { success: true, messageId: info.messageId };
+//   } catch (error) {
+//     console.error('Fehler beim Senden der Passwort-Reset-E-Mail:', error);
+//     return { success: false, error: error.message };
+//   }
+// };
+
 /**
  * Funktion zum Versenden einer Willkommens-E-Mail
  * @param {string} to - E-Mail-Adresse des Empfängers

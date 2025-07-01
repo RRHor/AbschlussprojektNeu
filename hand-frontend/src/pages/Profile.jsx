@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { User, Lock, MapPin, Edit3, Save, X, Camera, Loader } from 'lucide-react';
+import { User, MapPin, Edit3, Save, X, Camera, Loader } from 'lucide-react';
 import api from '../api';
 import exchangeService from '../services/exchangeService';
 import './Profile.css';
@@ -14,9 +14,9 @@ const Profile = () => {
     email: '',
     firstName: '',
     lastName: '',
-    state: '',
+    district: '',
     city: '',
-    zip: '',
+    zipCode: '',
     street: '',
     profileImage: null
   });
@@ -37,19 +37,17 @@ const Profile = () => {
       try {
         setIsLoading(true);
         const response = await api.get('/auth/users/me');
-        
         const formattedData = {
           username: response.data.nickname || '',
           email: response.data.email || '',
           firstName: response.data.adress?.[0]?.firstName || '',
           lastName: response.data.adress?.[0]?.lastName || '',
-          state: response.data.adress?.[0]?.state || '',
+          district: response.data.adress?.[0]?.district || '',
           city: response.data.adress?.[0]?.city || '',
-          zip: response.data.adress?.[0]?.zip || '',
+          zipCode: response.data.adress?.[0]?.zipCode || '',
           street: response.data.adress?.[0]?.street || '',
           profileImage: response.data.profileImage || null
         };
-        
         setProfileData(formattedData);
         setEditData(formattedData);
         setError(null);
@@ -95,35 +93,33 @@ const Profile = () => {
   const handleSave = async () => {
     try {
       setIsSaving(true);
-      
-      // DEBUG: Prüfe die tatsächliche API-URL
-      console.log('🔍 API Base URL:', api.defaults.baseURL);
-      
-      const token = localStorage.getItem('token');
-      console.log('🔍 Frontend Token:', token ? 'VORHANDEN' : 'NICHT VORHANDEN');
-      console.log('🔍 Token Inhalt:', token);
-      console.log('🔍 AuthContext User:', user);
-      
       const updateData = {
         nickname: editData.username,
         email: editData.email,
       };
 
-      if (editData.firstName || editData.lastName || editData.street || editData.city) {
-        updateData.adress = [{
-          firstName: editData.firstName,
-          lastName: editData.lastName,
-          street: editData.street,
-          city: editData.city,
-          state: editData.state,
-          zip: editData.zip ? parseInt(editData.zip, 10) : null
-        }];
+      if (
+        editData.firstName ||
+        editData.lastName ||
+        editData.street ||
+        editData.city ||
+        editData.district ||
+        editData.zipCode
+      ) {
+        updateData.adress = [
+          {
+            firstName: editData.firstName,
+            lastName: editData.lastName,
+            street: editData.street,
+            city: editData.city,
+            district: editData.district,
+            zipCode: editData.zipCode ? parseInt(editData.zipCode, 10) : null
+          }
+        ];
       }
 
-      console.log('🔍 Update Data:', updateData);
-      
       const response = await api.put('/auth/users/me', updateData);
-      
+
       if (response.status === 200) {
         setProfileData({ ...editData });
         setIsEditing(false);
@@ -131,9 +127,7 @@ const Profile = () => {
         alert('Profil erfolgreich aktualisiert!');
       }
     } catch (error) {
-      console.error('🚨 Fehler beim Speichern:', error);
-      console.error('🚨 Error Response:', error.response?.data);
-      console.error('🚨 Error Status:', error.response?.status);
+      console.error('Fehler beim Speichern:', error);
       setError('Fehler beim Speichern der Änderungen');
     } finally {
       setIsSaving(false);
@@ -153,12 +147,10 @@ const Profile = () => {
   const handleImageUpload = async (e) => {
     const file = e.target.files[0];
     if (file) {
-      // Validierung
-      if (file.size > 5 * 1024 * 1024) { // 5MB
+      if (file.size > 5 * 1024 * 1024) {
         setError('Bild ist zu groß (max. 5MB)');
         return;
       }
-
       const reader = new FileReader();
       reader.onload = (e) => {
         if (isEditing) {
@@ -174,7 +166,6 @@ const Profile = () => {
     if (!window.confirm('Sind Sie sicher, dass Sie diese Anzeige löschen möchten?')) {
       return;
     }
-
     try {
       const result = await exchangeService.deletePost(postId);
       if (result.success) {
@@ -354,7 +345,6 @@ const Profile = () => {
                           type="text"
                           value={editData.username}
                           onChange={(e) => handleInputChange('username', e.target.value)}
-                          
                         />
                       ) : (
                         <div className="input-display">{profileData.username || 'Nicht angegeben'}</div>
@@ -393,7 +383,6 @@ const Profile = () => {
                           type="text"
                           value={editData.firstName}
                           onChange={(e) => handleInputChange('firstName', e.target.value)}
-                          
                         />
                       ) : (
                         <div className="input-display">{profileData.firstName || 'Nicht angegeben'}</div>
@@ -408,7 +397,6 @@ const Profile = () => {
                           type="text"
                           value={editData.lastName}
                           onChange={(e) => handleInputChange('lastName', e.target.value)}
-                          
                         />
                       ) : (
                         <div className="input-display">{profileData.lastName || 'Nicht angegeben'}</div>
@@ -432,7 +420,6 @@ const Profile = () => {
                         type="text"
                         value={editData.street}
                         onChange={(e) => handleInputChange('street', e.target.value)}
-                       
                       />
                     ) : (
                       <div className="input-display">{profileData.street || 'Nicht angegeben'}</div>
@@ -446,13 +433,12 @@ const Profile = () => {
                       {isEditing ? (
                         <input
                           type="text"
-                          value={editData.zip}
-                          onChange={(e) => handleInputChange('zip', e.target.value)}
-                      
+                          value={editData.zipCode}
+                          onChange={(e) => handleInputChange('zipCode', e.target.value)}
                           maxLength="5"
                         />
                       ) : (
-                        <div className="input-display">{profileData.zip || 'Nicht angegeben'}</div>
+                        <div className="input-display">{profileData.zipCode || 'Nicht angegeben'}</div>
                       )}
                     </div>
                   </div>
@@ -464,7 +450,6 @@ const Profile = () => {
                           type="text"
                           value={editData.city}
                           onChange={(e) => handleInputChange('city', e.target.value)}
-                          
                         />
                       ) : (
                         <div className="input-display">{profileData.city || 'Nicht angegeben'}</div>
@@ -472,17 +457,16 @@ const Profile = () => {
                     </div>
                   </div>
                   <div className="input-group">
-                    <label>Bundesland</label>
+                    <label>Ortsteil</label>
                     <div className="input-container">
                       {isEditing ? (
                         <input
                           type="text"
-                          value={editData.state}
-                          onChange={(e) => handleInputChange('state', e.target.value)}
-                          
+                          value={editData.district}
+                          onChange={(e) => handleInputChange('district', e.target.value)}
                         />
                       ) : (
-                        <div className="input-display">{profileData.state || 'Nicht angegeben'}</div>
+                        <div className="input-display">{profileData.district || 'Nicht angegeben'}</div>
                       )}
                     </div>
                   </div>
@@ -492,7 +476,6 @@ const Profile = () => {
               {/* Meine Exchange-Anzeigen */}
               <div className="profile-form-section">
                 <h2 className="section-title">Meine Exchange-Anzeigen</h2>
-                
                 {loadingPosts ? (
                   <div className="loading-spinner">Lade Anzeigen...</div>
                 ) : myExchangePosts.length === 0 ? (
@@ -516,7 +499,6 @@ const Profile = () => {
                              post.status === 'reserviert' ? 'Reserviert' : 'Abgeschlossen'}
                           </div>
                         </div>
-                        
                         <div className="post-content">
                           <div className="post-header">
                             <h3 className="post-title">{post.title}</h3>
@@ -525,22 +507,18 @@ const Profile = () => {
                                post.category === 'tauschen' ? '🔄 Tauschen' : '🔍 Suchen'}
                             </span>
                           </div>
-                          
                           <p className="post-description">{post.description}</p>
-                          
                           {post.tauschGegen && (
                             <p className="post-trade">
                               <strong>Tausche gegen:</strong> {post.tauschGegen}
                             </p>
                           )}
-                          
                           <div className="post-meta">
                             <span className="post-date">
                               Erstellt: {new Date(post.createdAt).toLocaleDateString('de-DE')}
                             </span>
                             <span className="post-views">👁 {post.views} Aufrufe</span>
                           </div>
-                          
                           <div className="post-actions">
                             <select 
                               value={post.status}
@@ -551,14 +529,12 @@ const Profile = () => {
                               <option value="reserviert">Reserviert</option>
                               <option value="abgeschlossen">Abgeschlossen</option>
                             </select>
-                            
                             <button 
                               className="btn-action btn-edit-post"
                               onClick={() => handleEditPost(post)}
                             >
                               ✏️ Bearbeiten
                             </button>
-                            
                             <button 
                               className="btn-action btn-delete-post"
                               onClick={() => handleDeletePost(post._id)}
