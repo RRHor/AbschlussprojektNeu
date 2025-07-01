@@ -10,9 +10,9 @@ const router = express.Router();
 router.post('/login', async (req, res) => {
   console.log(req.body); // Debugging-Ausgabe
   
-  const { nickname, password } = req.body;
+  const { email, password } = req.body;
   try {
-    const user = await User.findOne({ nickname });
+    const user = await User.findOne({ email });
     if (!user) {
       return res.status(401).json({ message: 'Ungültiger Nickname oder Passwort' });
     }

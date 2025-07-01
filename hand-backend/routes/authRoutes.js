@@ -15,7 +15,7 @@ const router = express.Router();
  */
 router.post('/register', async (req, res) => {
     try {
-        const { nickname, email, password, adress } = req.body;
+        const { nickname, email, password, addresses } = req.body;
 
         console.log("Register-Request erhalten", req.body);
 
@@ -36,7 +36,7 @@ router.post('/register', async (req, res) => {
             nickname,
             email,
             password,
-            adress: [adress], // Als Array speichern (wie in deiner ursprünglichen Version)
+            addresses, // Als Array speichern (wie in deiner ursprünglichen Version)
             isVerify: false, // User ist anfangs nicht verifiziert
             verificationCode,
             isAdmin: !adminExists, // Erster User wird Admin
@@ -52,7 +52,7 @@ router.post('/register', async (req, res) => {
             _id: newUser._id,
             nickname: newUser.nickname,
             email: newUser.email,
-            adress: newUser.adress,
+            addresses: newUser.addresses,
             isAdmin: newUser.isAdmin,
             isVerify: newUser.isVerify
         });
@@ -106,7 +106,7 @@ router.post("/login", async (req, res) => {
         _id: user._id,
         nickname: user.nickname,
         email: user.email,
-        adress: user.adress,
+        addresses: user.addresses,
         isAdmin: user.isAdmin,
         isVerify: user.isVerify,
       },

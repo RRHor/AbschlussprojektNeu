@@ -20,15 +20,17 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
-    adress: {
+    addresses: [
+         {
         street: { type: String, required: true },
         city: { type: String, required: true },
         district: { type: String, required: true },
         zipCode: { type: Number, required: true },
-        district: { type: String }, // optional
+        //district: { type: String }, // optional
         firstName: { type: String }, // optional
         lastName: { type: String },  // optional
-    },
+        }
+    ],
     isAdmin: {
         type: Boolean,
         default: false,
