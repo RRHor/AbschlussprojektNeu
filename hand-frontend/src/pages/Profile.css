@@ -227,18 +227,29 @@
   align-items: center;
 }
 
-.input-icon {
+/* .input-icon {
   position: absolute;
   left: 0.75rem;
   font-size: 1.1rem;
   color: var(--skyBlue);
   z-index: 1;
+} */
+
+.input-icon {
+  position: absolute;
+  left: 0.75rem;
+  top: 50%;             /* ← Hinzufügen: Vertikal zentrieren */
+  transform: translateY(-50%); /* ← Hinzufügen: Perfekte Zentrierung */
+  font-size: 1rem;      /* ← Etwas kleiner */
+  color: var(--skyBlue);
+  z-index: 1;
+  pointer-events: none; /* ← Hinzufügen: Icon nicht klickbar */
 }
 
 .input-container input,
 .input-display {
   width: 100%;
-  padding: 0.75rem 0.75rem 0.75rem 2.5rem;
+  padding: 0.75rem;     /* Normales Padding ohne Icon-Platz */
   border: 2px solid var(--mint);
   border-radius: 0.5rem;
   background-color: var(--cream);

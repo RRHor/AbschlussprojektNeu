@@ -5,7 +5,7 @@ import { Eye, EyeOff, User, Mail, Lock, MapPin, Loader, CheckCircle } from 'luci
 import './RegisterForm.css';
 import logo from '../assets/logo.png';
 
-const RegisterForm = ({ onSuccess }) => {
+const RegisterForm = ({ onSuccess = () => {} }) => {
   const navigate = useNavigate();
   const { register } = useAuth();
 
@@ -13,13 +13,13 @@ const RegisterForm = ({ onSuccess }) => {
     nickname: '',
     email: '',
     password: '',
-    confirmPassword: '', // Passwort-Bestätigung
+    confirmPassword: '',
     firstName: '',
     lastName: '',
     street: '',
     city: '',
     district: '',
-    zip: '',
+    zipCode: '',
     state: '',
   });
 
@@ -33,8 +33,6 @@ const RegisterForm = ({ onSuccess }) => {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
-    
-    // Clear error when user types
     if (formErrors[name]) {
       setFormErrors((prev) => ({ ...prev, [name]: '' }));
     }
@@ -46,14 +44,11 @@ const RegisterForm = ({ onSuccess }) => {
       ...prev,
       [name]: true,
     }));
-    
-    // Validate on blur
     validateField(name, value);
   };
 
   const validateField = (fieldName, value) => {
     const errors = { ...formErrors };
-    
     switch (fieldName) {
       case 'email':
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -63,7 +58,6 @@ const RegisterForm = ({ onSuccess }) => {
           delete errors[fieldName];
         }
         break;
-      
       case 'password':
         if (value.length < 6) {
           errors[fieldName] = 'Passwort muss mindestens 6 Zeichen lang sein.';
@@ -71,7 +65,6 @@ const RegisterForm = ({ onSuccess }) => {
           delete errors[fieldName];
         }
         break;
-      
       case 'confirmPassword':
         if (value !== formData.password) {
           errors[fieldName] = 'Passwörter stimmen nicht überein.';
@@ -79,15 +72,13 @@ const RegisterForm = ({ onSuccess }) => {
           delete errors[fieldName];
         }
         break;
-      
-      case 'zip':
+      case 'zipCode':
         if (value && (value.length !== 5 || !/^\d+$/.test(value))) {
           errors[fieldName] = 'PLZ muss genau 5 Ziffern haben.';
         } else {
           delete errors[fieldName];
         }
         break;
-      
       default:
         if (!value.trim()) {
           errors[fieldName] = 'Dieses Feld ist erforderlich.';
@@ -95,47 +86,33 @@ const RegisterForm = ({ onSuccess }) => {
           delete errors[fieldName];
         }
     }
-    
     setFormErrors(errors);
   };
 
   const validateForm = () => {
     const errors = {};
-    
-    // Required fields - ALLE Felder jetzt required
     const requiredFields = [
-      'nickname', 'email', 'password', 'confirmPassword', 
-      'firstName', 'lastName',
-      'street', 'city', 'zip', 'state'  // ← Adressfelder auch required
+      'nickname', 'email', 'password', 'confirmPassword',
+      'firstName', 'lastName', 'street', 'city', 'zipCode', 'state'
     ];
-    
     requiredFields.forEach((field) => {
       if (!formData[field] || !formData[field].toString().trim()) {
         errors[field] = 'Dieses Feld ist erforderlich.';
       }
     });
-
-    // Email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (formData.email && !emailRegex.test(formData.email)) {
       errors.email = 'Bitte geben Sie eine gültige E-Mail-Adresse ein.';
     }
-
-    // Password validation
     if (formData.password && formData.password.length < 6) {
       errors.password = 'Passwort muss mindestens 6 Zeichen lang sein.';
     }
-
-    // Confirm password
     if (formData.password !== formData.confirmPassword) {
       errors.confirmPassword = 'Passwörter stimmen nicht überein.';
     }
-
-    // ZIP validation
-    if (formData.zip && (formData.zip.length !== 5 || !/^\d+$/.test(formData.zip))) {
-      errors.zip = 'PLZ muss genau 5 Ziffern haben.';
+    if (formData.zipCode && (formData.zipCode.length !== 5 || !/^\d+$/.test(formData.zipCode))) {
+      errors.zipCode = 'PLZ muss genau 5 Ziffern haben.';
     }
-
     return errors;
   };
 
@@ -143,42 +120,34 @@ const RegisterForm = ({ onSuccess }) => {
     e.preventDefault();
     setIsSubmitting(true);
     setMessage('');
-
     const errors = validateForm();
     if (Object.keys(errors).length > 0) {
       setFormErrors(errors);
       setIsSubmitting(false);
       return;
     }
-
     try {
-      // 🔧 OPTION 3: Nur Top-Level-Felder, KEIN adress-Objekt
       const registrationData = {
         nickname: formData.nickname,
         email: formData.email,
         password: formData.password,
+        confirmPassword: formData.confirmPassword,
         firstName: formData.firstName,
         lastName: formData.lastName,
         adress: {
           street: formData.street,
           city: formData.city,
-          district: formData.district || "",  // Optional
-          zip: parseInt(formData.zip, 10),
+          district: formData.district || "",
+          zipCode: parseInt(formData.zipCode, 10),
           state: formData.state
         }
       };
-
-      console.log('🔍 Sending complete registration data:', registrationData);
-
       const result = await register(registrationData);
-      
       if (result.success) {
         setMessage('✅ Registrierung erfolgreich! Sie werden weitergeleitet...');
-        
         if (onSuccess) {
           onSuccess(result);
         }
-        
         setTimeout(() => {
           navigate('/profile', { replace: true });
         }, 1500);
@@ -200,11 +169,11 @@ const RegisterForm = ({ onSuccess }) => {
     confirmPassword: 'Passwort bestätigen *',
     firstName: 'Vorname *',
     lastName: 'Nachname *',
-    street: 'Straße *',           // ← Jetzt required
-    city: 'Stadt *',              // ← Jetzt required
+    street: 'Straße *',
+    city: 'Stadt *',
     district: 'Landkreis oder Stadtteil',
-    zip: 'PLZ *',                 // ← Jetzt required
-    state: 'Bundesland *',        // ← Jetzt required
+    zipCode: 'PLZ *',
+    state: 'Bundesland *',
   };
 
   const getFieldIcon = (field) => {
@@ -216,7 +185,7 @@ const RegisterForm = ({ onSuccess }) => {
       case 'street':
       case 'city':
       case 'district':
-      case 'zip':
+      case 'zipCode':
       case 'state': return <MapPin size={16} />;
       default: return <User size={16} />;
     }
@@ -227,13 +196,11 @@ const RegisterForm = ({ onSuccess }) => {
       <div className="logo-background">
         <img src={logo} alt="Hand in Hand Logo" className="animated-logo" />
       </div>
-
       <form onSubmit={handleSubmit} className="register-form" noValidate>
         <div className="form-header">
           <h2>Registrierung</h2>
           <p>Werden Sie Teil unserer Nachbarschaftsgemeinschaft</p>
         </div>
-
         <div className="form-grid">
           {Object.keys(fieldLabels).map((field) => (
             <div key={field} className="form-group">
@@ -249,7 +216,7 @@ const RegisterForm = ({ onSuccess }) => {
                       (field === 'password' || field === 'confirmPassword') ? 
                         (field === 'password' ? (showPassword ? 'text' : 'password') : 
                          (showConfirmPassword ? 'text' : 'password')) :
-                      field === 'zip' ? 'text' : 'text'
+                      field === 'zipCode' ? 'text' : 'text'
                     }
                     name={field}
                     value={formData[field]}
@@ -257,8 +224,8 @@ const RegisterForm = ({ onSuccess }) => {
                     onBlur={handleBlur}
                     required={[
                       'nickname', 'email', 'password', 'confirmPassword', 
-                      'firstName', 'lastName', 'street', 'city', 'zip', 'state'
-                    ].includes(field)}  // ← Erweiterte Liste
+                      'firstName', 'lastName', 'street', 'city', 'zipCode', 'state'
+                    ].includes(field)}
                     className={`register-input ${
                       touchedFields[field] ? 'touched' : ''
                     } ${formErrors[field] ? 'error' : ''}`}
@@ -296,7 +263,6 @@ const RegisterForm = ({ onSuccess }) => {
             </div>
           ))}
         </div>
-
         <button
           type="submit"
           disabled={isSubmitting}
@@ -314,13 +280,11 @@ const RegisterForm = ({ onSuccess }) => {
             </>
           )}
         </button>
-
         {message && (
           <div className={`message ${message.includes('✅') ? 'success' : 'error'}`}>
             {message}
           </div>
         )}
-
         <div className="form-footer">
           <p>
             Bereits registriert? 
@@ -332,6 +296,10 @@ const RegisterForm = ({ onSuccess }) => {
       </form>
     </div>
   );
+};
+
+RegisterForm.defaultProps = {
+  onSuccess: () => {},
 };
 
 export default RegisterForm;

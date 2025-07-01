@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { User, Mail, Lock, MapPin, Edit3, Save, X, Camera, Loader } from 'lucide-react';
+import { User, MapPin, Edit3, Save, X, Camera, Loader } from 'lucide-react';
 import api from '../api';
 import exchangeService from '../services/exchangeService';
 import './Profile.css';
@@ -14,10 +14,11 @@ const Profile = () => {
     email: '',
     firstName: '',
     lastName: '',
-    state: '',
+    district: '',
     city: '',
-    zip: '',
+    zipCode: '',
     street: '',
+    state: '',
     profileImage: null
   });
   const [editData, setEditData] = useState({ ...profileData });
@@ -37,19 +38,23 @@ const Profile = () => {
       try {
         setIsLoading(true);
         const response = await api.get('/auth/users/me');
+        console.log('🔍 Raw API Response:', response.data);
         
+        // Moderne Datenstruktur (address als Objekt)
         const formattedData = {
           username: response.data.nickname || '',
           email: response.data.email || '',
-          firstName: response.data.firstName || '',              // ✅ KORRIGIERT!
-          lastName: response.data.lastName || '',                // ✅ KORRIGIERT!
-          state: response.data.address?.state || '',             // ✅ KORRIGIERT!
-          city: response.data.address?.city || '',               // ✅ KORRIGIERT!
-          zip: response.data.address?.postalCode || '',          // ✅ KORRIGIERT!
-          street: response.data.address?.street || '',           // ✅ KORRIGIERT!
+          firstName: response.data.firstName || '',
+          lastName: response.data.lastName || '',
+          state: response.data.address?.state || '',
+          city: response.data.address?.city || '',
+          zipCode: response.data.address?.postalCode || '',
+          street: response.data.address?.street || '',
+          district: response.data.address?.district || '',
           profileImage: response.data.profileImage || null
         };
         
+        console.log('📋 Formatted Data:', formattedData);
         setProfileData(formattedData);
         setEditData(formattedData);
         setError(null);
@@ -96,6 +101,7 @@ const Profile = () => {
     try {
       setIsSaving(true);
       
+      // Moderne Datenstruktur für Backend
       const updateData = {
         nickname: editData.username,
         email: editData.email,
@@ -105,14 +111,15 @@ const Profile = () => {
           street: editData.street,
           city: editData.city,
           state: editData.state,
-          postalCode: editData.zip
+          postalCode: editData.zipCode,
+          district: editData.district
         }
       };
 
-      console.log('🔍 Update Data:', updateData);
-      
+      console.log('💾 Sending update data:', updateData);
+
       const response = await api.put('/auth/users/me', updateData);
-      
+
       if (response.status === 200) {
         setProfileData({ ...editData });
         setIsEditing(false);
@@ -120,9 +127,7 @@ const Profile = () => {
         alert('Profil erfolgreich aktualisiert!');
       }
     } catch (error) {
-      console.error('🚨 Fehler beim Speichern:', error);
-      console.error('🚨 Error Response:', error.response?.data);
-      console.error('🚨 Error Status:', error.response?.status);
+      console.error('Fehler beim Speichern:', error);
       setError('Fehler beim Speichern der Änderungen');
     } finally {
       setIsSaving(false);
@@ -142,12 +147,10 @@ const Profile = () => {
   const handleImageUpload = async (e) => {
     const file = e.target.files[0];
     if (file) {
-      // Validierung
-      if (file.size > 5 * 1024 * 1024) { // 5MB
+      if (file.size > 5 * 1024 * 1024) {
         setError('Bild ist zu groß (max. 5MB)');
         return;
       }
-
       const reader = new FileReader();
       reader.onload = (e) => {
         if (isEditing) {
@@ -163,7 +166,6 @@ const Profile = () => {
     if (!window.confirm('Sind Sie sicher, dass Sie diese Anzeige löschen möchten?')) {
       return;
     }
-
     try {
       const result = await exchangeService.deletePost(postId);
       if (result.success) {
@@ -343,7 +345,6 @@ const Profile = () => {
                           type="text"
                           value={editData.username}
                           onChange={(e) => handleInputChange('username', e.target.value)}
-                          placeholder="Benutzername eingeben"
                         />
                       ) : (
                         <div className="input-display">{profileData.username || 'Nicht angegeben'}</div>
@@ -353,13 +354,11 @@ const Profile = () => {
                   <div className="input-group">
                     <label>E-Mail</label>
                     <div className="input-container">
-                      <Mail size={16} className="input-icon" />
                       {isEditing ? (
                         <input
                           type="email"
                           value={editData.email}
                           onChange={(e) => handleInputChange('email', e.target.value)}
-                          placeholder="E-Mail eingeben"
                         />
                       ) : (
                         <div className="input-display">{profileData.email || 'Nicht angegeben'}</div>
@@ -384,7 +383,6 @@ const Profile = () => {
                           type="text"
                           value={editData.firstName}
                           onChange={(e) => handleInputChange('firstName', e.target.value)}
-                          placeholder="Vorname eingeben"
                         />
                       ) : (
                         <div className="input-display">{profileData.firstName || 'Nicht angegeben'}</div>
@@ -399,7 +397,6 @@ const Profile = () => {
                           type="text"
                           value={editData.lastName}
                           onChange={(e) => handleInputChange('lastName', e.target.value)}
-                          placeholder="Nachname eingeben"
                         />
                       ) : (
                         <div className="input-display">{profileData.lastName || 'Nicht angegeben'}</div>
@@ -416,14 +413,13 @@ const Profile = () => {
                   Adresse
                 </h3>
                 <div className="input-group">
-                  <label>Straße</label>
+                  <label>Straße und Hausnummer</label>
                   <div className="input-container">
                     {isEditing ? (
                       <input
                         type="text"
                         value={editData.street}
                         onChange={(e) => handleInputChange('street', e.target.value)}
-                        placeholder="Straße und Hausnummer"
                       />
                     ) : (
                       <div className="input-display">{profileData.street || 'Nicht angegeben'}</div>
@@ -437,13 +433,12 @@ const Profile = () => {
                       {isEditing ? (
                         <input
                           type="text"
-                          value={editData.zip}
-                          onChange={(e) => handleInputChange('zip', e.target.value)}
-                          placeholder="PLZ"
+                          value={editData.zipCode}
+                          onChange={(e) => handleInputChange('zipCode', e.target.value)}
                           maxLength="5"
                         />
                       ) : (
-                        <div className="input-display">{profileData.zip || 'Nicht angegeben'}</div>
+                        <div className="input-display">{profileData.zipCode || 'Nicht angegeben'}</div>
                       )}
                     </div>
                   </div>
@@ -455,7 +450,6 @@ const Profile = () => {
                           type="text"
                           value={editData.city}
                           onChange={(e) => handleInputChange('city', e.target.value)}
-                          placeholder="Stadt"
                         />
                       ) : (
                         <div className="input-display">{profileData.city || 'Nicht angegeben'}</div>
@@ -470,7 +464,6 @@ const Profile = () => {
                           type="text"
                           value={editData.state}
                           onChange={(e) => handleInputChange('state', e.target.value)}
-                          placeholder="Bundesland"
                         />
                       ) : (
                         <div className="input-display">{profileData.state || 'Nicht angegeben'}</div>
@@ -483,7 +476,6 @@ const Profile = () => {
               {/* Meine Exchange-Anzeigen */}
               <div className="profile-form-section">
                 <h2 className="section-title">Meine Exchange-Anzeigen</h2>
-                
                 {loadingPosts ? (
                   <div className="loading-spinner">Lade Anzeigen...</div>
                 ) : myExchangePosts.length === 0 ? (
@@ -507,7 +499,6 @@ const Profile = () => {
                              post.status === 'reserviert' ? 'Reserviert' : 'Abgeschlossen'}
                           </div>
                         </div>
-                        
                         <div className="post-content">
                           <div className="post-header">
                             <h3 className="post-title">{post.title}</h3>
@@ -516,22 +507,18 @@ const Profile = () => {
                                post.category === 'tauschen' ? '🔄 Tauschen' : '🔍 Suchen'}
                             </span>
                           </div>
-                          
                           <p className="post-description">{post.description}</p>
-                          
                           {post.tauschGegen && (
                             <p className="post-trade">
                               <strong>Tausche gegen:</strong> {post.tauschGegen}
                             </p>
                           )}
-                          
                           <div className="post-meta">
                             <span className="post-date">
                               Erstellt: {new Date(post.createdAt).toLocaleDateString('de-DE')}
                             </span>
                             <span className="post-views">👁 {post.views} Aufrufe</span>
                           </div>
-                          
                           <div className="post-actions">
                             <select 
                               value={post.status}
@@ -542,14 +529,12 @@ const Profile = () => {
                               <option value="reserviert">Reserviert</option>
                               <option value="abgeschlossen">Abgeschlossen</option>
                             </select>
-                            
                             <button 
                               className="btn-action btn-edit-post"
                               onClick={() => handleEditPost(post)}
                             >
                               ✏️ Bearbeiten
                             </button>
-                            
                             <button 
                               className="btn-action btn-delete-post"
                               onClick={() => handleDeletePost(post._id)}

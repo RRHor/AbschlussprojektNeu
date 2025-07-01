@@ -3,6 +3,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
+
 import Navbar from './components/Navbar';
 import LandingPage from './pages/LandingPage';
 import Login from './pages/Login';
@@ -10,9 +11,10 @@ import Register from './pages/Register';
 import Profile from './pages/Profile';
 import Help from './pages/Help'; 
 import ForgotPassword from './components/ForgotPassword';
-import VerifyEmail from './components/VerifyEmail'; // ← Geändert von ./pages zu ./components
+import VerifyEmail from './components/VerifyEmail';
 import Exchange from './pages/Exchange/Exchange.jsx';
 import Blog from './pages/Blog';
+import Home from './pages/Home';
 import Events from './pages/Events';
 import EventDetail from './pages/EventDetail';
 
@@ -25,7 +27,7 @@ function App() {
           <Routes>
             {/* Hauptseiten */}
             <Route path="/" element={<LandingPage />} /> 
-            <Route path="/home" element={<LandingPage />} />
+            <Route path="/home" element={<Home />} />
             
             {/* Authentifizierung */}
             <Route path="/login" element={<Login />} />

@@ -3,12 +3,14 @@ import { Link } from 'react-router-dom';
 import ImageCarousel from '../components/ImageCarousel';
 import './LandingPage.css';
 
+
 // Image imports
 import landingphoto1 from '../assets/landingphoto/landingphoto1.png';
 import landingphoto2 from '../assets/landingphoto/landingphoto2.png';
 import landingphoto3 from '../assets/landingphoto/landingphoto3.png';
 import landingphoto4 from '../assets/landingphoto/landingphoto4.png';
-import landingphoto5 from '../assets/landingphoto/landingphoto5.avif';
+import landingphoto5 from '../assets/landingphoto/landingphoto5.avif'
+
 
 // Image array
 const landingPhotos = [
@@ -86,13 +88,16 @@ function LandingPage() {
 
   return (
     <div className="landing-container">
+
       <ImageCarousel images={landingPhotos} />
       
+
       <section className="landing-content">
         <h1>Willkommen in Hand in Hand</h1>
         <p>Gemeinsam in der Nachbarschaft helfen und verbunden bleiben.</p>
         
         <div className="cta-buttons">
+
           <Link to="/register" className="btn primary">
             Jetzt Registrieren
           </Link>
@@ -157,6 +162,7 @@ function LandingPage() {
           </div>
         </footer>
       </section>
+
     </div>
   );
 }

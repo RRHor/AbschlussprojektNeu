@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+
+import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { HelpCircle, MessageSquare, Send, User, Calendar } from 'lucide-react';
 import './Help.css';
@@ -30,9 +31,11 @@ function Help() {
     return items.length > 0 ? Math.max(...items.map(item => item.id)) + 1 : 1;
   };
 
+
   const handleNewQuestionChange = (event) => {
     setNewQuestion(event.target.value);
   };
+
 
   const handleAskQuestion = async (event) => {
     event.preventDefault();
@@ -62,10 +65,12 @@ function Help() {
       console.error('Error adding question:', error);
     } finally {
       setIsSubmitting(false);
+
     }
   };
 
   const handleAnswerChange = (questionId, event) => {
+
     setAnswerText(prev => ({ 
       ...prev, 
       [questionId]: event.target.value 
@@ -109,6 +114,7 @@ function Help() {
     if (event.key === 'Enter' && event.ctrlKey) {
       event.preventDefault();
       action(...args);
+
     }
   };
 
@@ -117,9 +123,11 @@ function Help() {
       <div className="help-wrapper">
         <header className="help-header">
           <div className="header-content">
+
             <div className="header-icon">
               <HelpCircle size={48} />
             </div>
+
             <div className="header-text">
               <h1 className="h1-text">Deine Fragen, unsere Antworten</h1>
               <p>Stell eine Frage an die Community oder hilf anderen mit deinem Wissen.</p>
@@ -128,12 +136,14 @@ function Help() {
         </header>
 
         <section className="help-content">
+
           {/* Question Form */}
           <div className="form-section section-block">
             <h2 className="section-title">
               <MessageSquare size={24} />
               Stelle eine neue Frage
             </h2>
+
             <form onSubmit={handleAskQuestion} className="question-form">
               <div className="input-group">
                 <label htmlFor="newQuestion">Deine Frage:</label>
@@ -141,6 +151,7 @@ function Help() {
                   <textarea
                     id="newQuestion"
                     className="question-input"
+
                     placeholder="Tippe hier deine Frage ein... (Strg+Enter zum Senden)"
                     rows="4"
                     value={newQuestion}
@@ -209,16 +220,20 @@ function Help() {
                               <Calendar size={12} />
                               <span>am {formatDate(answer.date)}</span>
                             </div>
+
                           </div>
                         ))}
                       </div>
                     )}
+
                     
                     {/* Answer Form */}
+
                     <div className="answer-form">
                       <div className="input-group">
                         <textarea
                           className="answer-input"
+
                           placeholder="Deine Antwort... (Strg+Enter zum Senden)"
                           rows="2"
                           value={answerText[question.id] || ''}
@@ -238,6 +253,7 @@ function Help() {
                         <Send size={14} />
                         Antworten
                       </button>
+
                     </div>
                   </div>
                 ))}
@@ -246,6 +262,8 @@ function Help() {
           </div>
         </section>
       </div>
+
+
     </div>
   );
 }

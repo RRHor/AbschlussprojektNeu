@@ -12,7 +12,7 @@ import cors from "cors";
 import cookieParser from 'cookie-parser';
 import mongoose from 'mongoose';
 
-// Alle Route-Imports (jetzt sicher, da dotenv bereits geladen ist)
+// Alle Route-Imports 
 import connectDB from './database/database.js';
 import authRoutes from './routes/authRoutes.js';
 import verifyRoutes from './routes/verifyRoutes.js';
@@ -26,6 +26,7 @@ import testEmailRoutes from './routes/testEmailRoutes.js';
 import postRoutes from './routes/postRoutes.js';
 import passwordRequestRoute from './routes/passwordResetRequestRoute.js';
 import passwordResetRoutes from './routes/passwordResetRoute.js';
+import publicUserRoutes from './routes/publicUserRoutes.js';
 import exchangeRoutes from './routes/exchangeRoutes.js';
 
 // ES6 Module __dirname workaround
@@ -53,21 +54,14 @@ app.use(cors());
 app.use(express.json());
 app.use(cookieParser());
 
-//Request-Logging
+// Request-Logging
 app.use((req, res, next) => {
   console.log(`📥 ${req.method} ${req.url}`);
   console.log('📋 Body:', req.body);
   next();
 });
 
-// NEU: Request-Logging
-app.use((req, res, next) => {
-  console.log(`📥 ${req.method} ${req.url}`);
-  console.log('📋 Body:', req.body);
-  next();
-});
-
-// Authentifizierungs-Routen
+// Authentifizierungs-/Login-/Passwort-Routen
 app.use('/api/auth', authRoutes);
 app.use('/api/auth', verifyRoutes);
 app.use('/api/auth', passwordRequestRoute);
@@ -78,6 +72,7 @@ app.use('/api/test-email', testEmailRoutes);
 
 // User-Routen
 app.use('/api', userRoutes);
+app.use('/api', publicUserRoutes);
 app.use('/api', adressRoutes);
 
 // Content-Routen
@@ -88,7 +83,6 @@ app.use('/api/posts', postRoutes);
 app.use('/api/comments', commentRoutes);
 app.use('/api/exchange', exchangeRoutes);
 
-// Root-Route
 app.get('/', (req, res) => {
   res.send('Willkommen im "Hand in Hand"-Backend!');
 });

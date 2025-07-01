@@ -22,26 +22,20 @@ function Login() {
       ...formData,
       [e.target.name]: e.target.value
     });
-    // Clear error when user types
     if (error) setError('');
   };
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    
     if (!formData.email || !formData.password) {
       setError('Bitte alle Felder ausfüllen');
       return;
     }
-
     setIsLoading(true);
     setError('');
-    
     try {
       const result = await login(formData.email, formData.password);
-      
       if (result.success) {
-        // Successful login - AuthContext will handle user state
         navigate('/profile', { replace: true });
       } else {
         // NEU: Spezielle Behandlung für unverifizierte E-Mails
@@ -79,24 +73,15 @@ function Login() {
 
   const handleForgotPassword = async (e) => {
     e.preventDefault();
-    
     if (!formData.resetEmail) {
       setError('Bitte E-Mail-Adresse eingeben');
       return;
     }
-
     setIsLoading(true);
     setError('');
-    
     try {
-      // TODO: Implement actual password reset API call
-      // const response = await api.post('/auth/forgot-password', { 
-      //   email: formData.resetEmail 
-      // });
-      
-      // Simulate API call for now
+      // TODO: Implementiere echten API-Call
       await new Promise(resolve => setTimeout(resolve, 1500));
-      
       alert('E-Mail zum Zurücksetzen des Passworts wurde gesendet!');
       setShowForgotPassword(false);
       setFormData(prev => ({ ...prev, resetEmail: '' }));
@@ -248,9 +233,16 @@ function Login() {
 
                 {/* Forgot Password Link */}
                 <div className="form-footer">
-                  <Link to="/forgot-password" className="forgot-password-link">
+                  <button
+                    type="button"
+                    className="forgot-password-link"
+                    onClick={() => {
+                      setShowForgotPassword(true);
+                      setError('');
+                    }}
+                  >
                     Passwort vergessen?
-                  </Link>
+                  </button>
                 </div>
               </form>
             ) : (
@@ -270,6 +262,13 @@ function Login() {
                     autoComplete="email"
                   />
                 </div>
+
+                {/* Error/Success Messages */}
+                {error && (
+                  <div className="error-message">
+                    ❌ {error}
+                  </div>
+                )}
 
                 {/* Info Text */}
                 <div className="info-box">
@@ -291,7 +290,7 @@ function Login() {
                         Senden...
                       </div>
                     ) : (
-                      'Passwort zurücksetzen'
+                      'E-Mail senden'
                     )}
                   </button>
                   
@@ -306,6 +305,16 @@ function Login() {
                     disabled={isLoading}
                   >
                     Zurück zum Login
+                  </button>
+
+                  {/* Link zur ausführlichen Seite */}
+                  <button
+                    type="button"
+                    onClick={() => navigate('/forgot-password')}
+                    className="link-button"
+                    disabled={isLoading}
+                  >
+                    Zur ausführlichen Passwort-Zurücksetzen-Seite →
                   </button>
                 </div>
               </form>

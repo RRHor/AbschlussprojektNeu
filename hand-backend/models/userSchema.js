@@ -16,21 +16,19 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
-    // Neue Felder für Vorname und Nachname direkt im User
-    firstName: {
-        type: String,
-    },
-    lastName: {
-        type: String,
-    },
-    adress: {
+
+    addresses: [
+         {
         street: { type: String, required: true },
         city: { type: String, required: true },
-        state: { type: String, required: true },
-        zip: { type: Number, required: true },
-        district: { type: String }, // optional
-        // firstName & lastName in Address -> entfernen, weil auf Root Ebene
-    },
+        district: { type: String, required: true },
+        zipCode: { type: Number, required: true },
+        //district: { type: String }, // optional
+        firstName: { type: String }, // optional
+        lastName: { type: String },  // optional
+        }
+    ],
+
     isAdmin: {
         type: Boolean,
         default: false,

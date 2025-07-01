@@ -1,32 +1,36 @@
 
-import express from 'express';
-import User from '../models/UserModel.js';
-import crypto from 'crypto';
-// import sendMail from '../utils/sendMail.js'; // Optional: Mailversand
+import express from 'express'
+import User from '../models/userSchema.js';
+import { sendVerificationEmail } from '../utils/emailService.js';
+
 
 console.log("passwordResetRequestRoute.js wurde geladen");
 
 const router = express.Router();
 
-router.post('/forgot-password', async (req, res) => {
-  const { email } = req.body;
-  const user = await User.findOne({ email });
+// Route für Verifizierungs-Code nach Registrierung
+router.post('/send-verification', async (req, res) => {
+  const { email, userId } = req.body;
+  const user = await User.findOne({ email, _id: userId });
   if (!user) {
-    return res.status(404).json({ message: 'E-Mail nicht gefunden.' });
+    return res.status(404).json({ message: 'User nicht gefunden.' });
   }
 
-  // Token generieren
-  const token = crypto.randomBytes(32).toString('hex');
-  user.resetToken = token;
-  user.resetTokenExpires = Date.now() + 1000 * 60 * 60; // 1 Stunde gültig
+  // Neuen 6-stelligen Verifizierungscode generieren
+  const verificationCode = Math.floor(100000 + Math.random() * 900000);
+  user.verificationCode = verificationCode;
+  user.isVerify = false;
   await user.save();
 
-  // Link für die E-Mail
-  const resetLink = `http://localhost:5173/reset-password?token=${token}`;
-  // await sendMail(user.email, `Dein Link: ${resetLink}`);
-  console.log(`Reset-Link für ${user.email}: ${resetLink}`);
+  // Verifizierungs-E-Mail senden
+  await sendVerificationEmail(user.email, verificationCode, user._id);
 
-  res.json({ message: 'E-Mail zum Zurücksetzen wurde gesendet.' });
+  console.log(`Verifizierungscode für ${user.email}: ${verificationCode}`);
+
+  res.json({ message: 'Verifizierungscode gesendet.' });
 });
 
 export default router;
+
+
+

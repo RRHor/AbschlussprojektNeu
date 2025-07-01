@@ -1,9 +1,11 @@
-import React, { useState } from 'react';
+
+import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Menu, X, User, LogOut } from 'lucide-react';
 import './Navbar.css';
 import logo from '../assets/logo.png';
+
 
 function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -36,6 +38,7 @@ function Navbar() {
           <ul className="direct-nav-menu">
             {user ? (
               <li className="nav-item">
+
                 <span className="nav-user">
                   <User size={18} />
                   {user.name}
@@ -49,6 +52,7 @@ function Navbar() {
                 >
                   Login
                 </Link>
+
               </li>
             )}
           </ul>
@@ -66,6 +70,7 @@ function Navbar() {
             {/* Mobile Menu */}
             <ul className={`burger-nav-menu ${isMenuOpen ? 'active' : ''}`}>
               <li className="nav-item">
+
                 <Link 
                   to="/" 
                   className={`nav-links ${isActive('/') ? 'active' : ''}`}
@@ -82,6 +87,7 @@ function Navbar() {
                 >
                   Verschenken & Tauschen
                 </Link>
+
               </li>
               <li className="nav-item">
                 <Link 
@@ -93,6 +99,7 @@ function Navbar() {
                 </Link>
               </li>
               <li className="nav-item">
+
                 <Link 
                   to="/help" 
                   className={`nav-links ${isActive('/help') ? 'active' : ''}`}
@@ -100,6 +107,7 @@ function Navbar() {
                 >
                   Hilfe
                 </Link>
+
               </li>
               
               {user ? (
