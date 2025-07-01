@@ -1,0 +1,433 @@
+:root {
+  --text-color: #05004e; /* deepBlue */
+  --bg-primary: #f8e8c3; /* cream */
+  --bg-secondary: #2e7eb3; /* skyBlue */
+  --bg-tertiary: #4fe3c1; /* mint */
+  --warning-color: #de887b; /* coral */
+
+  --deepBlue: #05004e;
+  --skyBlue: #2e7eb3;
+  --mint: #4fe3c1;
+  --cream: #f8e8c3;
+  --coral: #de887b;
+}
+.nunito-font {
+  font-family: "Nunito", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 400;
+  font-style: normal;
+}
+
+
+
+.event-detail-wrapper {
+   max-width: 1000px;
+  margin: 0 auto;
+  padding: 40px 20px;
+  background-color: var(--bg-primary);
+  color: var(--text-color);
+  font-family: "Nunito", sans-serif;
+}
+
+.event-detail-container{
+    background-color: var(--bg-primary);
+    padding: 20px 20px;
+    color: var(--text-color);
+    font-family: "Nunito", sans-serif;
+    display: flex;
+    flex-direction: row;
+    gap: 30px;
+    align-items: flex-start;
+    margin-bottom: 40px;
+}
+
+.events-image {
+    width: 100%;
+    max-width: 500px;
+    height: auto;
+    
+    flex-shrink:inherit;
+    border: 2px solid var(--skyBlue);
+    border-radius: 10px;
+    object-fit: cover;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    display: block;
+}
+
+.event.info {
+    flex: 1;
+    max-width: 50%;
+}
+.event-info h1 {
+    font-size: 2rem;
+    margin-bottom: 10px;
+    color: var(--text-color);
+}
+
+.event-description {
+    flex: 1;
+    max-width: 50%;
+}
+.events-title {
+  font-size: 1.8rem;
+  font-family: "Nunito", sans-serif;
+  color: var(--text-color);
+  margin-bottom: 20px;
+  text-align: center;
+  font-weight: bold;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.register-button {
+    background-color: var(--coral);
+    color: var(--deepBlue);
+    padding: 10px 20px;
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
+}
+
+.event-description p {
+  font-size: 1.2rem;
+  line-height: 1.6;
+  color: var(--text-color);
+  font-family: "Nunito";
+}
+
+/*---- Back Button----- */
+
+.back-button {
+  background-color: #2e7eb3; /* skyBlue */
+  color: #ffffff; /* white */
+  border: none;
+  padding: 10px 16px;
+  font-size: 15px;
+  border-radius: 10px;
+  cursor: pointer;
+  display: inline-flex;
+  justify-content: center;
+  gap: 8px;
+  align-items: center;
+  margin: 50px 0 0 60px; 
+  align-self: flex-start;
+  position: static; /* Position wurde auf Standard zurückgesetzt */
+}
+
+.back-button:hover {
+  background-color: #4fe3c1; /* mint */
+  color: #05004e; /* deepBlue */
+}
+
+
+/* COMMENT SECTION */
+
+.comment-section {
+    margin-top: 60px;
+    padding: 40px 30px;
+    background-color: var(--mint);
+    border-radius: 16px;
+    box-shadow: 0 4px 16px rgba(46, 126, 179, 0.1);
+    width: 100%;
+    max-width: 1000px;
+    margin-left: auto;
+    margin-right: auto;
+    font-family: "Nunito", sans-serif;
+}
+
+.comment-section h2 {
+    font-size: 1.8rem;
+    color: var(--deepBlue);
+    margin-bottom: 24px;
+    text-align: center;
+    font-weight: bold;
+}
+
+/* Form styles */
+.comment-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding: 28px 24px;
+    background: white;
+    border-radius: 14px;
+    box-shadow: 0 2px 12px rgba(46, 126, 179, 0.10);
+   
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 1000px;
+    margin: 0 auto 32px auto;
+}
+
+.comment-input-wrapper {
+    display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  border-radius: 20px;
+  padding: 12px;
+ background-color: var(--cream);
+  border: 1px solid #ccc;
+}
+
+.comment-avatar-img {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+}
+
+.comment-form-fields {
+  flex: 1;
+
+}
+
+.comment-user-name {
+  font-weight: bold;
+  margin-bottom: 5px;
+    color: var(--text-color);
+    font-family: "Nunito", sans-serif;
+}
+
+.comment-textarea {
+  width: 100%;
+  height: 80px;
+  padding: 10px;
+  border-radius: 8px;
+
+  font-family: "Nunito", sans-serif;
+  font-size: 1rem;
+  resize: none;
+    background-color: var(--cream);
+}
+.comment-textarea:focus {
+  outline: none;
+  border-color: var(--skyBlue);
+  }
+
+.comment-submit-btn {
+    margin-top: 10px;
+    padding: 10px 20px;
+    max-width: 300px;
+    justify-content: center;
+    align-self: center;
+    background-color: var(--coral);
+    color: var(--deepBlue);
+    border: none;
+    border-radius: 50px;
+    font-family: "Nunito", sans-serif;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+    box-shadow: 0 2px 8px rgba(46, 126, 179, 0.10);
+}
+.comment-submit-btn:hover {
+    background-color: var(--mint);
+    color: var(--deepBlue);
+}
+
+.comment-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.comment-item {
+  display: flex;
+  background: #f9f9f9;
+  border-radius: 12px;
+  padding: 12px;
+  gap: 12px;
+ border-color: skyBlue;    
+  border-width: 2px;
+  border-style: solid;
+}
+
+.comment-left .comment-avatar-circle {
+  background-color: #007bff;
+  color: white;
+  width: 40px;
+  height: 40px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  font-size: 18px;
+}
+
+.comment-right {
+  flex: 1;
+}
+
+.comment-header {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.9em;
+  margin-bottom: 6px;
+  font-weight: bold;
+}
+
+.comment-text-display {
+  margin-bottom: 8px;
+}
+
+.comment-actions button {
+  margin-right: 10px;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+/* Comment Section Styles */
+
+/* Responsive: Stack avatar and inputs vertically on small screens */
+@media (max-width: 600px) {
+    .comment-name-wrapper {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+    }
+    .comment-submit {
+        width: 100%;
+        align-self: stretch;
+    }
+}
+
+
+
+/* comment delete button */
+
+.comment-delete {
+  background: none;
+  border: none;
+  color: #888;
+  cursor: pointer;
+  margin-left: 8px;
+  font-size: 1rem;
+  transition: color 0.2s;
+}
+.comment-delete:focus {
+  outline: none;
+}
+.comment-delete:hover {
+  color: #e74c3c;
+}
+
+/* Displayed Comment Text */
+
+.comment-text-display {
+  font-size: 1rem;
+  line-height: 1.5;
+  color: var(--text-color);
+}
+
+/* No Comments */
+
+.no-comments {
+  color: #777;
+  font-style: italic;
+  text-align: center;
+}
+
+/* Responsive */
+
+@media (max-width: 600px) {
+  .comment-name-wrapper {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .comment-submit {
+    width: 100%;
+    text-align: center;
+  }
+}
+
+
+/* Responsive styles */
+@media (max-width: 768px) {
+  .event-detail-container {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .events-image {
+    max-width: 100%;
+    height: auto;
+  }
+
+  .event.info,
+  .event-description {
+    max-width: 100%;
+  }
+}   
+
+/* inspiresätze */
+.event-bottom-inspire {
+  margin-top: 60px;
+  padding: 40px 20px;
+  background-color: var(--mint);
+  border-radius: 16px;
+  text-align: center;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+}
+
+.inspire-quote {
+  font-size: 1.4rem;
+  font-weight: bold;
+  font-style: italic;
+  color: var(--deepBlue);
+  margin-bottom: 20px;
+}
+
+.community-note {
+  font-size: 1rem;
+  color: var(--text-color);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  align-items: center;
+}
+
+.community-note p {
+  max-width: 600px;
+  text-align: center;
+  line-height: 1.6;
+}
+.community-note a {
+  color: var(--skyBlue);
+  text-decoration: none;
+  font-weight: bold;
+}
+.community-note a:hover {
+  text-decoration: underline;
+}
+
+/* Logo styles */
+
+.logo-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 20px;
+}
+.logo-image {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  
+}
+.logo-image:hover {
+    transform: scale(1.12) rotate(-4deg);
+    box-shadow: 0 6px 18px rgba(46, 126, 179, 0.18);
+    transition: transform 0.25s cubic-bezier(0.4, 0.2, 0.2, 1), box-shadow 0.25s cubic-bezier(0.4, 0.2, 0.2, 1);
+}
+
+.inspire-text {
+  font-size: 1rem;
+  color: var(--deepBlue);
+  margin-top: 20px;
+  font-family: "Nunito", sans-serif;
+}

@@ -1,6 +1,6 @@
 // context/AuthContext.jsx
 import { createContext, useContext, useState, useEffect } from 'react';
-import api from '../api'; // zentrale axios-Instanz
+import api from '../api';
 
 const AuthContext = createContext();
 
@@ -20,20 +20,27 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (token) {
-      api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
       fetchUser();
     } else {
       setLoading(false);
     }
-    // eslint-disable-next-line
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchUser = async () => {
     try {
-      const response = await api.get('/users/profile');
-      setUser(response.data.data);
+      console.log('🔍 Fetching user data...');
+      const response = await api.get('/auth/users/me');
+      setUser(response.data); // Ändere zu response.data (nicht .data.data)
     } catch (error) {
       console.error('Token verification failed:', error);
+      
+      // Bei 401 (Unauthorized) Token automatisch löschen
+      if (error.response?.status === 401) {
+        console.log('🗑️ Token abgelaufen - lösche automatisch');
+        localStorage.removeItem('token');
+      }
+      
       logout();
     } finally {
       setLoading(false);
@@ -44,9 +51,10 @@ export const AuthProvider = ({ children }) => {
     try {
       const response = await api.post('/auth/login', { email, password });
       const { token, user } = response.data;
+      
       localStorage.setItem('token', token);
-      api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
       setUser(user);
+      
       return { success: true };
     } catch (error) {
       return {
@@ -60,11 +68,13 @@ export const AuthProvider = ({ children }) => {
     try {
       const response = await api.post('/auth/register', userData);
       const { token, user } = response.data;
+      
       localStorage.setItem('token', token);
-      api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
       setUser(user);
+      
       return { success: true };
     } catch (error) {
+      console.error('Registration failed:', error.response?.data);
       return {
         success: false,
         message: error.response?.data?.message || 'Registrierung fehlgeschlagen'
@@ -74,7 +84,6 @@ export const AuthProvider = ({ children }) => {
 
   const logout = () => {
     localStorage.removeItem('token');
-    delete api.defaults.headers.common['Authorization'];
     setUser(null);
   };
 

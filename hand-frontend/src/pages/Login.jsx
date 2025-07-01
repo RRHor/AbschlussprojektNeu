@@ -1,33 +1,31 @@
-import { useState } from 'react';
-import { Eye, EyeOff, Mail, Lock, User, ArrowLeft } from 'lucide-react'; 
-
-import { useNavigate } from 'react-router-dom';
+import React, { useState } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
+import { Eye, EyeOff, Mail, Lock, User, ArrowLeft, Loader } from 'lucide-react'; 
+import { useAuth } from '../context/AuthContext';
 import './Login.css'; 
 
 function Login() {
   const navigate = useNavigate();
+  const { login } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [formData, setFormData] = useState({
-    // nickname: '',
+
+    email: '',
     password: '',
-    email: ''
+    resetEmail: ''
   });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
-  const [successMessage, setSuccessMessage] = useState('');
-  const [rememberMe, setRememberMe] = useState(false);
-
 
   const handleInputChange = (e) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value
     });
-
-    // Clear errors when user starts typing
     if (error) setError('');
   };
+
 
   const handleLogin = async () => {
   if (!formData.email || !formData.password) {
@@ -53,94 +51,64 @@ function Login() {
     if (!response.ok) {
       setError(data.message || 'Login fehlgeschlagen');
       setIsLoading(false);
-      return;
-    }
-
-    // Hier kannst du das Token speichern (z.B. localStorage)
-    localStorage.setItem('token', data.token);
-
-    setIsLoading(false);
-    alert('Login erfolgreich!');
-    // Weiterleitung nach dem Login:
-    navigate('/profile');
-  } catch (err) {
-    setError('Serverfehler. Bitte später erneut versuchen.');
-    setIsLoading(false);
-  }
-};
-
-  
-
-  const handleForgotPassword = async () => {
-    if (!formData.email) {
-      setError('Bitte E-Mail-Adresse eingeben');
-      return;
-    }
-
-    // E-Mail-Format validieren
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(formData.email)) {
-      setError('Bitte geben Sie eine gültige E-Mail-Adresse ein');
 
       return;
     }
-
     setIsLoading(true);
-
     setError('');
-    
     try {
-      // Hier würdest du deine Passwort-Reset-Logik implementieren
-      // Simulation für Demo
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      console.log('Password reset for:', formData.email);
-      setSuccessMessage('📧 E-Mail wurde gesendet! Sie werden zur Bestätigungsseite weitergeleitet...');
-      
-      // Nach 2 Sekunden zur ausführlichen ForgotPassword-Seite weiterleiten
-      setTimeout(() => {
-        navigate('/forgot-password', { 
-          state: { email: formData.email } // E-Mail-Adresse mitgeben
-        });
-      }, 2000);
-      
+      const result = await login(formData.email, formData.password);
+      if (result.success) {
+        navigate('/profile', { replace: true });
+      } else {
+        setError(result.message || 'Login fehlgeschlagen');
+      }
     } catch (error) {
-      setError('Fehler beim Senden der E-Mail. Bitte versuchen Sie es erneut.');
-
+      console.error('Login error:', error);
+      setError('Ein unerwarteter Fehler ist aufgetreten');
     } finally {
       setIsLoading(false);
     }
   };
 
-
-  // const handleForgotPassword = async () => {
-  //   if (!formData.email) {
-  //     alert('Bitte E-Mail-Adresse eingeben');
-  //     return;
-  //   }
-
-  //   setIsLoading(true);
-  //   setTimeout(() => {
-  //     console.log('Password reset for:', formData.email);
-  //     setIsLoading(false);
-  //     alert('E-Mail zum Zurücksetzen des Passworts wurde gesendet!');
-  //     setShowForgotPassword(false);
-  //   }, 1500);
-  // };
-
+  const handleForgotPassword = async (e) => {
+    e.preventDefault();
+    if (!formData.resetEmail) {
+      setError('Bitte E-Mail-Adresse eingeben');
+      return;
+    }
+    setIsLoading(true);
+    setError('');
+    try {
+      // TODO: Implementiere echten API-Call
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      alert('E-Mail zum Zurücksetzen des Passworts wurde gesendet!');
+      setShowForgotPassword(false);
+      setFormData(prev => ({ ...prev, resetEmail: '' }));
+    } catch (error) {
+      console.error('Password reset error:', error);
+      setError('Fehler beim Senden der Reset-E-Mail');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleKeyPress = (e) => {
     if (e.key === 'Enter') {
       if (showForgotPassword) {
-        handleForgotPassword();
+        handleForgotPassword(e);
       } else {
-        handleLogin();
+        handleLogin(e);
       }
     }
   };
 
   const goBack = () => {
-    window.history.back();
+    if (window.history.length > 1) {
+      navigate(-1);
+    } else {
+      navigate('/');
+    }
   };
 
   return (
@@ -156,6 +124,7 @@ function Login() {
         <button
           onClick={goBack}
           className="back-button"
+          type="button"
         >
           <ArrowLeft size={20} className="back-button-icon" />
           Zurück
@@ -173,32 +142,36 @@ function Login() {
             </h1>
             <p className="header-subtitle">
               {showForgotPassword 
-
-                ? 'Gib deine E-Mail-Adresse ein um fortzufahren'
-
+                ? 'Gib deine E-Mail-Adresse ein, um dein Passwort zurückzusetzen'
                 : 'Logge dich ein, um fortzufahren und der Nachbartschaft zu helfen.'
               }
             </p>
           </div>
 
+          {/* Error Message */}
+          {error && (
+            <div className="error-message">
+              <p>{error}</p>
+            </div>
+          )}
+
           {/* Form Content */}
           <div className="login-card-content">
             {/* Login Form */}
             {!showForgotPassword ? (
-              <div className="form-section login-form">
-
-                {/* Email Field - KORRIGIERT */}
+              <form onSubmit={handleLogin} className="form-section login-form">
+                {/* Email Field */}
                 <div className="input-group">
-                  <User size={20} className="input-icon" />
+                  <Mail size={20} className="input-icon" />
                   <input
                     type="email"
-                    name="email" // <-- KORRIGIERT von "username" zu "email"
-                    placeholder="E-Mail"
-                    value={formData.email} // <-- KORRIGIERT von formData.username
-
+                    name="email"
+                    placeholder="E-Mail-Adresse"
+                    value={formData.email}
                     onChange={handleInputChange}
                     onKeyPress={handleKeyPress}
                     required
+                    autoComplete="email"
                   />
                 </div>
 
@@ -213,81 +186,73 @@ function Login() {
                     onChange={handleInputChange}
                     onKeyPress={handleKeyPress}
                     required
+                    autoComplete="current-password"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
                     className="password-toggle"
+                    aria-label={showPassword ? "Passwort verbergen" : "Passwort anzeigen"}
                   >
                     {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                   </button>
                 </div>
 
-
-                {/* Error Message */}
-                {error && (
-                  <div className="error-message">
-                    ❌ {error}
-                  </div>
-                )}
-
-                
-
                 {/* Remember Me & Forgot Password */}
                 <div className="form-options">
                   <label className="remember-me-checkbox">
-                    <input 
-                      type="checkbox" 
-                      checked={rememberMe}
-                      onChange={(e) => setRememberMe(e.target.checked)}
-                    />
-
+                    <input type="checkbox" name="rememberMe" />
                     <span>Angemeldet bleiben</span>
                   </label>
-                  <button
-                    type="button"
-                    onClick={() => setShowForgotPassword(true)}
-                    className="forgot-password-link"
-                  >
-                    Passwort vergessen?
-                  </button>
                 </div>
 
                 {/* Login Button */}
                 <button
-                  onClick={handleLogin}
+                  type="submit"
                   disabled={isLoading}
                   className="submit-button primary-button"
                 >
                   {isLoading ? (
                     <div className="spinner-container">
-                      <div className="spinner"></div>
+                      <Loader size={20} className="spinner" />
                       Anmelden...
                     </div>
                   ) : (
                     'Anmelden'
                   )}
                 </button>
-              </div>
+
+                {/* Forgot Password Link */}
+                <div className="form-footer">
+                  <button
+                    type="button"
+                    className="forgot-password-link"
+                    onClick={() => {
+                      setShowForgotPassword(true);
+                      setError('');
+                    }}
+                  >
+                    Passwort vergessen?
+                  </button>
+                </div>
+              </form>
             ) : (
               /* Forgot Password Form */
-              <div className="form-section forgot-password-form">
+              <form onSubmit={handleForgotPassword} className="form-section forgot-password-form">
                 {/* Email Field */}
                 <div className="input-group">
                   <Mail size={20} className="input-icon" />
                   <input
                     type="email"
-                    name="email"
+                    name="resetEmail"
                     placeholder="E-Mail-Adresse"
-
-                    value={formData.email || ""}
-
+                    value={formData.resetEmail}
                     onChange={handleInputChange}
                     onKeyPress={handleKeyPress}
                     required
+                    autoComplete="email"
                   />
                 </div>
-
 
                 {/* Error/Success Messages */}
                 {error && (
@@ -295,13 +260,6 @@ function Login() {
                     ❌ {error}
                   </div>
                 )}
-                
-                {successMessage && (
-                  <div className="success-message">
-                    {successMessage}
-                  </div>
-                )}
-
 
                 {/* Info Text */}
                 <div className="info-box">
@@ -313,50 +271,44 @@ function Login() {
                 {/* Buttons */}
                 <div className="button-group">
                   <button
-                    onClick={handleForgotPassword}
-
-                    disabled={isLoading || successMessage}
-
+                    type="submit"
+                    disabled={isLoading}
                     className="submit-button primary-button"
                   >
                     {isLoading ? (
                       <div className="spinner-container">
-                        <div className="spinner"></div>
+                        <Loader size={20} className="spinner" />
                         Senden...
                       </div>
-
-                    ) : successMessage ? (
-                      'Weiterleitung...'
                     ) : (
                       'E-Mail senden'
-
                     )}
                   </button>
                   
                   <button
-
+                    type="button"
                     onClick={() => {
                       setShowForgotPassword(false);
                       setError('');
-                      setSuccessMessage('');
+                      setFormData(prev => ({ ...prev, resetEmail: '' }));
                     }}
                     className="submit-button secondary-button"
-                    disabled={isLoading || successMessage}
+                    disabled={isLoading}
                   >
                     Zurück zum Login
                   </button>
 
                   {/* Link zur ausführlichen Seite */}
                   <button
+                    type="button"
                     onClick={() => navigate('/forgot-password')}
                     className="link-button"
-                    disabled={isLoading || successMessage}
+                    disabled={isLoading}
                   >
                     Zur ausführlichen Passwort-Zurücksetzen-Seite →
                   </button>
-
                 </div>
-              </div>
+              </form>
             )}
 
             {/* Footer */}
@@ -366,9 +318,9 @@ function Login() {
               </div>
               <p className="register-prompt">
                 Noch kein Konto? 
-                <a href="/register" className="register-link">
+                <Link to="/register" className="register-link">
                   Jetzt registrieren
-                </a>
+                </Link>
               </p>
             </div>
           </div>

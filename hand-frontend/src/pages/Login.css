@@ -15,6 +15,7 @@ body {
 /* Haupt-Wrapper für die gesamte Seite */
 .login-page-wrapper {
 
+
   min-height: 100vh;
   background: var(--bg-primary);
   position: relative;
@@ -59,6 +60,7 @@ body {
     transform: translate(-5%, -15%) rotate(-1deg);
   }
 
+
 }
 
 /* Haupt-Container für die Login-Box und zusätzliche Info */
@@ -93,8 +95,6 @@ body {
     text-decoration: none;
 
     background: rgba(0, 0, 0, 0.35);
-
-    background: rgba(255, 255, 255, 0.1);
 
     backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 255, 255, 0.2); 
@@ -517,10 +517,10 @@ body {
 
 .register-link {
 
-    color:  #DE887B; 
+    color:  #f8e8c3; 
     background-color: rgba(5, 0, 78, 0.6);
     border-radius: 24px;
-    padding: 3px 5px;
+    padding: 6px 10px;
 
     text-decoration: underline;
     font-weight: 600; 

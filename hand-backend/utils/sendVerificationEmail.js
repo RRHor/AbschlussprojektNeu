@@ -1,3 +1,4 @@
+
 import nodemailer from 'nodemailer';
 
 const transporter = nodemailer.createTransport({
@@ -10,12 +11,14 @@ const transporter = nodemailer.createTransport({
   }
 });
 
+
 // const sendVerificationEmail = async (email, code) => {
 //   //Hier würdest du z.B. nodemailer verwenden, um eine echte Email zu senden
 //   console.log(`Sende Verifizierungscode ${code} an ${email}`);
 //   //Simuliere Erfolg
 //   return { success: true };
 // };
+
 
 const sendVerificationEmail = async (email, code) => {
   const mailText = `Dein Bestätigungscode: ${code}`;
@@ -29,4 +32,4 @@ const sendVerificationEmail = async (email, code) => {
   return { success: true };
 };
 
-export default sendVerificationEmail;
+// export default sendVerificationEmail;

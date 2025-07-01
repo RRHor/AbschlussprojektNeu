@@ -6,7 +6,7 @@ const adSchema = new mongoose.Schema(
     description: { type: String, required: true },
     type: { 
       type: String, 
-      enum: ["biete", "suche", "tausche"], 
+      enum: ["verschenke", "suche", "tausche"], 
       required: true 
     }, // Art der Anzeige
     user: { 
