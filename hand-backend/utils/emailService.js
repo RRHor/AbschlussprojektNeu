@@ -21,7 +21,7 @@ const createTransporter = () => {
   }
 
   // Für Produktion: Echter E-Mail-Service
-  return nodemailer.createTransport({  // ← KORRIGIERT: createTransport (nicht createTransporter)
+  return nodemailer.createTransport({
     host: process.env.EMAIL_HOST,
     port: process.env.EMAIL_PORT || 587,
     secure: process.env.EMAIL_SECURE === 'true',

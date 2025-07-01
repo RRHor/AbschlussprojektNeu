@@ -13,24 +13,22 @@ router.get('/users/me', protect, async (req, res) => {
     // Password-Feld ausschließen und Existenz prüfen
     const user = await User.findById(req.user._id).select('-password');
     if (!user) {
-      return res.status(404).json({ message: 'Benutzer nicht gefunden' });
+      return res.status(404).json({ message: "User nicht gefunden" });
     }
     res.json(user);
   } catch (error) {
-    console.error('Get user error:', error);
+    console.error('Fehler in /users/me:', error);
     res.status(500).json({ message: "Serverfehler", error: error.message });
   }
 });
 
 /**
- * Einzelnen User abrufen (öffentlich - aber sicher!)
- * Gibt nur öffentliche Daten eines Users zurück
+ * Einzelnen User abrufen (öffentlich)
+ * Gibt die Daten eines Users anhand der ID zurück (ohne Passwort)
  */
 router.get('/users/:id', async (req, res) => {
   try {
-    // Nur öffentliche Felder zeigen (nickname und Stadtteil)
-    const user = await User.findById(req.params.id)
-      .select('nickname adress.district -_id');
+    const user = await User.findById(req.params.id).select('-password');
     if (!user) {
       return res.status(404).json({ message: "User nicht gefunden" });
     }
@@ -42,27 +40,24 @@ router.get('/users/:id', async (req, res) => {
 });
 
 /**
- * Userdaten aktualisieren (geschützt + Autorisierung)
- * Aktualisiert die Daten des Users mit der angegebenen ID
+ * Eigene Userdaten aktualisieren (geschützt)
+ * Aktualisiert die Daten des eingeloggten Users
  */
-router.put('/users/:id', protect, async (req, res) => {
+router.put('/users/me', protect, async (req, res) => {
   try {
-    // Sicherheit: Nur eigene Daten ändern (außer Admin)
-    if (req.user._id.toString() !== req.params.id && !req.user.isAdmin) {
-      return res.status(403).json({ message: 'Zugriff verweigert' });
-    }
+    const userId = req.user._id; // aus dem Token
+    const updateData = req.body;
 
-    const user = await User.findByIdAndUpdate(req.params.id, req.body, {
+    const user = await User.findByIdAndUpdate(userId, updateData, {
       new: true,
-      runValidators: true  // Mongoose-Validierung aktivieren
-    }).select("-password");
-    
+      runValidators: true,
+    }).select('-password');
     if (!user) {
       return res.status(404).json({ message: "User nicht gefunden" });
     }
     res.json(user);
   } catch (error) {
-    console.error('Update user error:', error);
+    console.error('Fehler beim Update:', error);
     res.status(500).json({ message: "Aktualisierung fehlgeschlagen", error: error.message });
   }
 });

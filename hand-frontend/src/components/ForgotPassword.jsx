@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import './ForgotPassword.css';
-import api from '../api';
+import api from '../api'; // <-- API-Client für Backend-Aufrufe
 
 const ForgotPassword = () => {
   const [step, setStep] = useState('email'); // 'email', 'verification', 'reset', 'success'
@@ -15,7 +15,6 @@ const ForgotPassword = () => {
 
   const handleInputChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
-    // Clear error when user starts typing
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: '' }));
     }
@@ -47,7 +46,6 @@ const ForgotPassword = () => {
 
     setIsLoading(true);
     try {
-      // HIER: Ändere die URL von '/auth/password-reset-request' zu '/auth/forgot-password'
       await api.post('/auth/forgot-password', { email: formData.email });
       setStep('verification');
     } catch (error) {
@@ -73,7 +71,7 @@ const ForgotPassword = () => {
     }
 
     setIsLoading(true);
-    // Simulate API call
+    // Hier ggf. API-Call zur Code-Prüfung einbauen, falls Backend das unterstützt
     setTimeout(() => {
       setIsLoading(false);
       setStep('reset');
@@ -119,7 +117,6 @@ const ForgotPassword = () => {
   const resendCode = async () => {
     setIsLoading(true);
     try {
-      // HIER: Auch hier die URL ändern
       await api.post('/auth/forgot-password', { email: formData.email });
     } catch (error) {
       console.error('Fehler beim erneuten Senden:', error);
