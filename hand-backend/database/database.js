@@ -2,14 +2,40 @@ import mongoose from 'mongoose';
 
 const connectDB = async () => {
   try {
-    await mongoose.connect(process.env.MONGODB_URL, {
-    //   useNewUrlParser: true, wir nicht mehr benötigt
-    //   useUnifiedTopology: true,
+    console.log('🔄 Verbinde mit MongoDB...');
+    console.log('📍 MongoDB URI:', process.env.MONGO_URI ? 'URI vorhanden' : 'URI FEHLT!');
+    
+    if (!process.env.MONGO_URI) {
+      throw new Error('MONGO_URI ist nicht in der .env-Datei definiert');
+    }
+    
+    const conn = await mongoose.connect(process.env.MONGO_URI);
+    
+    console.log('✅ MongoDB verbunden:', conn.connection.host);
+    console.log('📊 Database Name:', conn.connection.name);
+    
+    // Connection Event Listeners
+    mongoose.connection.on('error', (err) => {
+      console.error('❌ MongoDB Verbindungsfehler:', err);
     });
-    console.log('MongoDB connected successfully');
+    
+    mongoose.connection.on('disconnected', () => {
+      console.log('⚠️ MongoDB Verbindung getrennt');
+    });
+    
   } catch (error) {
-    console.error('MongoDB connection failed:', error.message);
-    process.exit(1); // Exit the process with failure
+    console.error('❌ MongoDB Verbindungsfehler:', error.message);
+    process.exit(1);
   }
-}
+};
+
 export default connectDB;
+
+// server.js - Nach connectDB() hinzufügen:
+
+connectDB();
+
+// Mongoose Debug-Modus aktivieren
+mongoose.set('debug', true);
+
+console.log('🔧 Mongoose Debug-Modus aktiviert');

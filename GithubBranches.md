@@ -12,7 +12,7 @@ git add .
 git commit -m "Beschreibung der Änderungen"
 ```
 
-## 3. Branch mit Remote-Repository verknüpfen (nur 1mal  '-u origin <branchname>' notwendig)
+## 3. Branch mit Remote-Repository verknüpfen (nur 1mal  '-u' notwendig)
 ```bash
 git push -u origin <branchname>
 ```

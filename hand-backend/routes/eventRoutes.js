@@ -5,19 +5,46 @@ import Event from '../models/eventModel.js';
 const router = express.Router();
 
 /**
- * Alle Events abrufen
- * Gibt eine Liste aller Events mit Organisator- und Teilnehmernamen zurück
+ * Alle Events abrufen ODER suchen
+ * Beispiel: /api/events oder /api/events?q=nachbarschaft
  */
 router.get('/', async (req, res) => {
-  const events = await Event.find()
+  const { q } = req.query;
+  let filter = {};
+  
+  if (q) {
+    filter = {
+      $or: [
+        { title: { $regex: q, $options: 'i' } },
+        { description: { $regex: q, $options: 'i' } },
+        { location: { $regex: q, $options: 'i' } },
+        { tags: { $regex: q, $options: 'i' } }
+      ]
+    };
+  }
+  
+  let events = await Event.find(filter)
     .populate('organizer', 'nickname')
     .populate('participants', 'nickname');
+
+  // Zusätzliche Filterung nach Usernamen (falls q gesetzt)
+  if (q) {
+    const regex = new RegExp(q, 'i');
+    events = events.filter(event =>
+      regex.test(event.organizer?.nickname || '') ||
+      event.participants.some(user => regex.test(user.nickname || '')) ||
+      regex.test(event.title) ||
+      regex.test(event.description) ||
+      regex.test(event.location) ||
+      (event.tags && event.tags.some(tag => regex.test(tag)))
+    );
+  }
+
   res.json(events);
 });
 
 /**
  * Einzelnes Event abrufen
- * Gibt ein Event anhand der ID zurück, inkl. Organisator und Teilnehmer
  */
 router.get('/:id', async (req, res) => {
   const event = await Event.findById(req.params.id)
@@ -29,7 +56,6 @@ router.get('/:id', async (req, res) => {
 
 /**
  * Neues Event erstellen (geschützt)
- * Nur eingeloggte User können Events erstellen
  */
 router.post('/', protect, async (req, res) => {
   try {
@@ -43,7 +69,6 @@ router.post('/', protect, async (req, res) => {
 
 /**
  * Event bearbeiten (geschützt)
- * Nur eingeloggte User können Events bearbeiten
  */
 router.put('/:id', protect, async (req, res) => {
   try {
@@ -57,7 +82,6 @@ router.put('/:id', protect, async (req, res) => {
 
 /**
  * Event löschen (geschützt)
- * Nur eingeloggte User können Events löschen
  */
 router.delete('/:id', protect, async (req, res) => {
   const event = await Event.findByIdAndDelete(req.params.id);
@@ -67,7 +91,6 @@ router.delete('/:id', protect, async (req, res) => {
 
 /**
  * An Event teilnehmen (geschützt)
- * Fügt den eingeloggten User als Teilnehmer zum Event hinzu
  */
 router.post('/:id/join', protect, async (req, res) => {
   const event = await Event.findById(req.params.id);
@@ -78,53 +101,5 @@ router.post('/:id/join', protect, async (req, res) => {
   }
   res.json({ message: 'Teilnahme bestätigt', event });
 });
-
-/**
- * Suche nach Events mit Titel, Beschreibung, Ort oder Tags.
- * Beispiel: /api/events?q=nachbarschaft
- * Die Suche ist case-insensitive und durchsucht auch Organisator- und Teilnehmernamen.
- */
-router.get('/', async (req, res) => {
-  const { q } = req.query;
-  let filter = {};
-  if (q) {
-    filter = {
-      $or: [
-        { title: { $regex: q, $options: 'i' } },
-        { description: { $regex: q, $options: 'i' } },
-        { location: { $regex: q, $options: 'i' } },
-        { tags: { $regex: q, $options: 'i' } }
-      ]
-    };
-  }
-  let events = await Event.find(filter)
-    .populate('organizer', 'name nickname')
-    .populate('participants', 'name nickname');
-
-  // Nach Usernamen filtern, falls q gesetzt ist
-  if (q) {
-    const regex = new RegExp(q, 'i');
-    events = events.filter(event =>
-      regex.test(event.organizer?.name || '') ||
-      regex.test(event.organizer?.nickname || '') ||
-      event.participants.some(user =>
-        regex.test(user.name || '') || regex.test(user.nickname || '')
-      ) ||
-      regex.test(event.title) ||
-      regex.test(event.description) ||
-      regex.test(event.location) ||
-      (event.tags && event.tags.some(tag => regex.test(tag)))
-    );
-  }
-
-  res.json(events);
-});
-
-/*
-Hinweise:
-- Die Suche ist case-insensitive.
-- Du kannst nach Titel, Beschreibung, Ort, Tags, Organisator- und Teilnehmernamen suchen.
-- Beispiel: /api/events?q=hilfe findet alle Events, die "hilfe" im Titel, in der Beschreibung, im Ort, in den Tags oder bei den Usernamen haben.
-*/
 
 export default router;

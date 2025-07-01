@@ -5,12 +5,8 @@ const userSchema = new mongoose.Schema({
     nickname: {
         type: String,
         unique: true,
-        sparse: true // falls nicht jeder User einen Nickname hat
+        sparse: true, // falls nicht jeder User einen Nickname hat
     },
-    // name: {
-    //     type: String,
-    //     required: true,
-    // },
     email: {
         type: String,
         required: true,
@@ -20,15 +16,19 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
-    adress: {
+
+    addresses: [
+         {
         street: { type: String, required: true },
         city: { type: String, required: true },
         district: { type: String, required: true },
         zipCode: { type: Number, required: true },
-        district: { type: String }, // optional
+        //district: { type: String }, // optional
         firstName: { type: String }, // optional
         lastName: { type: String },  // optional
-    },
+        }
+    ],
+
     isAdmin: {
         type: Boolean,
         default: false,
@@ -44,19 +44,14 @@ const userSchema = new mongoose.Schema({
     verificationCode: {
         type: Number,
     },
-    // Für das Ändern des Passworts
-    resetToken: {
-        type: String,
-    },
-    resetTokenExpires: {
-        type: Date,
-    },
+    // Reset-Code für Passwort-Reset
+    resetCode: { type: String, required: false, default: null },
+    resetCodeExpires: { type: Date, default: null },
 }, {
     timestamps: true,
 });
 
-
-// Password hashing middleware
+// Password hashing Middleware
 userSchema.pre("save", async function (next) {
     if (!this.isModified("password")) {
         return next();

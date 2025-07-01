@@ -1,7 +1,9 @@
-import dotenv from "dotenv";
+
+// Importiere andere Module NACH dotenv.config()
 import express from "express";
 import cors from "cors";
 import cookieParser from 'cookie-parser';
+import mongoose from 'mongoose';
 
 import connectDB from './database/database.js';
 import authRoutes from './routes/authRoutes.js';
@@ -12,73 +14,66 @@ import adRoutes from './routes/adRoutes.js';
 import eventRoutes from './routes/eventRoutes.js';
 import commentRoutes from './routes/commentRoutes.js';
 import adressRoutes from './routes/adressRoutes.js';
-import testEmailRoutes from './routes/testEmailRoutes.js'
+import testEmailRoutes from './routes/testEmailRoutes.js';
 import postRoutes from './routes/postRoutes.js';
 import passwordRequestRoute from './routes/passwordResetRequestRoute.js';
 import passwordResetRoutes from './routes/passwordResetRoute.js';
+import publicUserRoutes from './routes/publicUserRoutes.js';
+import forgotRoute from './routes/forgotPasswordRoute.js'
+import loginRoutes from './routes/loginRoutes.js';
+import exchangeRoutes from './routes/exchangeRoutes.js';
 
 
 
 // Lade Umgebungsvariablen aus .env-Datei
 dotenv.config();
 
+
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 4000;
 
 // Stelle Verbindung zur Datenbank her
 connectDB();
 
-// Middleware für CORS (Cross-Origin Resource Sharing)
-app.use(cors());
+// Mongoose Debug-Modus aktivieren
+mongoose.set('debug', true);
 
-// Middleware zum Parsen von JSON-Bodies
+// Middleware
+app.use(cors());
 app.use(express.json());
 
-// Middleware zum Parsen von Cookies
-app.use(cookieParser());
-
-// Authentifizierungs-Routen (Registrierung, Login, Verifizierung)
+// Authentifizierungs-/Login-/Passwort-Routen
+app.use('/api/auth', loginRoutes);
 app.use('/api/auth', authRoutes);
+app.use('/api/auth', verifyRoutes);
+app.use('/api/auth', passwordRequestRoute);
+app.use('/api/auth', passwordResetRoutes);
+app.use('/api/auth', forgotRoute);
+
 
 // Test-Route zum Versenden von E-Mails
 app.use('/api/test-email', testEmailRoutes);
 
-// Verifizierungs-Routen (z.B. /api/auth/verify)
-app.use('/api', verifyRoutes);
-
-// User-Routen (z.B. /api/users/me, /api/users/:id)
+// User-Routen
 app.use('/api', userRoutes);
-
-// Blog-Routen (z.B. /api/blog)
-app.use('/api/blogs', blogRoutes);
-
-// Kleinanzeigen-Routen (z.B. /api/ads)
-app.use('/api/ads', adRoutes);
-
-// Event-Routen (z.B. /api/events)
-app.use('/api/events', eventRoutes);
-
-// Kommentar-Routen (z.B. /api/comments)
-app.use('/api/comments', commentRoutes);
-
-// Adress-Routen (z.B. /api/users/me/adress)
+app.use('/api', publicUserRoutes);
 app.use('/api', adressRoutes);
 
-// Post-Routen (z.B. /api/posts)
+// Content-Routen
+app.use('/api/blogs', blogRoutes);
+app.use('/api/ads', adRoutes);
+app.use('/api/events', eventRoutes);
 app.use('/api/posts', postRoutes);
+app.use('/api/comments', commentRoutes);
+app.use('/api/exchange', exchangeRoutes);
 
-// Passwort-Zurücksetzen-Routen (z.B. /api/password-reset)
-app.use('/api/auth', passwordRequestRoute);
 
-app.use('/api/auth', passwordResetRoutes);
-
-// Root-Route (Startseite)
 app.get('/', (req, res) => {
   res.send('Willkommen im "Hand in Hand"-Backend!');
 });
 
 // Starte den Server
 app.listen(PORT, () => {
-  console.log(`Server läuft auf http://localhost:${PORT}`);
+  console.log(`🚀 Server läuft auf http://localhost:${PORT}`);
 });
 
