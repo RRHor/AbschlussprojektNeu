@@ -144,10 +144,11 @@ router.get('/verify/:token', async (req, res) => {
     res.json({
       success: true,
       message: isNewUser 
-        ? 'E-Mail erfolgreich verifiziert! Bitte loggen Sie sich ein.' 
+        ? 'E-Mail erfolgreich verifiziert! Willkommen bei Hand in Hand!' 
         : 'E-Mail erfolgreich verifiziert! Willkommen zurück!',
       isNewUser, // ← Wichtigste Info für Frontend-Routing
       wasAlreadyVerified,
+      token: jwtToken,
       user: {
         id: user._id,
         username: user.username,
@@ -232,6 +233,5 @@ router.post('/resend-verification', async (req, res) => {
     });
   }
 });
-
 
 export default router;

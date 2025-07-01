@@ -38,7 +38,30 @@ function Login() {
       if (result.success) {
         navigate('/profile', { replace: true });
       } else {
-        setError(result.message || 'Login fehlgeschlagen');
+        // NEU: Spezielle Behandlung für unverifizierte E-Mails
+        if (result.requiresVerification) {
+          setError(
+            <>
+              {result.message}
+              <br />
+              <button 
+                onClick={() => handleResendVerification(result.email)}
+                style={{ 
+                  background: 'none', 
+                  border: 'none', 
+                  color: '#ff6b6b', 
+                  textDecoration: 'underline',
+                  cursor: 'pointer',
+                  marginTop: '10px'
+                }}
+              >
+                Verifizierungs-E-Mail erneut senden
+              </button>
+            </>
+          );
+        } else {
+          setError(result.message || 'Login fehlgeschlagen');
+        }
       }
     } catch (error) {
       console.error('Login error:', error);
@@ -85,6 +108,15 @@ function Login() {
       navigate(-1);
     } else {
       navigate('/');
+    }
+  };
+
+  const handleResendVerification = async (email) => {
+    try {
+      const response = await api.post('/auth/resend-verification', { email });
+      alert('Neue Verifizierungs-E-Mail wurde gesendet!');
+    } catch (error) {
+      alert('Fehler beim Senden der E-Mail.');
     }
   };
 

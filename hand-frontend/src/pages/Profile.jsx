@@ -18,6 +18,7 @@ const Profile = () => {
     city: '',
     zipCode: '',
     street: '',
+    state: '',
     profileImage: null
   });
   const [editData, setEditData] = useState({ ...profileData });
@@ -37,17 +38,23 @@ const Profile = () => {
       try {
         setIsLoading(true);
         const response = await api.get('/auth/users/me');
+        console.log('🔍 Raw API Response:', response.data);
+        
+        // Moderne Datenstruktur (address als Objekt)
         const formattedData = {
           username: response.data.nickname || '',
           email: response.data.email || '',
-          firstName: response.data.adress?.[0]?.firstName || '',
-          lastName: response.data.adress?.[0]?.lastName || '',
-          district: response.data.adress?.[0]?.district || '',
-          city: response.data.adress?.[0]?.city || '',
-          zipCode: response.data.adress?.[0]?.zipCode || '',
-          street: response.data.adress?.[0]?.street || '',
+          firstName: response.data.firstName || '',
+          lastName: response.data.lastName || '',
+          state: response.data.address?.state || '',
+          city: response.data.address?.city || '',
+          zipCode: response.data.address?.postalCode || '',
+          street: response.data.address?.street || '',
+          district: response.data.address?.district || '',
           profileImage: response.data.profileImage || null
         };
+        
+        console.log('📋 Formatted Data:', formattedData);
         setProfileData(formattedData);
         setEditData(formattedData);
         setError(null);
@@ -93,30 +100,23 @@ const Profile = () => {
   const handleSave = async () => {
     try {
       setIsSaving(true);
+      
+      // Moderne Datenstruktur für Backend
       const updateData = {
         nickname: editData.username,
         email: editData.email,
+        firstName: editData.firstName,
+        lastName: editData.lastName,
+        address: {
+          street: editData.street,
+          city: editData.city,
+          state: editData.state,
+          postalCode: editData.zipCode,
+          district: editData.district
+        }
       };
 
-      if (
-        editData.firstName ||
-        editData.lastName ||
-        editData.street ||
-        editData.city ||
-        editData.district ||
-        editData.zipCode
-      ) {
-        updateData.adress = [
-          {
-            firstName: editData.firstName,
-            lastName: editData.lastName,
-            street: editData.street,
-            city: editData.city,
-            district: editData.district,
-            zipCode: editData.zipCode ? parseInt(editData.zipCode, 10) : null
-          }
-        ];
-      }
+      console.log('💾 Sending update data:', updateData);
 
       const response = await api.put('/auth/users/me', updateData);
 
@@ -457,16 +457,16 @@ const Profile = () => {
                     </div>
                   </div>
                   <div className="input-group">
-                    <label>Ortsteil</label>
+                    <label>Bundesland</label>
                     <div className="input-container">
                       {isEditing ? (
                         <input
                           type="text"
-                          value={editData.district}
-                          onChange={(e) => handleInputChange('district', e.target.value)}
+                          value={editData.state}
+                          onChange={(e) => handleInputChange('state', e.target.value)}
                         />
                       ) : (
-                        <div className="input-display">{profileData.district || 'Nicht angegeben'}</div>
+                        <div className="input-display">{profileData.state || 'Nicht angegeben'}</div>
                       )}
                     </div>
                   </div>

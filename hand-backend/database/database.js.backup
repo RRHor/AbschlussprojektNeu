@@ -30,3 +30,12 @@ const connectDB = async () => {
 };
 
 export default connectDB;
+
+// server.js - Nach connectDB() hinzufügen:
+
+connectDB();
+
+// Mongoose Debug-Modus aktivieren
+mongoose.set('debug', true);
+
+console.log('🔧 Mongoose Debug-Modus aktiviert');
