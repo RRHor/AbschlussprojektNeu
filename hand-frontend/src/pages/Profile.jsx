@@ -41,12 +41,12 @@ const Profile = () => {
         const formattedData = {
           username: response.data.nickname || '',
           email: response.data.email || '',
-          firstName: response.data.adress?.[0]?.firstName || '',
-          lastName: response.data.adress?.[0]?.lastName || '',
-          state: response.data.adress?.[0]?.state || '',
-          city: response.data.adress?.[0]?.city || '',
-          zip: response.data.adress?.[0]?.zip || '',
-          street: response.data.adress?.[0]?.street || '',
+          firstName: response.data.firstName || '',              // ✅ KORRIGIERT!
+          lastName: response.data.lastName || '',                // ✅ KORRIGIERT!
+          state: response.data.address?.state || '',             // ✅ KORRIGIERT!
+          city: response.data.address?.city || '',               // ✅ KORRIGIERT!
+          zip: response.data.address?.postalCode || '',          // ✅ KORRIGIERT!
+          street: response.data.address?.street || '',           // ✅ KORRIGIERT!
           profileImage: response.data.profileImage || null
         };
         
@@ -96,29 +96,18 @@ const Profile = () => {
     try {
       setIsSaving(true);
       
-      // DEBUG: Prüfe die tatsächliche API-URL
-      console.log('🔍 API Base URL:', api.defaults.baseURL);
-      
-      const token = localStorage.getItem('token');
-      console.log('🔍 Frontend Token:', token ? 'VORHANDEN' : 'NICHT VORHANDEN');
-      console.log('🔍 Token Inhalt:', token);
-      console.log('🔍 AuthContext User:', user);
-      
       const updateData = {
         nickname: editData.username,
         email: editData.email,
-      };
-
-      if (editData.firstName || editData.lastName || editData.street || editData.city) {
-        updateData.adress = [{
-          firstName: editData.firstName,
-          lastName: editData.lastName,
+        firstName: editData.firstName,
+        lastName: editData.lastName,
+        address: {
           street: editData.street,
           city: editData.city,
           state: editData.state,
-          zip: editData.zip ? parseInt(editData.zip, 10) : null
-        }];
-      }
+          postalCode: editData.zip
+        }
+      };
 
       console.log('🔍 Update Data:', updateData);
       

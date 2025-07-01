@@ -10,6 +10,7 @@ import Register from './pages/Register';
 import Profile from './pages/Profile';
 import Help from './pages/Help'; 
 import ForgotPassword from './components/ForgotPassword';
+import VerifyEmail from './components/VerifyEmail'; // ← Geändert von ./pages zu ./components
 import Exchange from './pages/Exchange/Exchange.jsx';
 import Blog from './pages/Blog';
 import Events from './pages/Events';
@@ -22,19 +23,32 @@ function App() {
         <Navbar />
         <div className="container">
           <Routes>
+            {/* Hauptseiten */}
             <Route path="/" element={<LandingPage />} /> 
+            <Route path="/home" element={<LandingPage />} />
+            
+            {/* Authentifizierung */}
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
-            <Route path="/help" element={<Help />} />
-            <Route path="/profile" element={<Profile />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
-            <Route path="/home" element={<LandingPage />} /> 
+            
+            {/* E-Mail Verifizierung */}
+            <Route path="/verify/:token" element={<VerifyEmail />} />
+            <Route path="/verify-email/:token" element={<VerifyEmail />} />
+            
+            {/* User-Bereich */}
+            <Route path="/profile" element={<Profile />} />
+            
+            {/* Features */}
             <Route path="/exchange/*" element={<Exchange />} />
             <Route path="/blog" element={<Blog />} />
             <Route path="/events" element={<Events />} />
+            <Route path="/events/:id" element={<EventDetail />} />
             
-           <Route path="/events/:id" element={<EventDetail />} />
+            {/* Hilfe */}
+            <Route path="/help" element={<Help />} />
             
+            {/* Fallback */}
             <Route path="*" element={<div>Seite nicht gefunden</div>} />
           </Routes>
         </div>

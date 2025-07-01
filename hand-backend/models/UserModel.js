@@ -4,46 +4,69 @@ import bcrypt from "bcryptjs";
 // User-Schema Definition
 const userSchema = new mongoose.Schema(
   {
-    // Name des Users (Pflichtfeld)
-    nickname: { type: String, required: true, unique: true }, // unique hinzugefügt
+    // Benutzername (Pflichtfeld, eindeutig, 3-20 Zeichen)
+    username: {
+      type: String,
+      required: [true, "Benutzername ist erforderlich"],
+      unique: true,
+      trim: true,
+      minlength: [3, "Benutzername muss mindestens 3 Zeichen haben"],
+      maxlength: [20, "Benutzername darf maximal 20 Zeichen haben"],
+    },
 
-    // Array von Adress-Objekten für mehrere Wohnsitze
-    adress: [
-      {
-        firstName: { type: String, required: true },
-        lastName: { type: String, required: true },
-        street: { type: String, required: true },   // Straße
-        city: { type: String, required: true },     // Stadt
-        district: { type: String, required: true }, // Stadtteil/Bezirk
-        state: { type: String, required: true },    // Bundesland
-        zip: { type: Number, required: true },      // Postleitzahl
-      }
-    ],
+    // Nickname (Pflichtfeld, maximal 30 Zeichen)
+    nickname: {
+      type: String,
+      required: [true, "Nickname ist erforderlich"],
+      trim: true,
+      maxlength: [30, "Nickname darf maximal 30 Zeichen haben"],
+    },
 
-    // E-Mail-Adresse (muss eindeutig sein)
-    email: { type: String, required: true, unique: true },
+    // E-Mail-Adresse (Pflichtfeld, eindeutig, validieren)
+    email: {
+      type: String,
+      required: [true, "E-Mail ist erforderlich"],
+      unique: true,
+      lowercase: true,
+      match: [
+        /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/,
+        "Bitte gültige E-Mail eingeben",
+      ],
+    },
 
-    // Passwort (wird gehasht gespeichert)
-    password: { type: String, required: true },
+    // Passwort (Pflichtfeld, mindestens 6 Zeichen)
+    password: {
+      type: String,
+      required: [true, "Passwort ist erforderlich"],
+      minlength: [6, "Passwort muss mindestens 6 Zeichen haben"],
+    },
 
-    // Admin-Status (Standard: false)
-    isAdmin: { type: Boolean, default: false },
+    // Verifizierungsstatus (Standard: false)
+    isVerified: { type: Boolean, default: false },
 
-    // Aktivitätsstatus (Standard: true)
-    isActive: { type: Boolean, default: true },
+    // Verifizierungstoken und Ablaufdatum
+    verificationToken: String,
+    verificationTokenExpires: Date,
 
-    // E-Mail-Verifizierungsstatus (Standard: false)
-    isVerify: { type: Boolean, default: false },
+    // NEU: Tracking für erste Verifizierung
+    firstVerifiedAt: { type: Date, default: null },
 
-    // Verifizierungscode für E-Mail-Bestätigung (optional)
-    verificationCode: { type: String, required: false, default: null },
-
-    // Ablaufdatum des Verifizierungscodes (optional)
-    verificationCodeExpires: { type: Date, default: null },
+    // NEU: Tracking wann User erstellt wurde
+    registeredAt: { type: Date, default: Date.now },
 
     // Reset-Code für Passwort-Reset
-    resetCode: { type: String, required: false, default: null },
-    resetCodeExpires: { type: Date, default: null },
+    resetPasswordToken: String,
+    resetPasswordExpires: Date,
+
+    // Profil-Felder
+    firstName: String,
+    lastName: String,
+    birthdate: Date,
+    address: {
+      street: String,
+      city: String,
+      postalCode: String,
+    },
   },
   { timestamps: true } // Erstellt automatisch createdAt und updatedAt Felder
 );
@@ -68,5 +91,5 @@ userSchema.methods.matchPassword = async function (enteredPassword) {
 };
 
 // User-Modell exportieren (verhindert Mehrfach-Registrierung bei Hot-Reload)
-const User = mongoose.models.User || mongoose.model('User', userSchema);
+const User = mongoose.models.User || mongoose.model("User", userSchema);
 export default User;

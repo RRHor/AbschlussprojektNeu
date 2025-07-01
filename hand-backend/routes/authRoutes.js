@@ -48,80 +48,107 @@ const validateAddress = async (adress) => {
  * - Sendet eine Verifizierungs-E-Mail
  */
 router.post('/register', async (req, res) => {
-    try {
-        console.log("🔥 VOLLSTÄNDIGER REGISTER-REQUEST:", req.body);
-        console.log("🔍 Nickname:", req.body.nickname);
-        console.log("🔍 Email:", req.body.email);
-        console.log("🔍 FirstName:", req.body.firstName);
-        console.log("🔍 LastName:", req.body.lastName);
-        console.log("🔍 Adress Object:", req.body.adress);
-        
-        const { nickname, email, password, adress, firstName, lastName } = req.body;
-        
-        // Prüfen, ob alle Daten vorhanden sind
-        console.log("🔍 Destructured firstName:", firstName);
-        console.log("🔍 Destructured lastName:", lastName);
-        
-        // Prüfen, ob Nickname oder E-Mail schon vergeben sind
-        const existingUser = await User.findOne({ $or: [{ email }, { nickname }] });
-        if (existingUser) {
-            return res.status(400).json({ message: 'E-Mail oder Nickname bereits vergeben' });
-        }
+  try {
+    console.log('🔥 VOLLSTÄNDIGER REGISTER-REQUEST:', req.body);
 
-        // OPTIONALE Adress-Validierung - temporär deaktiviert
-        const isValidAddress = true; // await validateAddress(adress);
-        if (!isValidAddress) {
-            return res.status(400).json({ 
-                message: 'Die eingegebene Adresse konnte nicht gefunden werden. Bitte überprüfen Sie Ihre Eingabe.',
-                hint: 'Falls Sie sicher sind, dass die Adresse korrekt ist, kontaktieren Sie den Support.'
-            });
-        }
+    const {
+      nickname,
+      email,
+      password,
+      firstName,
+      lastName,
+      adress
+    } = req.body;
 
-        // Prüfen, ob schon ein Admin existiert (erster User wird Admin)
-        const adminExists = await User.findOne({ isAdmin: true });
-
-        // Verifizierungscode generieren (6-stellig, als String)
-        const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
-
-        // Neuen User anlegen
-        const { street, city, state, zip, district } = adress || {};
-
-        const newUser = new User({
-            nickname,
-            email,
-            password,
-            adress: [{  // ARRAY mit einem Adress-Objekt
-                firstName: firstName || '', // Aus req.body
-                lastName: lastName || '',   // Aus req.body
-                street: street || '',
-                city: city || '',
-                district: district || city || '', // Falls district nicht vorhanden
-                state: state || '',
-                zip: zip || 0
-            }],
-            isVerify: false,
-            verificationCode,
-            isAdmin: !adminExists,
-        });
-        await newUser.save();
-
-        // Verifizierungs-E-Mail senden
-        await sendVerificationEmail(newUser.email, newUser.verificationCode, newUser._id);
-
-        // Erfolgreiche Registrierung
-        res.status(201).json({
-            message: 'User erfolgreich erstellt',
-            _id: newUser._id,
-            nickname: newUser.nickname,
-            email: newUser.email,
-            adress: newUser.adress,
-            isAdmin: newUser.isAdmin,
-            isVerify: newUser.isVerify
-        });
-    } catch (error) {
-        console.error('Register error:', error);
-        res.status(500).json({ message: 'Serverfehler' });
+    // Validierung...
+    if (!nickname || !email || !password) {
+      return res.status(400).json({
+        success: false,
+        message: 'Nickname, E-Mail und Passwort sind erforderlich'
+      });
     }
+
+    // Prüfe ob User bereits existiert...
+    const existingUser = await User.findOne({
+      $or: [{ email }, { nickname }, { username: nickname }]
+    });
+
+    if (existingUser) {
+      return res.status(400).json({
+        success: false,
+        message: 'E-Mail oder Nickname bereits registriert'
+      });
+    }
+
+    // Verifizierungstoken generieren
+    const verificationToken = jwt.sign(
+      { email, nickname },
+      process.env.JWT_SECRET,
+      { expiresIn: '24h' }
+    );
+
+    console.log('🎫 Verifizierungstoken generiert:', verificationToken);
+
+    // User erstellen
+    const user = new User({
+      username: nickname,
+      nickname: nickname,
+      email: email,
+      password: password,
+      firstName: firstName,
+      lastName: lastName,
+      address: adress ? {
+        street: adress.street,
+        city: adress.city,
+        postalCode: adress.zip?.toString(),
+        district: adress.district,
+        state: adress.state
+      } : undefined,
+      isVerified: false,
+      verificationToken: verificationToken,
+      verificationTokenExpires: Date.now() + 24 * 60 * 60 * 1000,
+      registeredAt: new Date()
+    });
+
+    await user.save();
+    console.log('💾 User gespeichert mit ID:', user._id);
+
+    // E-MAIL VERSENDEN - AKTIV!
+    console.log('📧 Starte E-Mail-Versand...');
+    try {
+      const emailResult = await sendVerificationEmail(email, verificationToken);
+      console.log('📧 E-Mail-Service Ergebnis:', emailResult);
+      
+      if (emailResult.success) {
+        console.log('✅ Verifizierungs-E-Mail erfolgreich "gesendet"');
+      } else {
+        console.log('⚠️ E-Mail-Versand fehlgeschlagen:', emailResult.message);
+      }
+    } catch (emailError) {
+      console.error('❌ E-Mail-Service Fehler:', emailError);
+    }
+    console.log('📧 E-Mail-Versand-Prozess abgeschlossen');
+
+    res.status(201).json({
+      success: true,
+      message: 'Registrierung erfolgreich! Prüfen Sie die Backend-Console für den Verifizierungslink.',
+      verificationToken: verificationToken, // Nur für Development!
+      user: {
+        id: user._id,
+        username: user.username,
+        nickname: user.nickname,
+        email: user.email,
+        isVerified: user.isVerified
+      }
+    });
+
+  } catch (error) {
+    console.error('❌ Register error:', error);
+    res.status(400).json({
+      success: false,
+      message: error.message || 'Fehler bei der Registrierung'
+    });
+  }
 });
 
 /**
@@ -136,41 +163,36 @@ router.post("/login", async (req, res) => {
     const user = await User.findOne({ email });
 
     if (!user) {
-      // Konsistente Fehlermeldung (Security Best Practice)
       return res.status(401).json({ message: "Ungültige E-Mail oder Passwort" });
     }
 
     const isMatch = await user.matchPassword(password);
     if (!isMatch) {
-      // Gleiche Fehlermeldung wie oben
       return res.status(401).json({ message: "Ungültige E-Mail oder Passwort" });
     }
 
-    // Token-Gültigkeit je nach rememberMe (dein Feature beibehalten)
+    // NEU: Prüfe E-Mail-Verifizierung
+    if (!user.isVerified) {
+      return res.status(401).json({ 
+        message: "Bitte verifizieren Sie zuerst Ihre E-Mail-Adresse",
+        requiresVerification: true,
+        email: user.email
+      });
+    }
+
+    // Token generieren...
     const expiresIn = rememberMe ? "30d" : "1d";
-    
-    // Mehr Infos im Token (Brians Ansatz)
     const token = jwt.sign(
       { 
-        id: user._id,           // Für Kompatibilität mit deinem Middleware
-        _id: user._id,          // Zusätzlich für Brians Stil
-        nickname: user.nickname // Nützlich für Frontend
+        id: user._id,
+        _id: user._id,
+        nickname: user.nickname
       }, 
       process.env.JWT_SECRET, 
       { expiresIn }
     );
 
-    // Cookie-Lebensdauer anpassen (dein Feature)
-    const maxAge = rememberMe ? 30 * 24 * 60 * 60 * 1000 : 24 * 60 * 60 * 1000;
-
-    // Cookie setzen (verbesserte Konfiguration)
-    res.cookie('token', token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production', // Dein dynamischer Ansatz
-      sameSite: 'strict',
-      maxAge
-    });
-
+    // Rest bleibt gleich...
     res.json({
       message: "Login erfolgreich",
       token,
@@ -178,15 +200,14 @@ router.post("/login", async (req, res) => {
         _id: user._id,
         nickname: user.nickname,
         email: user.email,
-        firstName: user.adress?.[0]?.firstName || '', // Aus adress-Array
-        lastName: user.adress?.[0]?.lastName || '',   // Aus adress-Array
-        adress: user.adress,
-        isAdmin: user.isAdmin,
-        isVerify: user.isVerify,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        address: user.address,
+        isVerified: user.isVerified
       },
     });
   } catch (error) {
-    console.error('Login error:', error); // Besseres Error Logging
+    console.error('Login error:', error);
     res.status(500).json({ message: "Serverfehler" });
   }
 });

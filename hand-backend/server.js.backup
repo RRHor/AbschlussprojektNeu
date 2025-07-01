@@ -53,20 +53,6 @@ app.use(cors());
 app.use(express.json());
 app.use(cookieParser());
 
-//Request-Logging
-app.use((req, res, next) => {
-  console.log(`📥 ${req.method} ${req.url}`);
-  console.log('📋 Body:', req.body);
-  next();
-});
-
-// NEU: Request-Logging
-app.use((req, res, next) => {
-  console.log(`📥 ${req.method} ${req.url}`);
-  console.log('📋 Body:', req.body);
-  next();
-});
-
 // Authentifizierungs-Routen
 app.use('/api/auth', authRoutes);
 app.use('/api/auth', verifyRoutes);
