@@ -7,55 +7,78 @@ import User from '../models/userSchema.js';
 const router = express.Router();
 
 /**
- * POST /api/auth/verify
- * Verifiziert einen User anhand des Codes (z.B. aus dem Frontend-Formular)
+ * POST /verify
+ * Verifiziert einen User anhand des Codes
  */
-router.post('/auth/verify', async (req, res) => {
-  const { code, userId } = req.body;
+router.post('/verify', async (req, res) => {
+  const { email, code } = req.body;
+  
   try {
-    // Suche User anhand userId und Code (optional: nur Code, wie bisher)
-    const user = userId
-      ? await User.findOne({ _id: userId, verificationCode: Number(code) })
-      : await User.findOne({ verificationCode: Number(code) });
+    const user = await User.findOne({ 
+      email, 
+      verificationCode: code.toString() 
+    });
 
     if (!user) {
-      return res.status(400).json({ message: 'Ungültiger oder abgelaufener Code' });
+      return res.status(400).json({ message: 'Ungültiger Code oder E-Mail' });
     }
+
+    // Prüfe Code-Ablauf (falls implementiert)
+    if (user.verificationCodeExpires && user.verificationCodeExpires < new Date()) {
+      return res.status(400).json({ message: 'Code ist abgelaufen' });
+    }
+
     if (user.isVerify) {
       return res.status(400).json({ message: 'E-Mail bereits verifiziert' });
     }
+
+    // Verifizierung durchführen
     user.isVerify = true;
+    user.verificationCode = null;
+    user.verificationCodeExpires = null;
     await user.save();
+
     res.json({ message: 'E-Mail erfolgreich verifiziert!' });
   } catch (error) {
+    console.error('Verify error:', error);
     res.status(500).json({ message: 'Serverfehler', error: error.message });
   }
 });
 
 /**
- * GET /api/auth/verify-link
- * Wird vom Link in der E-Mail aufgerufen.
- * Verifiziert den User und leitet auf das Frontend weiter (z.B. Login-Seite).
+ * GET /verify-link
+ * Wird vom Link in der E-Mail aufgerufen
  */
-router.get('/auth/verify-link', async (req, res) => {
-  console.log('GET /auth/verify-link ', req.query); 
-  
+router.get('/verify-link', async (req, res) => {
   const { code, userId } = req.query;
+  const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+  
   try {
-    const user = await User.findOne({ _id: userId, verificationCode: Number(code) });
+    const user = await User.findOne({ 
+      _id: userId, 
+      verificationCode: code 
+    });
+
     if (!user) {
-      // Optional: Fehlerseite im Frontend anzeigen
-      return res.redirect('http://localhost:5173/verify?status=error');
+      return res.redirect(`${frontendUrl}/verify?status=error&message=invalid_code`);
     }
+
+    // Prüfe Code-Ablauf
+    if (user.verificationCodeExpires && user.verificationCodeExpires < new Date()) {
+      return res.redirect(`${frontendUrl}/verify?status=error&message=expired`);
+    }
+
     if (!user.isVerify) {
       user.isVerify = true;
+      user.verificationCode = null;
+      user.verificationCodeExpires = null;
       await user.save();
     }
-    // Nach erfolgreicher Verifizierung auf die Login-Seite des Frontends weiterleiten
-    return res.redirect('http://localhost:5173/login');
+
+    return res.redirect(`${frontendUrl}/login?verified=true`);
   } catch (error) {
-    // Optional: Fehlerseite im Frontend anzeigen
-    return res.redirect('http://localhost:5173/verify?status=server-error');
+    console.error('Verify link error:', error);
+    return res.redirect(`${frontendUrl}/verify?status=error&message=server_error`);
   }
 });
 

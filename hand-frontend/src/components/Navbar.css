@@ -266,3 +266,107 @@ navbar-logo:hover {
 .burger-nav-menu .nav-links.active:hover {
   background-color: var(--deepBlue);
 }
+
+/* ------------------------------------- */
+/* Neue Stile für die modernisierte Navbar */
+/* ------------------------------------- */
+
+/* User-Anzeige für eingeloggte Benutzer */
+.nav-user {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--deepBlue);
+  font-weight: 600;
+  background-color: var(--cream);
+  padding: 8px 16px;
+  border-radius: 25px;
+  font-size: 0.9rem;
+}
+
+/* Logout-Button Styling */
+.logout-btn {
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  width: 100%;
+  text-align: left;
+  font-size: 1rem;
+  transition: background-color 0.3s ease;
+}
+
+.logout-btn:hover {
+  background-color: var(--coral);
+}
+
+/* Active Link Styling */
+.nav-links.active {
+  color: var(--coral) !important;
+  font-weight: 700;
+}
+
+/* Burger Menu Active State */
+.burger-nav-menu.active {
+  display: flex !important;
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+  .navbar-container {
+    padding: 0 15px;
+  }
+  
+  .logo {
+    height: 50px;
+  }
+  
+  .logo-text {
+    font-size: 1.5rem;
+  }
+  
+  .direct-nav-menu {
+    display: none;
+  }
+  
+  .burger-icon {
+    width: 45px;
+    height: 45px;
+  }
+  
+  .burger-nav-menu {
+    width: 250px;
+    right: -10px;
+  }
+}
+
+/* Animation für Burger Menu */
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.burger-nav-menu.active {
+  animation: slideDown 0.3s ease-out;
+}
+
+/* Focus States für Accessibility */
+.burger-icon:focus {
+  outline: 2px solid var(--cream);
+  outline-offset: 2px;
+}
+
+.nav-links:focus {
+  outline: 2px solid var(--cream);
+  outline-offset: 2px;
+}

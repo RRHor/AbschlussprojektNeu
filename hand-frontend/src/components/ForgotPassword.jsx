@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import './ForgotPassword.css';
+import api from '../api'; // <-- API-Client für Backend-Aufrufe
 
 const ForgotPassword = () => {
   const [step, setStep] = useState('email'); // 'email', 'verification', 'reset', 'success'
@@ -14,7 +15,6 @@ const ForgotPassword = () => {
 
   const handleInputChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
-    // Clear error when user starts typing
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: '' }));
     }
@@ -45,11 +45,14 @@ const ForgotPassword = () => {
     }
 
     setIsLoading(true);
-    // Simulate API call
-    setTimeout(() => {
-      setIsLoading(false);
+    try {
+      await api.post('/auth/forgot-password', { email: formData.email });
       setStep('verification');
-    }, 2000);
+    } catch (error) {
+      setErrors({ email: error.response?.data?.message || 'Fehler beim Senden der E-Mail' });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleVerificationSubmit = async (e) => {
@@ -68,7 +71,7 @@ const ForgotPassword = () => {
     }
 
     setIsLoading(true);
-    // Simulate API call
+    // Hier ggf. API-Call zur Code-Prüfung einbauen, falls Backend das unterstützt
     setTimeout(() => {
       setIsLoading(false);
       setStep('reset');
@@ -97,19 +100,29 @@ const ForgotPassword = () => {
     }
 
     setIsLoading(true);
-    // Simulate API call
-    setTimeout(() => {
-      setIsLoading(false);
+    try {
+      await api.post('/auth/password-reset', {
+        email: formData.email,
+        resetCode: formData.verificationCode,
+        newPassword: formData.newPassword
+      });
       setStep('success');
-    }, 2000);
+    } catch (error) {
+      setErrors({ newPassword: error.response?.data?.message || 'Fehler beim Zurücksetzen des Passworts' });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const resendCode = () => {
+  const resendCode = async () => {
     setIsLoading(true);
-    // Simulate resend API call
-    setTimeout(() => {
+    try {
+      await api.post('/auth/forgot-password', { email: formData.email });
+    } catch (error) {
+      console.error('Fehler beim erneuten Senden:', error);
+    } finally {
       setIsLoading(false);
-    }, 1000);
+    }
   };
 
   const goBackToLogin = () => {
@@ -129,7 +142,7 @@ const ForgotPassword = () => {
           <div className="input-container">
             <input
               type="email"
-              value={formData.email || ""}
+              value={formData.email}
               onChange={(e) => handleInputChange('email', e.target.value)}
               placeholder="max.mustermann@email.com"
               className={errors.email ? 'error' : ''}
@@ -171,7 +184,7 @@ const ForgotPassword = () => {
           <div className="input-container">
             <input
               type="text"
-              value={formData.verificationCode || ""}
+              value={formData.verificationCode}
               onChange={(e) => handleInputChange('verificationCode', e.target.value)}
               placeholder="000000"
               maxLength="6"
@@ -215,7 +228,7 @@ const ForgotPassword = () => {
           <div className="input-container">
             <input
               type="password"
-              value={formData.newPassword || ""}
+              value={formData.newPassword}
               onChange={(e) => handleInputChange('newPassword', e.target.value)}
               placeholder="Mindestens 8 Zeichen"
               className={errors.newPassword ? 'error' : ''}
@@ -229,7 +242,7 @@ const ForgotPassword = () => {
           <div className="input-container">
             <input
               type="password"
-              value={formData.confirmPassword || ""}
+              value={formData.confirmPassword}
               onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
               placeholder="Passwort wiederholen"
               className={errors.confirmPassword ? 'error' : ''}
