@@ -10,7 +10,7 @@ const createTransporter = () => {
   // Für Entwicklung: Ethereal Email (Test-Service)
   if (process.env.NODE_ENV === 'development' || !process.env.EMAIL_HOST) {
     console.log('📧 Using development email mode (no real emails sent)');
-    return nodemailer.createTransport({
+    return nodemailer.createTransport({  // ← KORRIGIERT: createTransport (nicht createTransporter)
       host: 'smtp.ethereal.email',
       port: 587,
       auth: {
@@ -21,7 +21,7 @@ const createTransporter = () => {
   }
 
   // Für Produktion: Echter E-Mail-Service
-  return nodemailer.createTransporter({
+  return nodemailer.createTransport({
     host: process.env.EMAIL_HOST,
     port: process.env.EMAIL_PORT || 587,
     secure: process.env.EMAIL_SECURE === 'true',
