@@ -148,7 +148,7 @@ export const sendPasswordResetEmail = async (email, resetToken) => {
           <div style="background: white; padding: 30px; border-radius: 0 0 10px 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
             <p style="font-size: 16px; color: #333;">Hallo!</p>
             <p style="font-size: 16px; color: #333;">
-              Sie haben eine Anfrage zum Zurücksetzen Ihres Passworts für die <strong>Hand in Hand</strong> App gestellt.
+              Sie haben eine Anfrage zum Zurücksetzen Ihres Passworts für die <strong>Hand in Hand</strong> Plattform gestellt.
             </p>
             
             <div style="text-align: center; margin: 30px 0;">
