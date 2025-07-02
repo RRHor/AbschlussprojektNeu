@@ -38,7 +38,9 @@ const validateAddress = async (address) => {
  */
 router.post('/register', async (req, res) => {
   try {
-    console.log('🔥 VOLLSTÄNDIGER REGISTER-REQUEST:', req.body);
+    console.log('🔥 VOLLSTÄNDIGER REGISTER-REQUEST:', JSON.stringify(req.body, null, 2));
+    console.log('📋 Adress-Daten vom Frontend:', req.body.adress);
+    console.log('🔍 ZIP specifically:', req.body.adress?.zip);
 
     const {
       nickname,
@@ -89,7 +91,7 @@ router.post('/register', async (req, res) => {
       address: adress ? {
         street: adress.street,
         city: adress.city,
-        postalCode: adress.zip?.toString(),
+        zip: adress.zip?.toString(),        // ← KORRIGIERT: zip statt postalCode
         district: adress.district,
         state: adress.state
       } : undefined,
@@ -99,8 +101,15 @@ router.post('/register', async (req, res) => {
       registeredAt: new Date()
     });
 
+    console.log('🏠 Address data being saved:', user.address);
+    console.log('🔍 ZIP specifically:', user.address?.zip);
+
     await user.save();
     console.log('💾 User gespeichert mit ID:', user._id);
+
+    // Sofort User aus DB laden:
+    const savedUser = await User.findById(user._id);
+    console.log('🔍 User aus DB nach Speichern:', savedUser.address);
 
     // E-MAIL VERSENDEN
     console.log('📧 Starte E-Mail-Versand...');
@@ -281,8 +290,20 @@ router.get('/verify/:token', async (req, res) => {
  * Eigene Userdaten abrufen (geschützt)
  */
 router.get("/users/me", protect, async (req, res) => {
-    const user = await User.findById(req.user._id).select('-password');
-    res.json(user);
+    try {
+        const user = await User.findById(req.user._id).select('-password');
+        console.log('👤 COMPLETE USER from DB:', JSON.stringify(user, null, 2));
+        console.log('🏠 ADDRESS from DB:', user?.address);
+        console.log('🔍 ZIP from DB:', user?.address?.zip);
+        
+        if (!user) {
+            return res.status(404).json({ message: "User nicht gefunden" });
+        }
+        res.json(user);
+    } catch (error) {
+        console.error('❌ Get user error:', error);
+        res.status(500).json({ message: "Serverfehler", error: error.message });
+    }
 });
 
 /**

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Eye, EyeOff, Mail, Lock, User, ArrowLeft, Loader } from 'lucide-react'; 
 import { useAuth } from '../context/AuthContext';
+import api from '../api.js';  // ← DIESE ZEILE HINZUFÜGEN!
 import './Login.css'; 
 
 function Login() {
@@ -79,15 +80,18 @@ function Login() {
     }
     setIsLoading(true);
     setError('');
+    
     try {
-      // TODO: Implementiere echten API-Call
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      alert('E-Mail zum Zurücksetzen des Passworts wurde gesendet!');
-      setShowForgotPassword(false);
-      setFormData(prev => ({ ...prev, resetEmail: '' }));
+      const response = await api.post('/auth/forgot-password', { 
+        email: formData.resetEmail 
+      });
+      
+      if (response.data.success) {
+        alert('✅ Reset-E-Mail gesendet! Schaue in die Backend-Console für den Link.');
+        setShowForgotPassword(false);
+      }
     } catch (error) {
-      console.error('Password reset error:', error);
-      setError('Fehler beim Senden der Reset-E-Mail');
+      setError(error.response?.data?.message || 'Fehler beim Senden');
     } finally {
       setIsLoading(false);
     }
