@@ -24,7 +24,7 @@ import commentRoutes from './routes/commentRoutes.js';
 import adressRoutes from './routes/adressRoutes.js';
 import testEmailRoutes from './routes/testEmailRoutes.js';
 import postRoutes from './routes/postRoutes.js';
-import passwordRequestRoute from './routes/passwordResetRequestRoute.js';
+import passwordResetRequestRoute from './routes/passwordResetRequestRoute.js';
 import passwordResetRoutes from './routes/passwordResetRoute.js';
 import publicUserRoutes from './routes/publicUserRoutes.js';
 import exchangeRoutes from './routes/exchangeRoutes.js';
@@ -64,7 +64,7 @@ app.use((req, res, next) => {
 // Authentifizierungs-/Login-/Passwort-Routen
 app.use('/api/auth', authRoutes);
 app.use('/api/auth', verifyRoutes);
-app.use('/api/auth', passwordRequestRoute);
+app.use('/api/auth', passwordResetRequestRoute);
 app.use('/api/auth', passwordResetRoutes);
 
 // Test-Route zum Versenden von E-Mails

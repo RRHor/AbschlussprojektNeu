@@ -55,17 +55,27 @@ const userSchema = new mongoose.Schema(
     registeredAt: { type: Date, default: Date.now },
 
     // Reset-Code für Passwort-Reset
-    resetPasswordToken: String,
-    resetPasswordExpires: Date,
+    resetPasswordToken: {
+      type: String,
+      default: null,
+    },
+    resetPasswordExpires: {
+      type: Date,
+      default: null,
+    },
 
     // Profil-Felder
     firstName: String,
     lastName: String,
     birthdate: Date,
+
+    // ✅ KORRIGIERTE ADRESSE mit allen Feldern:
     address: {
       street: String,
       city: String,
-      postalCode: String,
+      zip: String, // ← Postleitzahl
+      state: String, // ← HINZUGEFÜGT: Bundesland
+      district: String, // ← HINZUGEFÜGT: Stadtteil/Landkreis
     },
   },
   { timestamps: true } // Erstellt automatisch createdAt und updatedAt Felder

@@ -113,63 +113,93 @@ export const sendVerificationEmail = async (email, verificationToken) => {
 /**
  * Passwort-Reset-E-Mail senden
  */
-export const sendPasswordResetEmail = async (email, resetToken, verificationCode = null) => {
+export const sendPasswordResetEmail = async (email, resetToken) => {
   try {
-    if (process.env.NODE_ENV === 'development') {
-      console.log('📧 PASSWORD RESET - Development Mode:');
-      console.log('🎯 An:', email);
-      console.log('🔗 Reset-Link:', `http://localhost:5173/reset-password/${resetToken}`);
-      if (verificationCode) {
-        console.log('🔢 Verification Code:', verificationCode);
+    console.log('📧 Sending password reset email to:', email);
+    
+    const resetLink = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
+    
+    // Console-Log für Development
+    console.log('🔗 Password Reset Link für', email + ':');
+    console.log('   ', resetLink);
+    
+    // Transporter konfigurieren
+    const transporter = nodemailer.createTransport({
+      host: process.env.EMAIL_HOST,
+      port: parseInt(process.env.EMAIL_PORT),
+      secure: process.env.EMAIL_SECURE === 'true',
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS
       }
-      return { success: true, message: 'Development mode - Reset-E-Mail simuliert' };
-    }
+    });
 
-    const transporter = createTransporter();
-
-    let codeHtml = '';
-    if (verificationCode) {
-      codeHtml = `
-        <p>Dein Bestätigungscode zum Zurücksetzen des Passworts:</p>
-        <div style="background-color: #F5F5F5; padding: 10px; border-radius: 4px; font-size: 20px; letter-spacing: 2px; text-align: center; margin: 20px 0;">
-          <strong>${verificationCode}</strong>
-        </div>
-        <p>Du kannst alternativ auch den Link unten nutzen.</p>
-      `;
-    }
-
+    // E-Mail-Inhalt
     const mailOptions = {
-      from: process.env.EMAIL_FROM || 'noreply@handinhand.com',
+      from: process.env.EMAIL_FROM,
       to: email,
-      subject: 'Passwort zurücksetzen - Hand in Hand',
+      subject: '🔐 Passwort zurücksetzen - Hand in Hand',
       html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #E1E1E1; border-radius: 5px;">
-          <h2 style="color: #333;">Passwort zurücksetzen</h2>
-          <p>Du erhältst diese E-Mail, weil du (oder jemand anderes) ein Zurücksetzen deines Passworts angefordert hat.</p>
-          ${codeHtml}
-          <p>Klicke auf den folgenden Link, um dein Passwort zurückzusetzen:</p>
-          <p><a href="http://localhost:5173/reset-password?token=${resetToken}" style="background-color: #4CAF50; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px; display: inline-block;">Passwort zurücksetzen</a></p>
-          <p>Dieser Link ist 1 Stunde gültig.</p>
-          <p>Wenn du das nicht angefordert hast, ignoriere diese E-Mail bitte.</p>
-          <p>Viele Grüße,<br>Dein Hand-Hand Team</p>
+        <div style="max-width: 600px; margin: 0 auto; font-family: Arial, sans-serif; line-height: 1.6;">
+          <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
+            <h1 style="color: white; margin: 0; font-size: 28px;">🔐 Passwort zurücksetzen</h1>
+          </div>
+          
+          <div style="background: white; padding: 30px; border-radius: 0 0 10px 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
+            <p style="font-size: 16px; color: #333;">Hallo!</p>
+            <p style="font-size: 16px; color: #333;">
+              Sie haben eine Anfrage zum Zurücksetzen Ihres Passworts für die <strong>Hand in Hand</strong> App gestellt.
+            </p>
+            
+            <div style="text-align: center; margin: 30px 0;">
+              <a href="${resetLink}" 
+                 style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+                        color: white; padding: 15px 30px; text-decoration: none; 
+                        border-radius: 25px; display: inline-block; font-weight: bold;
+                        font-size: 16px; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);">
+                🔑 Neues Passwort erstellen
+              </a>
+            </div>
+            
+            <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
+              <p style="margin: 0; color: #666; font-size: 14px;">
+                <strong>⏰ Wichtig:</strong> Dieser Link ist <strong>6 Stunden</strong> gültig.
+              </p>
+            </div>
+            
+            <p style="color: #666; font-size: 14px;">
+              Falls Sie diese Anfrage nicht gestellt haben, können Sie diese E-Mail ignorieren. 
+              Ihr Passwort bleibt unverändert.
+            </p>
+            
+            <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
+            
+            <div style="text-align: center;">
+              <p style="color: #999; font-size: 12px; margin: 0;">
+                Hand in Hand - Nachbarschaftshilfe<br>
+                Diese E-Mail wurde automatisch generiert.
+              </p>
+            </div>
+          </div>
         </div>
       `
     };
 
+    // E-Mail senden
     const result = await transporter.sendMail(mailOptions);
-    console.log('✅ Reset-E-Mail gesendet:', result.messageId);
-
+    console.log('✅ Password reset email sent successfully:', result.messageId);
+    
     return {
       success: true,
-      message: 'Reset-E-Mail gesendet',
+      message: 'Password reset email sent',
       messageId: result.messageId
     };
-
+    
   } catch (error) {
-    console.error('❌ Reset-E-Mail-Fehler:', error);
+    console.error('❌ Password reset email error:', error);
     return {
       success: false,
-      message: 'Reset-E-Mail konnte nicht gesendet werden',
+      message: 'Failed to send password reset email',
       error: error.message
     };
   }

@@ -48,7 +48,7 @@ const Profile = () => {
           lastName: response.data.lastName || '',
           state: response.data.address?.state || '',
           city: response.data.address?.city || '',
-          zipCode: response.data.address?.postalCode || '',
+          zipCode: response.data.address?.zip || '',
           street: response.data.address?.street || '',
           district: response.data.address?.district || '',
           profileImage: response.data.profileImage || null
@@ -111,7 +111,7 @@ const Profile = () => {
           street: editData.street,
           city: editData.city,
           state: editData.state,
-          postalCode: editData.zipCode,
+          zip: editData.zipCode,
           district: editData.district
         }
       };

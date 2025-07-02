@@ -138,10 +138,13 @@ const RegisterForm = ({ onSuccess = () => {} }) => {
           street: formData.street,
           city: formData.city,
           district: formData.district || "",
-          zipCode: parseInt(formData.zipCode, 10),
+          zip: formData.zipCode || "",     // ← KORRIGIERT: zip statt zipCode + Fallback
           state: formData.state
         }
       };
+      console.log('📋 Registration data being sent:', JSON.stringify(registrationData, null, 2));
+      console.log('🏠 Address being sent:', registrationData.adress);
+      console.log('🔍 ZIP being sent:', registrationData.adress.zip);  // ← Neuer Debug
       const result = await register(registrationData);
       if (result.success) {
         setMessage('✅ Registrierung erfolgreich! Sie werden weitergeleitet...');
