@@ -16,13 +16,11 @@ import mongoose from 'mongoose';
 import connectDB from './database/database.js';
 import authRoutes from './routes/authRoutes.js';
 import verifyRoutes from './routes/verifyRoutes.js';
-import userRoutes from './routes/userRoutes.js';
 import blogRoutes from './routes/blogRoutes.js';
 import adRoutes from './routes/adRoutes.js';
 import eventRoutes from './routes/eventRoutes.js';
 import commentRoutes from './routes/commentRoutes.js';
 import adressRoutes from './routes/adressRoutes.js';
-import testEmailRoutes from './routes/testEmailRoutes.js';
 import postRoutes from './routes/postRoutes.js';
 import passwordResetRequestRoute from './routes/passwordResetRequestRoute.js';
 import passwordResetRoutes from './routes/passwordResetRoute.js';
@@ -67,11 +65,8 @@ app.use('/api/auth', verifyRoutes);
 app.use('/api/auth', passwordResetRequestRoute);
 app.use('/api/auth', passwordResetRoutes);
 
-// Test-Route zum Versenden von E-Mails
-app.use('/api/test-email', testEmailRoutes);
 
 // User-Routen
-app.use('/api', userRoutes);
 app.use('/api', publicUserRoutes);
 app.use('/api', adressRoutes);
 
