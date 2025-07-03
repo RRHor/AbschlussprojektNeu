@@ -117,7 +117,8 @@ export const sendPasswordResetEmail = async (email, resetToken) => {
   try {
     console.log('📧 Sending password reset email to:', email);
     
-    const resetLink = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
+    // RICHTIG (Query-Parameter)
+    const resetLink = `http://localhost:5173/reset-password?token=${resetToken}`;
     
     // Console-Log für Development
     console.log('🔗 Password Reset Link für', email + ':');

@@ -17,6 +17,7 @@ import Blog from './pages/Blog';
 import Home from './pages/Home';
 import Events from './pages/Events';
 import EventDetail from './pages/EventDetail';
+import ResetPassword from './pages/ResetPassword';
 
 function App() {
   return (
@@ -33,6 +34,7 @@ function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
             
             {/* E-Mail Verifizierung */}
             <Route path="/verify/:token" element={<VerifyEmail />} />

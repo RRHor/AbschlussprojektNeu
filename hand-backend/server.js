@@ -23,7 +23,7 @@ import commentRoutes from './routes/commentRoutes.js';
 import adressRoutes from './routes/adressRoutes.js';
 import postRoutes from './routes/postRoutes.js';
 import passwordResetRequestRoute from './routes/passwordResetRequestRoute.js';
-import passwordResetRoutes from './routes/passwordResetRoute.js';
+import passwordResetRoute from './routes/passwordResetRoute.js';
 import publicUserRoutes from './routes/publicUserRoutes.js';
 import exchangeRoutes from './routes/exchangeRoutes.js';
 
@@ -63,7 +63,7 @@ app.use((req, res, next) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/auth', verifyRoutes);
 app.use('/api/auth', passwordResetRequestRoute);
-app.use('/api/auth', passwordResetRoutes);
+app.use('/api/auth', passwordResetRoute);
 
 
 // User-Routen
