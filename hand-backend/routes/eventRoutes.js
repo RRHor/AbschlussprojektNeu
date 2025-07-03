@@ -102,4 +102,68 @@ router.post('/:id/join', protect, async (req, res) => {
   res.json({ message: 'Teilnahme bestätigt', event });
 });
 
+/**
+ * Von Event abmelden (geschützt)
+ */
+router.delete('/:id/leave', protect, async (req, res) => {
+  try {
+    const event = await Event.findById(req.params.id);
+    if (!event) return res.status(404).json({ message: 'Event nicht gefunden' });
+    
+    // Teilnehmer entfernen
+    event.participants = event.participants.filter(
+      participantId => participantId.toString() !== req.user._id.toString()
+    );
+    await event.save();
+    
+    res.json({ message: 'Teilnahme abgemeldet', event });
+  } catch (error) {
+    res.status(400).json({ message: 'Fehler beim Abmelden', error });
+  }
+});
+
+/**
+ * Teilnehmer-Liste abrufen (geschützt - nur angemeldete User)
+ */
+router.get('/:id/participants', protect, async (req, res) => {
+  try {
+    const event = await Event.findById(req.params.id)
+      .populate('participants', 'nickname username firstName lastName')
+      .populate('organizer', 'nickname username firstName lastName');
+    
+    if (!event) return res.status(404).json({ message: 'Event nicht gefunden' });
+    
+    res.json({
+      success: true,
+      participants: event.participants,
+      organizer: event.organizer,
+      participantCount: event.participants.length
+    });
+  } catch (error) {
+    res.status(400).json({ message: 'Fehler beim Laden der Teilnehmer', error });
+  }
+});
+
+/**
+ * Teilnahme-Status prüfen (geschützt)
+ */
+router.get('/:id/my-participation', protect, async (req, res) => {
+  try {
+    const event = await Event.findById(req.params.id);
+    if (!event) return res.status(404).json({ message: 'Event nicht gefunden' });
+    
+    const isParticipating = event.participants.includes(req.user._id);
+    const isOrganizer = event.organizer.toString() === req.user._id.toString();
+    
+    res.json({
+      success: true,
+      isParticipating,
+      isOrganizer,
+      participantCount: event.participants.length
+    });
+  } catch (error) {
+    res.status(400).json({ message: 'Fehler beim Prüfen der Teilnahme', error });
+  }
+});
+
 export default router;

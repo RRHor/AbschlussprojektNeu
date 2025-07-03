@@ -1,6 +1,7 @@
 import express from "express";
 import jwt from "jsonwebtoken";
 import User from "../models/UserModel.js";
+import Event from "../models/eventModel.js"; // ← DIESE ZEILE HINZUFÜGEN
 import { sendVerificationEmail } from "../utils/emailService.js";
 import { protect } from "../middleware/authMiddleware.js";
 
@@ -351,6 +352,34 @@ router.get("/users", async (req, res) => {
     } catch (error) {
         res.status(500).json({ message: "Fehler beim Laden der User", error: error.message });
     }
+});
+
+/**
+ * Events des eingeloggten Users abrufen (geschützt)
+ */
+router.get("/users/me/events", protect, async (req, res) => {
+  try {
+    console.log('📥 GET /api/auth/users/me/events');
+    console.log('👤 User ID:', req.user._id);
+
+    // Finde alle Events, an denen der User teilnimmt
+    const events = await Event.find({
+      participants: req.user._id
+    }).populate('organizer', 'nickname firstName lastName');
+
+    console.log('📊 Found events:', events.length);
+    
+    res.json({
+      success: true,
+      events: events
+    });
+  } catch (error) {
+    console.error('❌ Error fetching user events:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Fehler beim Laden der Events'
+    });
+  }
 });
 
 export default router;

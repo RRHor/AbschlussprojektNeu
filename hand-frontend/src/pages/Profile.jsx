@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { User, MapPin, Edit3, Save, X, Camera, Loader } from 'lucide-react';
+import { User, MapPin, Edit3, Save, X, Camera, Loader, Calendar, Users } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import api from '../api';
 import exchangeService from '../services/exchangeService';
 import './Profile.css';
@@ -8,6 +9,11 @@ import ExchangeEditModal from '../components/ExchangeEditModal';
 
 const Profile = () => {
   const { user, loading: authLoading } = useAuth();
+  const navigate = useNavigate();
+  
+  // ========================================
+  // STATES - Profil-Daten
+  // ========================================
   const [isEditing, setIsEditing] = useState(false);
   const [profileData, setProfileData] = useState({
     username: '',
@@ -26,13 +32,24 @@ const Profile = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState(null);
 
-  // Exchange Posts States
+  // ========================================
+  // STATES - Exchange Posts
+  // ========================================
   const [myExchangePosts, setMyExchangePosts] = useState([]);
   const [loadingPosts, setLoadingPosts] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [editingPost, setEditingPost] = useState(null);
 
-  // User-Daten laden
+  // ========================================
+  // STATES - Events & Navigation
+  // ========================================
+  const [activeTab, setActiveTab] = useState('profile'); // 'profile', 'exchange', 'events'
+  const [userEvents, setUserEvents] = useState([]);
+  const [eventsLoading, setEventsLoading] = useState(false);
+
+  // ========================================
+  // EFFECT - User-Daten beim Laden abrufen
+  // ========================================
   useEffect(() => {
     const fetchUserData = async () => {
       try {
@@ -40,7 +57,7 @@ const Profile = () => {
         const response = await api.get('/auth/users/me');
         console.log('🔍 Raw API Response:', response.data);
         
-        // Moderne Datenstruktur (address als Objekt)
+        // Moderne Datenstruktur (address als Objekt) in flache Struktur umwandeln
         const formattedData = {
           username: response.data.nickname || '',
           email: response.data.email || '',
@@ -66,12 +83,15 @@ const Profile = () => {
       }
     };
 
+    // Nur laden wenn Auth fertig ist und User existiert
     if (!authLoading && user) {
       fetchUserData();
     }
   }, [user, authLoading]);
 
-  // Fetch Exchange Posts
+  // ========================================
+  // EFFECT - Exchange Posts laden
+  // ========================================
   useEffect(() => {
     const fetchMyExchangePosts = async () => {
       setLoadingPosts(true);
@@ -87,11 +107,53 @@ const Profile = () => {
       }
     };
 
-    if (profileData) {
+    // Nur laden wenn Profil-Daten vorhanden sind
+    if (profileData.username) {
       fetchMyExchangePosts();
     }
-  }, [profileData]);
+  }, [profileData.username]);
 
+  // ========================================
+  // EFFECT - Events laden wenn Events-Tab aktiv
+  // ========================================
+  useEffect(() => {
+    if (activeTab === 'events' && user) {
+      loadUserEvents();
+    }
+  }, [activeTab, user]);
+
+  // ========================================
+  // FUNCTION - User-Events von Backend laden
+  // ========================================
+  const loadUserEvents = async () => {
+    try {
+      setEventsLoading(true);
+      console.log('📥 Loading user events...');
+      
+      // API-Call zur neuen Route
+      const response = await api.get('/auth/users/me/events');
+      console.log('📥 User events loaded:', response.data);
+      
+      // Events aus Response extrahieren
+      setUserEvents(response.data.events || []);
+    } catch (error) {
+      console.error('❌ Error loading user events:', error);
+      setUserEvents([]);
+    } finally {
+      setEventsLoading(false);
+    }
+  };
+
+  // ========================================
+  // FUNCTION - Event-Detail-Seite öffnen
+  // ========================================
+  const handleEventClick = (event) => {
+    navigate(`/events/${event._id}`, { state: { event } });
+  };
+
+  // ========================================
+  // PROFILE FUNCTIONS - Bearbeiten/Speichern
+  // ========================================
   const handleEdit = () => {
     setIsEditing(true);
     setEditData({ ...profileData });
@@ -101,7 +163,7 @@ const Profile = () => {
     try {
       setIsSaving(true);
       
-      // Moderne Datenstruktur für Backend
+      // Flache Struktur zurück in moderne Backend-Struktur umwandeln
       const updateData = {
         nickname: editData.username,
         email: editData.email,
@@ -144,6 +206,9 @@ const Profile = () => {
     setEditData(prev => ({ ...prev, [field]: value }));
   };
 
+  // ========================================
+  // FUNCTION - Profilbild hochladen
+  // ========================================
   const handleImageUpload = async (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -161,7 +226,9 @@ const Profile = () => {
     }
   };
 
-  // Delete Post
+  // ========================================
+  // EXCHANGE FUNCTIONS - Posts verwalten
+  // ========================================
   const handleDeletePost = async (postId) => {
     if (!window.confirm('Sind Sie sicher, dass Sie diese Anzeige löschen möchten?')) {
       return;
@@ -178,7 +245,6 @@ const Profile = () => {
     }
   };
 
-  // Update Post Status
   const handleStatusChange = async (postId, newStatus) => {
     try {
       const result = await exchangeService.updateStatus(postId, newStatus);
@@ -195,13 +261,11 @@ const Profile = () => {
     }
   };
 
-  // Edit Post
   const handleEditPost = (post) => {
     setEditingPost(post);
     setShowEditModal(true);
   };
 
-  // Update Post
   const handleUpdatePost = async (postId, updatedData) => {
     try {
       const result = await exchangeService.updatePost(postId, updatedData);
@@ -221,7 +285,9 @@ const Profile = () => {
     }
   };
 
-  // Loading State
+  // ========================================
+  // LOADING & ERROR STATES
+  // ========================================
   if (authLoading || isLoading) {
     return (
       <div className="profile-container">
@@ -233,7 +299,6 @@ const Profile = () => {
     );
   }
 
-  // Error State
   if (error) {
     return (
       <div className="profile-container">
@@ -247,10 +312,16 @@ const Profile = () => {
     );
   }
 
+  // ========================================
+  // MAIN RENDER
+  // ========================================
   return (
     <div className="profile-container">
       <div className="profile-wrapper">
-        {/* Header */}
+        
+        {/* ========================================
+            HEADER - Titel und Bearbeiten-Button
+            ======================================== */}
         <div className="profile-header">
           <div className="header-content">
             <div className="header-text">
@@ -287,272 +358,408 @@ const Profile = () => {
           </div>
         </div>
 
-        {/* Main Content */}
-        <div className="profile-content">
-          <div className="profile-grid">
-            {/* Profile Image Section */}
-            <div className="profile-image-section">
-              <div className="image-container">
-                <div className="profile-image">
-                  {(isEditing ? editData.profileImage : profileData.profileImage) ? (
-                    <img 
-                      src={isEditing ? editData.profileImage : profileData.profileImage} 
-                      alt="Profilbild" 
-                    />
-                  ) : (
-                    <div className="default-avatar">
-                      <User size={48} />
-                    </div>
-                  )}
-                  {isEditing && (
-                    <label className="image-upload-btn">
-                      <Camera size={20} />
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={handleImageUpload}
-                        style={{ display: 'none' }}
-                      />
-                    </label>
-                  )}
-                </div>
-                <h2 className="profile-name">
-                  {profileData.firstName || profileData.lastName 
-                    ? `${profileData.firstName} ${profileData.lastName}`.trim()
-                    : 'Unbekannter Benutzer'
-                  }
-                </h2>
-                <p className="profile-username">
-                  @{profileData.username || 'unbekannt'}
-                </p>
-              </div>
-            </div>
-
-            {/* Form Section */}
-            <div className="profile-form-section">
-              {/* Account Information */}
-              <div className="form-group">
-                <h3 className="section-title">
-                  <User size={20} />
-                  Account Informationen
-                </h3>
-                <div className="form-row">
-                  <div className="input-group">
-                    <label>Benutzername</label>
-                    <div className="input-container">
-                      {isEditing ? (
-                        <input
-                          type="text"
-                          value={editData.username}
-                          onChange={(e) => handleInputChange('username', e.target.value)}
-                        />
-                      ) : (
-                        <div className="input-display">{profileData.username || 'Nicht angegeben'}</div>
-                      )}
-                    </div>
-                  </div>
-                  <div className="input-group">
-                    <label>E-Mail</label>
-                    <div className="input-container">
-                      {isEditing ? (
-                        <input
-                          type="email"
-                          value={editData.email}
-                          onChange={(e) => handleInputChange('email', e.target.value)}
-                        />
-                      ) : (
-                        <div className="input-display">{profileData.email || 'Nicht angegeben'}</div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Personal Information */}
-              <div className="form-group">
-                <h3 className="section-title">
-                  <User size={20} />
-                  Persönliche Daten
-                </h3>
-                <div className="form-row">
-                  <div className="input-group">
-                    <label>Vorname</label>
-                    <div className="input-container">
-                      {isEditing ? (
-                        <input
-                          type="text"
-                          value={editData.firstName}
-                          onChange={(e) => handleInputChange('firstName', e.target.value)}
-                        />
-                      ) : (
-                        <div className="input-display">{profileData.firstName || 'Nicht angegeben'}</div>
-                      )}
-                    </div>
-                  </div>
-                  <div className="input-group">
-                    <label>Nachname</label>
-                    <div className="input-container">
-                      {isEditing ? (
-                        <input
-                          type="text"
-                          value={editData.lastName}
-                          onChange={(e) => handleInputChange('lastName', e.target.value)}
-                        />
-                      ) : (
-                        <div className="input-display">{profileData.lastName || 'Nicht angegeben'}</div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Address Information */}
-              <div className="form-group">
-                <h3 className="section-title">
-                  <MapPin size={20} />
-                  Adresse
-                </h3>
-                <div className="input-group">
-                  <label>Straße und Hausnummer</label>
-                  <div className="input-container">
-                    {isEditing ? (
-                      <input
-                        type="text"
-                        value={editData.street}
-                        onChange={(e) => handleInputChange('street', e.target.value)}
-                      />
-                    ) : (
-                      <div className="input-display">{profileData.street || 'Nicht angegeben'}</div>
-                    )}
-                  </div>
-                </div>
-                <div className="form-row address-row">
-                  <div className="input-group">
-                    <label>PLZ</label>
-                    <div className="input-container">
-                      {isEditing ? (
-                        <input
-                          type="text"
-                          value={editData.zipCode}
-                          onChange={(e) => handleInputChange('zipCode', e.target.value)}
-                          maxLength="5"
-                        />
-                      ) : (
-                        <div className="input-display">{profileData.zipCode || 'Nicht angegeben'}</div>
-                      )}
-                    </div>
-                  </div>
-                  <div className="input-group">
-                    <label>Stadt</label>
-                    <div className="input-container">
-                      {isEditing ? (
-                        <input
-                          type="text"
-                          value={editData.city}
-                          onChange={(e) => handleInputChange('city', e.target.value)}
-                        />
-                      ) : (
-                        <div className="input-display">{profileData.city || 'Nicht angegeben'}</div>
-                      )}
-                    </div>
-                  </div>
-                  <div className="input-group">
-                    <label>Bundesland</label>
-                    <div className="input-container">
-                      {isEditing ? (
-                        <input
-                          type="text"
-                          value={editData.state}
-                          onChange={(e) => handleInputChange('state', e.target.value)}
-                        />
-                      ) : (
-                        <div className="input-display">{profileData.state || 'Nicht angegeben'}</div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Meine Exchange-Anzeigen */}
-              <div className="profile-form-section">
-                <h2 className="section-title">Meine Exchange-Anzeigen</h2>
-                {loadingPosts ? (
-                  <div className="loading-spinner">Lade Anzeigen...</div>
-                ) : myExchangePosts.length === 0 ? (
-                  <div className="no-posts">
-                    <p>Sie haben noch keine Exchange-Anzeigen erstellt.</p>
-                    <button 
-                      className="btn btn-edit"
-                      onClick={() => window.location.href = '/exchange'}
-                    >
-                      Erste Anzeige erstellen
-                    </button>
-                  </div>
-                ) : (
-                  <div className="exchange-posts-grid">
-                    {myExchangePosts.map(post => (
-                      <div key={post._id} className="exchange-post-card">
-                        <div className="post-image">
-                          <img src={post.picture} alt={post.title} />
-                          <div className={`status-badge status-${post.status}`}>
-                            {post.status === 'aktiv' ? 'Aktiv' : 
-                             post.status === 'reserviert' ? 'Reserviert' : 'Abgeschlossen'}
-                          </div>
-                        </div>
-                        <div className="post-content">
-                          <div className="post-header">
-                            <h3 className="post-title">{post.title}</h3>
-                            <span className={`category-badge category-${post.category}`}>
-                              {post.category === 'verschenken' ? '🎁 Verschenken' :
-                               post.category === 'tauschen' ? '🔄 Tauschen' : '🔍 Suchen'}
-                            </span>
-                          </div>
-                          <p className="post-description">{post.description}</p>
-                          {post.tauschGegen && (
-                            <p className="post-trade">
-                              <strong>Tausche gegen:</strong> {post.tauschGegen}
-                            </p>
-                          )}
-                          <div className="post-meta">
-                            <span className="post-date">
-                              Erstellt: {new Date(post.createdAt).toLocaleDateString('de-DE')}
-                            </span>
-                            <span className="post-views">👁 {post.views} Aufrufe</span>
-                          </div>
-                          <div className="post-actions">
-                            <select 
-                              value={post.status}
-                              onChange={(e) => handleStatusChange(post._id, e.target.value)}
-                              className="status-select"
-                            >
-                              <option value="aktiv">Aktiv</option>
-                              <option value="reserviert">Reserviert</option>
-                              <option value="abgeschlossen">Abgeschlossen</option>
-                            </select>
-                            <button 
-                              className="btn-action btn-edit-post"
-                              onClick={() => handleEditPost(post)}
-                            >
-                              ✏️ Bearbeiten
-                            </button>
-                            <button 
-                              className="btn-action btn-delete-post"
-                              onClick={() => handleDeletePost(post._id)}
-                            >
-                              🗑️ Löschen
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
+        {/* ========================================
+            TAB NAVIGATION - Profil/Exchange/Events
+            ======================================== */}
+        <div className="profile-tabs">
+          <button 
+            className={`tab-button ${activeTab === 'profile' ? 'active' : ''}`}
+            onClick={() => setActiveTab('profile')}
+          >
+            <User size={18} />
+            Profil
+          </button>
+          <button 
+            className={`tab-button ${activeTab === 'exchange' ? 'active' : ''}`}
+            onClick={() => setActiveTab('exchange')}
+          >
+            <MapPin size={18} />
+            Exchange ({myExchangePosts.length})
+          </button>
+          <button 
+            className={`tab-button ${activeTab === 'events' ? 'active' : ''}`}
+            onClick={() => {
+              setActiveTab('events');
+              if (userEvents.length === 0) {
+                loadUserEvents(); // Events laden wenn noch nicht geladen
+              }
+            }}
+          >
+            <Calendar size={18} />
+            Events ({userEvents.length})
+          </button>
         </div>
 
-        {/* Edit Post Modal */}
+        {/* ========================================
+            MAIN CONTENT - Je nach aktivem Tab
+            ======================================== */}
+        <div className="profile-content">
+          
+          {/* ========================================
+              PROFILE TAB - Persönliche Daten
+              ======================================== */}
+          {activeTab === 'profile' && (
+            <div className="profile-grid">
+              
+              {/* Profilbild-Section */}
+              <div className="profile-image-section">
+                <div className="image-container">
+                  <div className="profile-image">
+                    {(isEditing ? editData.profileImage : profileData.profileImage) ? (
+                      <img 
+                        src={isEditing ? editData.profileImage : profileData.profileImage} 
+                        alt="Profilbild" 
+                      />
+                    ) : (
+                      <div className="default-avatar">
+                        <User size={48} />
+                      </div>
+                    )}
+                    {isEditing && (
+                      <label className="image-upload-btn">
+                        <Camera size={20} />
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={handleImageUpload}
+                          style={{ display: 'none' }}
+                        />
+                      </label>
+                    )}
+                  </div>
+                  <h2 className="profile-name">
+                    {profileData.firstName || profileData.lastName 
+                      ? `${profileData.firstName} ${profileData.lastName}`.trim()
+                      : 'Unbekannter Benutzer'
+                    }
+                  </h2>
+                  <p className="profile-username">
+                    @{profileData.username || 'unbekannt'}
+                  </p>
+                </div>
+              </div>
+
+              {/* Formular-Section */}
+              <div className="profile-form-section">
+                
+                {/* Account Informationen */}
+                <div className="form-group">
+                  <h3 className="section-title">
+                    <User size={20} />
+                    Account Informationen
+                  </h3>
+                  <div className="form-row">
+                    <div className="input-group">
+                      <label>Benutzername</label>
+                      <div className="input-container">
+                        {isEditing ? (
+                          <input
+                            type="text"
+                            value={editData.username}
+                            onChange={(e) => handleInputChange('username', e.target.value)}
+                          />
+                        ) : (
+                          <div className="input-display">{profileData.username || 'Nicht angegeben'}</div>
+                        )}
+                      </div>
+                    </div>
+                    <div className="input-group">
+                      <label>E-Mail</label>
+                      <div className="input-container">
+                        {isEditing ? (
+                          <input
+                            type="email"
+                            value={editData.email}
+                            onChange={(e) => handleInputChange('email', e.target.value)}
+                          />
+                        ) : (
+                          <div className="input-display">{profileData.email || 'Nicht angegeben'}</div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Persönliche Daten */}
+                <div className="form-group">
+                  <h3 className="section-title">
+                    <User size={20} />
+                    Persönliche Daten
+                  </h3>
+                  <div className="form-row">
+                    <div className="input-group">
+                      <label>Vorname</label>
+                      <div className="input-container">
+                        {isEditing ? (
+                          <input
+                            type="text"
+                            value={editData.firstName}
+                            onChange={(e) => handleInputChange('firstName', e.target.value)}
+                          />
+                        ) : (
+                          <div className="input-display">{profileData.firstName || 'Nicht angegeben'}</div>
+                        )}
+                      </div>
+                    </div>
+                    <div className="input-group">
+                      <label>Nachname</label>
+                      <div className="input-container">
+                        {isEditing ? (
+                          <input
+                            type="text"
+                            value={editData.lastName}
+                            onChange={(e) => handleInputChange('lastName', e.target.value)}
+                          />
+                        ) : (
+                          <div className="input-display">{profileData.lastName || 'Nicht angegeben'}</div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Adress-Informationen */}
+                <div className="form-group">
+                  <h3 className="section-title">
+                    <MapPin size={20} />
+                    Adresse
+                  </h3>
+                  <div className="input-group">
+                    <label>Straße und Hausnummer</label>
+                    <div className="input-container">
+                      {isEditing ? (
+                        <input
+                          type="text"
+                          value={editData.street}
+                          onChange={(e) => handleInputChange('street', e.target.value)}
+                        />
+                      ) : (
+                        <div className="input-display">{profileData.street || 'Nicht angegeben'}</div>
+                      )}
+                    </div>
+                  </div>
+                  <div className="form-row address-row">
+                    <div className="input-group">
+                      <label>PLZ</label>
+                      <div className="input-container">
+                        {isEditing ? (
+                          <input
+                            type="text"
+                            value={editData.zipCode}
+                            onChange={(e) => handleInputChange('zipCode', e.target.value)}
+                            maxLength="5"
+                          />
+                        ) : (
+                          <div className="input-display">{profileData.zipCode || 'Nicht angegeben'}</div>
+                        )}
+                      </div>
+                    </div>
+                    <div className="input-group">
+                      <label>Stadt</label>
+                      <div className="input-container">
+                        {isEditing ? (
+                          <input
+                            type="text"
+                            value={editData.city}
+                            onChange={(e) => handleInputChange('city', e.target.value)}
+                          />
+                        ) : (
+                          <div className="input-display">{profileData.city || 'Nicht angegeben'}</div>
+                        )}
+                      </div>
+                    </div>
+                    <div className="input-group">
+                      <label>Bundesland</label>
+                      <div className="input-container">
+                        {isEditing ? (
+                          <input
+                            type="text"
+                            value={editData.state}
+                            onChange={(e) => handleInputChange('state', e.target.value)}
+                          />
+                        ) : (
+                          <div className="input-display">{profileData.state || 'Nicht angegeben'}</div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ========================================
+              EXCHANGE TAB - Exchange-Anzeigen
+              ======================================== */}
+          {activeTab === 'exchange' && (
+            <div className="exchange-content">
+              <h2 className="section-title">
+                <MapPin size={20} />
+                Meine Exchange-Anzeigen
+              </h2>
+              
+              {loadingPosts ? (
+                <div className="loading-spinner">
+                  <Loader className="spinner" />
+                  Lade Anzeigen...
+                </div>
+              ) : myExchangePosts.length === 0 ? (
+                <div className="no-posts">
+                  <div className="no-posts-icon">📦</div>
+                  <h3>Keine Anzeigen</h3>
+                  <p>Sie haben noch keine Exchange-Anzeigen erstellt.</p>
+                  <button 
+                    className="btn btn-primary"
+                    onClick={() => navigate('/exchange')}
+                  >
+                    Erste Anzeige erstellen
+                  </button>
+                </div>
+              ) : (
+                <div className="exchange-posts-grid">
+                  {myExchangePosts.map(post => (
+                    <div key={post._id} className="exchange-post-card">
+                      <div className="post-image">
+                        <img src={post.picture} alt={post.title} />
+                        <div className={`status-badge status-${post.status}`}>
+                          {post.status === 'aktiv' ? 'Aktiv' : 
+                           post.status === 'reserviert' ? 'Reserviert' : 'Abgeschlossen'}
+                        </div>
+                      </div>
+                      <div className="post-content">
+                        <div className="post-header">
+                          <h3 className="post-title">{post.title}</h3>
+                          <span className={`category-badge category-${post.category}`}>
+                            {post.category === 'verschenken' ? '🎁 Verschenken' :
+                             post.category === 'tauschen' ? '🔄 Tauschen' : '🔍 Suchen'}
+                          </span>
+                        </div>
+                        <p className="post-description">{post.description}</p>
+                        {post.tauschGegen && (
+                          <p className="post-trade">
+                            <strong>Tausche gegen:</strong> {post.tauschGegen}
+                          </p>
+                        )}
+                        <div className="post-meta">
+                          <span className="post-date">
+                            Erstellt: {new Date(post.createdAt).toLocaleDateString('de-DE')}
+                          </span>
+                          <span className="post-views">👁 {post.views} Aufrufe</span>
+                        </div>
+                        <div className="post-actions">
+                          <select 
+                            value={post.status}
+                            onChange={(e) => handleStatusChange(post._id, e.target.value)}
+                            className="status-select"
+                          >
+                            <option value="aktiv">Aktiv</option>
+                            <option value="reserviert">Reserviert</option>
+                            <option value="abgeschlossen">Abgeschlossen</option>
+                          </select>
+                          <button 
+                            className="btn-action btn-edit-post"
+                            onClick={() => handleEditPost(post)}
+                          >
+                            ✏️ Bearbeiten
+                          </button>
+                          <button 
+                            className="btn-action btn-delete-post"
+                            onClick={() => handleDeletePost(post._id)}
+                          >
+                            🗑️ Löschen
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ========================================
+              EVENTS TAB - User Events
+              ======================================== */}
+          {activeTab === 'events' && (
+            <div className="events-content">
+              <h2 className="section-title">
+                <Calendar size={20} />
+                Meine Events
+              </h2>
+              
+              {eventsLoading ? (
+                <div className="loading-spinner">
+                  <Loader className="spinner" />
+                  Lade Events...
+                </div>
+              ) : userEvents.length === 0 ? (
+                <div className="no-events">
+                  <div className="no-events-icon">📅</div>
+                  <h3>Keine Events</h3>
+                  <p>Du nimmst aktuell an keinen Events teil.</p>
+                  <button 
+                    className="btn btn-primary"
+                    onClick={() => navigate('/events')}
+                  >
+                    Events durchsuchen
+                  </button>
+                </div>
+              ) : (
+                <div className="user-events-grid">
+                  {userEvents.map(event => (
+                    <div 
+                      key={event._id} 
+                      className="user-event-card"
+                      onClick={() => handleEventClick(event)}
+                    >
+                      {/* Event-Bild */}
+                      <div className="event-image">
+                        <img 
+                          src={event.image || '/placeholder-event.jpg'} 
+                          alt={event.title}
+                          onError={(e) => {
+                            e.target.style.display = 'none';
+                            e.target.nextSibling.style.display = 'flex';
+                          }}
+                        />
+                        <div className="event-placeholder" style={{ display: 'none' }}>
+                          <Calendar size={48} />
+                        </div>
+                      </div>
+                      
+                      {/* Event-Informationen */}
+                      <div className="event-info">
+                        <h3>{event.title}</h3>
+                        <div className="event-meta">
+                          <div className="event-date">
+                            <Calendar size={16} />
+                            {new Date(event.date).toLocaleDateString('de-DE')}
+                          </div>
+                          <div className="event-location">
+                            <MapPin size={16} />
+                            {event.location}
+                          </div>
+                          <div className="event-participants">
+                            <Users size={16} />
+                            {event.participants?.length || 0} Teilnehmer
+                          </div>
+                        </div>
+                        <p className="event-description">
+                          {event.description?.substring(0, 100)}
+                          {event.description?.length > 100 && '...'}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* ========================================
+            MODAL - Exchange-Post bearbeiten
+            ======================================== */}
         {showEditModal && editingPost && (
           <div className="edit-post-modal">
             <div className="modal-content">
