@@ -11,70 +11,40 @@ router.post('/reset-password/:token', async (req, res) => {
     const { token } = req.params;
     const { newPassword, confirmPassword } = req.body;
     
-    console.log('🔐 Password reset attempt with token');
+    console.log('🔄 Password reset attempt:', { email, resetCode: resetCode?.substring(0, 6) + '...', newPasswordLength: newPassword?.length });
     
-    // Validierung
-    if (!newPassword || !confirmPassword) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'Neues Passwort und Bestätigung sind erforderlich' 
-      });
-    }
-
-    if (newPassword !== confirmPassword) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'Passwörter stimmen nicht überein' 
-      });
-    }
-
-    if (newPassword.length < 6) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'Passwort muss mindestens 6 Zeichen lang sein' 
-      });
-    }
-
-    // Token verifizieren
-    let decoded;
-    try {
-      decoded = jwt.verify(token, process.env.JWT_SECRET);
-    } catch (error) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'Ungültiger oder abgelaufener Reset-Token' 
-      });
-    }
-
-    // User finden mit gültigem Token
-    const user = await User.findOne({
-      _id: decoded.userId,
-      resetPasswordToken: token,
-      resetPasswordExpires: { $gt: Date.now() }
+    // User finden und Code überprüfen
+    const user = await User.findOne({ 
+      email, 
+      resetCode,
+      resetCodeExpires: { $gt: Date.now() } // Code noch gültig
     });
-
+    
     if (!user) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'Ungültiger oder abgelaufener Reset-Token' 
-      });
+      console.log('❌ User not found or code invalid:', { email, resetCode });
+      return res.status(400).json({ message: 'Ungültiger oder abgelaufener Code' });
     }
 
-    console.log('✅ Valid reset token for user:', user.email);
+    console.log('✅ User found, resetting password for:', user.nickname);
+    console.log('🔍 Current password hash length:', user.password?.length);
+    console.log('🔍 New password length:', newPassword?.length);
 
     // Neues Passwort hashen und speichern
-    const hashedPassword = await bcrypt.hash(newPassword, 12);
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    console.log('🔐 New hashed password length:', hashedPassword?.length);
     
+    // Das Middleware erkennt jetzt, dass das Passwort bereits gehasht ist
     user.password = hashedPassword;
-    user.resetPasswordToken = undefined;
-    user.resetPasswordExpires = undefined;
-    await user.save();
+    user.resetCode = null;
+    user.resetCodeExpires = null;
+    
+    const savedUser = await user.save();
+    console.log('💾 User saved, final password hash length:', savedUser.password?.length);
 
-    console.log('✅ Password reset successful for:', user.email);
+    console.log('✅ Password successfully updated in database for:', user.nickname);
 
-    res.status(200).json({ 
-      success: true, 
-      message: 'Passwort erfolgreich zurückgesetzt. Sie können sich jetzt anmelden.' 
+    res.json({ 
+      message: 'Passwort erfolgreich zurückgesetzt'
     });
 
   } catch (error) {
