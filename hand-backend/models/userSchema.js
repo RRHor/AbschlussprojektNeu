@@ -23,7 +23,7 @@ const userSchema = new mongoose.Schema({
         city: { type: String, required: true },
         district: { type: String, required: true },
         zipCode: { type: Number, required: true },
-        //district: { type: String }, // optional
+        state: { type: String, required: true }, // Bundesland
         firstName: { type: String }, // optional
         lastName: { type: String },  // optional
         }
@@ -56,7 +56,18 @@ userSchema.pre("save", async function (next) {
     if (!this.isModified("password")) {
         return next();
     }
+    
+    // Prüfen, ob das Passwort bereits ein bcrypt-Hash ist
+    // bcrypt-Hashes beginnen immer mit $2a$, $2b$, $2x$ oder $2y$ und sind 60 Zeichen lang
+    const isBcryptHash = /^\$2[abxy]\$\d{2}\$.{53}$/.test(this.password);
+    
+    if (isBcryptHash) {
+        console.log('🔄 Password is already hashed, skipping hash middleware');
+        return next();
+    }
+    
     try {
+        console.log('🔐 Hashing password in middleware');
         const salt = await bcrypt.genSalt(10);
         this.password = await bcrypt.hash(this.password, salt);
         next();

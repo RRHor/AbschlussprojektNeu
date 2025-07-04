@@ -13,23 +13,21 @@ router.post('/forgot-password', async (req, res) => {
     return res.status(404).json({ message: 'E-Mail nicht gefunden.' });
   }
 
-  // Token für Passwort-Reset generieren
-  const token = crypto.randomBytes(32).toString('hex');
-  user.resetToken = token;
-  user.resetTokenExpires = Date.now() + 1000 * 60 * 60; // 1 Stunde gültig
-
-
-// Verifizierungscode generieren und speichern
-const verificationCode = Math.floor(100000 + Math.random() * 900000);
-user.verificationCode = verificationCode;
+  // Verifizierungscode generieren (6-stellig, benutzerfreundlich)
+  const verificationCode = Math.floor(100000 + Math.random() * 900000);
+  
+  // WICHTIG: Den 6-stelligen Code als resetCode verwenden, damit Frontend und Backend synchron sind
+  user.resetCode = verificationCode.toString();
+  user.resetCodeExpires = Date.now() + 1000 * 60 * 60; // 1 Stunde gültig
+  user.verificationCode = verificationCode;
 
   await user.save();
 
   // Nur die zentrale Mailfunktion für Passwort-Reset verwenden!
-  await sendPasswordResetEmail(user.email, token, verificationCode);
+  await sendPasswordResetEmail(user.email, verificationCode.toString(), verificationCode);
 
   // Logging (optional)
-  console.log(`Reset-Link für ${user.email}: http://localhost:5173/reset-password?token=${token}`);
+  console.log(`Reset-Link für ${user.email}: http://localhost:5175/forgot-password?code=${verificationCode}`);
 
   res.json({ message: 'E-Mail zum Zurücksetzen wurde gesendet.' });
 });

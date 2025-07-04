@@ -1,6 +1,6 @@
 import express from "express";
 import jwt from "jsonwebtoken";
-import User from "../models/UserModel.js";
+import User from "../models/userSchema.js";
 import { sendVerificationEmail } from "../utils/emailService.js";
 import { protect } from "../middleware/authMiddleware.js";
 
@@ -48,7 +48,8 @@ router.post('/register', async (req, res) => {
             return res.status(400).json({ message: 'E-Mail oder Nickname bereits vergeben' });
         }
 
-        // Adress-Validierung für alle Adressen im Array
+        // Adress-Validierung für alle Adressen im Array - temporär deaktiviert
+        /*
         if (addresses && addresses.length > 0) {
             for (const addr of addresses) {
                 const isValid = await validateAddress(addr);
@@ -60,6 +61,7 @@ router.post('/register', async (req, res) => {
                 }
             }
         }
+        */
 
         // Prüfen, ob schon ein Admin existiert (erster User wird Admin)
         const adminExists = await User.findOne({ isAdmin: true });
@@ -78,9 +80,16 @@ router.post('/register', async (req, res) => {
             isAdmin: !adminExists,
         });
         await newUser.save();
+        console.log('👤 User gespeichert, versuche E-Mail zu senden...');
 
-        // Verifizierungs-E-Mail senden
-        await sendVerificationEmail(newUser.email, newUser.verificationCode, newUser._id);
+        // Verifizierungs-E-Mail senden - temporär deaktiviert für Testing
+        try {
+            console.log('📧 Rufe sendVerificationEmail auf...');
+            await sendVerificationEmail(newUser.email, newUser.verificationCode, newUser._id);
+            console.log('✅ E-Mail erfolgreich gesendet');
+        } catch (emailError) {
+            console.error('❌ E-Mail-Versand fehlgeschlagen:', emailError.message);
+        }
 
         res.status(201).json({
             message: 'User erfolgreich erstellt',
@@ -89,10 +98,12 @@ router.post('/register', async (req, res) => {
             email: newUser.email,
             addresses: newUser.addresses,
             isAdmin: newUser.isAdmin,
-            isVerify: newUser.isVerify
+            isVerify: newUser.isVerify,
+            verificationCode: newUser.verificationCode // Nur für Testing - in Produktion entfernen!
         });
     } catch (error) {
-        console.error('Register error:', error);
+        console.error('🔥 REGISTER ERROR:', error);
+        console.error('🔥 ERROR STACK:', error.stack);
         res.status(500).json({ message: 'Serverfehler' });
     }
 });
@@ -213,6 +224,39 @@ router.post("/verify", async (req, res) => {
         res.json({ message: "E-Mail erfolgreich verifiziert" });
     } catch (error) {
         res.status(500).json({ message: "Verifizierung fehlgeschlagen", error: error.message });
+    }
+});
+
+/**
+ * Passwort zurücksetzen (alternative Route für Team-Konsistenz)
+ */
+router.post("/reset-password", async (req, res) => {
+    try {
+        const { email, resetCode, newPassword } = req.body;
+        
+        // User finden und Code überprüfen
+        const user = await User.findOne({ 
+            email, 
+            resetCode,
+            resetCodeExpires: { $gt: Date.now() } // Code noch gültig
+        });
+        
+        if (!user) {
+            return res.status(400).json({ message: 'Ungültiger oder abgelaufener Code' });
+        }
+
+        // Neues Passwort setzen (wird automatisch gehashed durch das User-Schema)
+        user.password = newPassword;
+        user.resetCode = null;
+        user.resetCodeExpires = null;
+        await user.save();
+
+        res.json({ 
+            message: 'Passwort erfolgreich zurückgesetzt'
+        });
+    } catch (error) {
+        console.error('Reset password error:', error);
+        res.status(500).json({ message: 'Serverfehler beim Passwort zurücksetzen' });
     }
 });
 

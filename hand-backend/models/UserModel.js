@@ -1,54 +1,9 @@
 import mongoose from "mongoose";
-import bcrypt from "bcryptjs";
+import { userSchema } from "./userSchema.js";
 
-// User-Schema Definition
-const userSchema = new mongoose.Schema(
-  {
-    // Name des Users (Pflichtfeld)
-    nickname: { type: String, required: true, unique: true }, // unique hinzugefügt
+const User = mongoose.model("User", userSchema);
 
-    // Array von Adress-Objekten für mehrere Wohnsitze
-    adress: [
-      {
-        firstName: { type: String, required: true },
-        lastName: { type: String, required: true },
-        street: { type: String, required: true },   // Straße
-        city: { type: String, required: true },     // Stadt
-        district: { type: String, required: true }, // Stadtteil/Bezirk
-        state: { type: String, required: true },    // Bundesland
-        zip: { type: Number, required: true },      // Postleitzahl
-      }
-    ],
-
-    // E-Mail-Adresse (muss eindeutig sein)
-    email: { type: String, required: true, unique: true },
-
-    // Passwort (wird gehasht gespeichert)
-    password: { type: String, required: true },
-
-    // Admin-Status (Standard: false)
-    isAdmin: { type: Boolean, default: false },
-
-    // Aktivitätsstatus (Standard: true)
-    isActive: { type: Boolean, default: true },
-
-    // E-Mail-Verifizierungsstatus (Standard: false)
-    isVerify: { type: Boolean, default: false },
-
-    // Verifizierungscode für E-Mail-Bestätigung (optional)
-    verificationCode: { type: String, required: false, default: null },
-
-    // Ablaufdatum des Verifizierungscodes (optional)
-    verificationCodeExpires: { type: Date, default: null },
-
-    // Reset-Code für Passwort-Reset
-    resetCode: { type: String, required: false, default: null },
-    resetCodeExpires: { type: Date, default: null },
-  },
-  { timestamps: true } // Erstellt automatisch createdAt und updatedAt Felder
-);
-
-// Middleware: Passwort vor dem Speichern hashen
+export default User;
 userSchema.pre("save", async function (next) {
   if (!this.isModified("password")) {
     return next();

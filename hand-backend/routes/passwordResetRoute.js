@@ -9,6 +9,8 @@ router.post('/password-reset', async (req, res) => {
   try {
     const { email, resetCode, newPassword } = req.body;
     
+    console.log('🔄 Password reset attempt:', { email, resetCode: resetCode?.substring(0, 6) + '...', newPasswordLength: newPassword?.length });
+    
     // User finden und Code überprüfen
     const user = await User.findOne({ 
       email, 
@@ -17,37 +19,33 @@ router.post('/password-reset', async (req, res) => {
     });
     
     if (!user) {
+      console.log('❌ User not found or code invalid:', { email, resetCode });
       return res.status(400).json({ message: 'Ungültiger oder abgelaufener Code' });
     }
 
+    console.log('✅ User found, resetting password for:', user.nickname);
+    console.log('🔍 Current password hash length:', user.password?.length);
+    console.log('🔍 New password length:', newPassword?.length);
+
     // Neues Passwort hashen und speichern
-    user.password = await bcrypt.hash(newPassword, 10);
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    console.log('🔐 New hashed password length:', hashedPassword?.length);
+    
+    // Das Middleware erkennt jetzt, dass das Passwort bereits gehasht ist
+    user.password = hashedPassword;
     user.resetCode = null;
     user.resetCodeExpires = null;
-    await user.save();
+    
+    const savedUser = await user.save();
+    console.log('💾 User saved, final password hash length:', savedUser.password?.length);
 
-    // Neues JWT-Token generieren
-    const token = jwt.sign(
-      { _id: user._id, nickname: user.nickname },
-      process.env.JWT_SECRET,
-      { expiresIn: '1d' }
-    );
+    console.log('✅ Password successfully updated in database for:', user.nickname);
 
     res.json({ 
-      message: 'Passwort erfolgreich zurückgesetzt',
-      token,
-      user: {
-        _id: user._id,
-        nickname: user.nickname,
-        email: user.email,
-        addresses: user.addresses,
-        isAdmin: user.isAdmin,
-        isActive: user.isActive,
-        isVerify: user.isVerify
-      }
+      message: 'Passwort erfolgreich zurückgesetzt'
     });
   } catch (error) {
-    console.error('Password reset error:', error);
+    console.error('❌ Password reset error:', error);
     res.status(500).json({ message: 'Serverfehler' });
   }
 });

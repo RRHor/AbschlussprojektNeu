@@ -21,6 +21,9 @@ const transporter = nodemailer.createTransport({
  */
 export const sendVerificationEmail = async (to, verificationCode,userId) => {
   try {
+    console.log('📧 Versuche E-Mail zu senden an:', to);
+    console.log('🔢 Verifizierungscode:', verificationCode);
+    
     const mailOptions = {
       from: process.env.EMAIL_FROM,
       to,
@@ -79,7 +82,7 @@ export const sendPasswordResetEmail = async (to, resetToken, verificationCode) =
           <p>Du erhältst diese E-Mail, weil du (oder jemand anderes) ein Zurücksetzen deines Passworts angefordert hat.</p>
           ${codeHtml}
           <p>Klicke auf den folgenden Link, um dein Passwort zurückzusetzen:</p>
-          <p><a href="http://localhost:5173/reset-password?token=${resetToken}" style="background-color: #4CAF50; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px; display: inline-block;">Passwort zurücksetzen</a></p>
+          <p><a href="http://localhost:5173/forgot-password?code=${resetToken}" style="background-color: #4CAF50; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px; display: inline-block;">Passwort zurücksetzen</a></p>
           <p>Dieser Link ist 1 Stunde gültig.</p>
           <p>Wenn du das nicht angefordert hast, ignoriere diese E-Mail bitte.</p>
           <p>Viele Grüße,<br>Dein Hand-Hand Team</p>

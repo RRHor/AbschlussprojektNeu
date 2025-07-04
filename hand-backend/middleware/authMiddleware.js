@@ -3,14 +3,16 @@ import User from '../models/userSchema.js';
 
 export async function protect(req, res, next) {
     try {
-        console.log('🔐 Auth middleware called');
-        console.log('📋 Headers:', req.headers.authorization ? 'Authorization header present' : 'NO AUTH HEADER');
+        // console.log('🔐 Auth middleware called');
+        // console.log('📋 Headers:', req.headers.authorization ? 'Authorization header present' : 'NO AUTH HEADER');
         
         let token;
         
         if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+            // console.log('🔍 Full auth header:', req.headers.authorization);
             token = req.headers.authorization.split(' ')[1];
-            console.log('🎫 Token extracted:', token ? 'Token present' : 'Token missing');
+            // console.log('🎫 Token extracted:', token ? 'Token present' : 'Token missing');
+            // console.log('🔧 Token length:', token ? token.length : 'No token');
         }
 
         if (!token) {
@@ -26,7 +28,7 @@ export async function protect(req, res, next) {
         console.log('✅ Token decoded, User ID:', decoded.id);
 
         req.user = await User.findById(decoded.id).select('-password');
-        console.log('👤 User found:', req.user ? req.user.username : 'User not found');
+        console.log('👤 User found:', req.user ? req.user.nickname : 'User not found');
 
         if (!req.user) {
             console.log('❌ User not found in database');

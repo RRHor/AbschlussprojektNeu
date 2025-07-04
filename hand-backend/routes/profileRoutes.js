@@ -1,11 +1,11 @@
 import express from 'express';
 import {protect} from '../middleware/authMiddleware.js'; // oder { protect } je nach Export
 import User from '../models/userSchema.js';
-import Post from '../models/postSchema.js'; // Importiere das Post-Modell
+// import Post from '../models/postSchema.js'; // Falls wir Posts später brauchen
 
 const router = express.Router();
 
-// Profil-Endpunkt (geschützt)
+// Profil-Endpunkt (geschützt) - für Team-Kompatibilität
 router.get('/profile', protect, async (req, res) => {
   try {
     // req.user wird im protect-Middleware gesetzt
@@ -17,7 +17,19 @@ router.get('/profile', protect, async (req, res) => {
   }
 });
 
+// Gleiche Route als /users/me - für einheitliche API-Struktur
+router.get('/users/me', protect, async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id).select('-password');
+    if (!user) return res.status(404).json({ message: 'User nicht gefunden' });
+    res.json(user);
+  } catch (err) {
+    res.status(500).json({ message: 'Serverfehler' });
+  }
+});
+
 // Neuen Endpunkt für das Abrufen von Beiträgen eines Benutzers
+/*
 router.get('/profile/posts', protect, async (req, res) => {
   try {
     // Finde den Benutzer und beziehe die zugehörigen Beiträge
@@ -32,8 +44,10 @@ router.get('/profile/posts', protect, async (req, res) => {
     res.status(500).json({ message: 'Serverfehler' });
   }
 });
+*/
 
 // Beispiel für einen geschützten Endpunkt zum Erstellen eines Beitrags
+/*
 router.post('/profile/posts', protect, async (req, res) => {
   const { title, content } = req.body;
 
@@ -53,8 +67,10 @@ router.post('/profile/posts', protect, async (req, res) => {
     res.status(500).json({ message: 'Serverfehler' });
   }
 });
+*/
 
 // Beispiel für einen geschützten Endpunkt zum Abrufen eines bestimmten Beitrags
+/*
 router.get('/profile/posts/:id', protect, async (req, res) => {
   try {
     // Finde den Beitrag anhand der ID und beziehe den Benutzer
@@ -67,5 +83,6 @@ router.get('/profile/posts/:id', protect, async (req, res) => {
     res.status(500).json({ message: 'Serverfehler' });
   }
 });
+*/
 
 export default router;
