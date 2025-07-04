@@ -16,14 +16,42 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Check if user is logged in on app start
+  // Check if user is logged in on app start + Listen for token changes across tabs
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (token) {
+      console.log('🔍 Found token, verifying user...');
       fetchUser();
     } else {
+      console.log('ℹ️ No token found, user not logged in');
       setLoading(false);
     }
+
+    // Listen for storage changes (token updates from other tabs)
+    const handleStorageChange = (e) => {
+      if (e.key === 'token') {
+        console.log('🔄 Token changed in another tab, syncing...');
+        
+        if (e.newValue) {
+          // New token was set in another tab
+          console.log('✅ New token detected, fetching user data...');
+          fetchUser();
+        } else {
+          // Token was removed in another tab
+          console.log('🚪 Token removed in another tab, logging out...');
+          setUser(null);
+          setLoading(false);
+        }
+      }
+    };
+
+    // Add storage event listener
+    window.addEventListener('storage', handleStorageChange);
+
+    // Cleanup listener on unmount
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -47,16 +75,26 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const login = async (email, password) => {
+  const login = async (email, password, rememberMe = false) => {
     try {
-      const response = await api.post('/auth/login', { email, password });
+      console.log('🔐 AuthContext login called with:', { email, rememberMe });
+      
+      const response = await api.post('/auth/login', { 
+        email, 
+        password,
+        rememberMe 
+      });
+      
       const { token, user } = response.data;
+      
+      console.log('✅ Login response received:', { token: token ? 'present' : 'missing', user: user ? 'present' : 'missing' });
       
       localStorage.setItem('token', token);
       setUser(user);
       
       return { success: true };
     } catch (error) {
+      console.error('❌ Login error:', error.response?.data || error);
       return {
         success: false,
         message: error.response?.data?.message || 'Login fehlgeschlagen'
@@ -66,15 +104,19 @@ export const AuthProvider = ({ children }) => {
 
   const register = async (userData) => {
     try {
+      console.log('📝 AuthContext register called with:', userData);
+      
       const response = await api.post('/auth/register', userData);
       const { token, user } = response.data;
+      
+      console.log('✅ Registration response received:', { token: token ? 'present' : 'missing', user: user ? 'present' : 'missing' });
       
       localStorage.setItem('token', token);
       setUser(user);
       
       return { success: true };
     } catch (error) {
-      console.error('Registration failed:', error.response?.data);
+      console.error('❌ Registration error:', error.response?.data || error);
       return {
         success: false,
         message: error.response?.data?.message || 'Registrierung fehlgeschlagen'
@@ -83,8 +125,16 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = () => {
+    console.log('🚪 Logging out');
     localStorage.removeItem('token');
     setUser(null);
+  };
+
+  // Additional helper function for setting token directly if needed
+  const setTokenDirectly = (token) => {
+    console.log('🔑 Setting token directly');
+    localStorage.setItem('token', token);
+    fetchUser(); // Fetch user data with the new token
   };
 
   const value = {
@@ -92,6 +142,7 @@ export const AuthProvider = ({ children }) => {
     login,
     register,
     logout,
+    setTokenDirectly,
     loading
   };
 

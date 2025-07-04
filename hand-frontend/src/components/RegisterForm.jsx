@@ -3,619 +3,479 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Eye, EyeOff, User, Mail, Lock, MapPin, Loader, CheckCircle } from 'lucide-react';
 import './RegisterForm.css';
-import logo from '../assets/logo.png';
-// import { API_URL } from '../config';
 
 const RegisterForm = ({ onSuccess = () => {} }) => {
-  const navigate = useNavigate();
-  const { register } = useAuth();
-
   const [formData, setFormData] = useState({
     nickname: '',
     email: '',
     password: '',
     confirmPassword: '',
-    firstName: '',
-    lastName: '',
-    street: '',
-    city: '',
-    district: '',
-    zipCode: '',
-    // state: '',
+    address: {
+      street: '',
+      city: '',
+      district: '',
+      state: '',
+      zipCode: '',
+      firstName: '',
+      lastName: ''
+    }
   });
 
-  const [touchedFields, setTouchedFields] = useState({});
+  const [errors, setErrors] = useState({});
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [message, setMessage] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [formErrors, setFormErrors] = useState({});
+  const [isLoading, setIsLoading] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-    if (formErrors[name]) {
-      setFormErrors((prev) => ({ ...prev, [name]: '' }));
-    }
-  };
-
-  const handleBlur = (e) => {
-    const { name, value } = e.target;
-    setTouchedFields((prev) => ({
-      ...prev,
-      [name]: true,
-    }));
-    validateField(name, value);
-  };
-
-  const validateField = (fieldName, value) => {
-    const errors = { ...formErrors };
-    switch (fieldName) {
-      case 'email':
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(value)) {
-          errors[fieldName] = 'Bitte geben Sie eine gültige E-Mail-Adresse ein.';
-        } else {
-          delete errors[fieldName];
-        }
-        break;
-      case 'password':
-        if (value.length < 6) {
-          errors[fieldName] = 'Passwort muss mindestens 6 Zeichen lang sein.';
-        } else {
-          delete errors[fieldName];
-        }import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import { Eye, EyeOff, User, Mail, Lock, MapPin, Loader, CheckCircle } from 'lucide-react';
-import './RegisterForm.css';
-import logo from '../assets/logo.png';
-// import { API_URL } from '../config';
-
-const RegisterForm = ({ onSuccess = () => {} }) => {
   const navigate = useNavigate();
   const { register } = useAuth();
 
-  const [formData, setFormData] = useState({
-    nickname: '',
-    email: '',
-    password: '',
-    confirmPassword: '',
-    firstName: '',
-    lastName: '',
-    street: '',
-    city: '',
-    district: '',
-    zipCode: '',
-    // state: '',
-  });
+  const validateField = (name, value) => {
+    const newErrors = { ...errors };
 
-  const [touchedFields, setTouchedFields] = useState({});
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [message, setMessage] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [formErrors, setFormErrors] = useState({});
+    switch (name) {
+      case 'nickname':
+        if (!value.trim()) {
+          newErrors[name] = 'Nickname ist erforderlich.';
+        } else if (value.length < 2) {
+          newErrors[name] = 'Nickname muss mindestens 2 Zeichen lang sein.';
+        } else {
+          delete newErrors[name];
+        }
+        break;
+
+      case 'email':
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!value.trim()) {
+          newErrors[name] = 'E-Mail ist erforderlich.';
+        } else if (!emailRegex.test(value)) {
+          newErrors[name] = 'Ungültige E-Mail-Adresse.';
+        } else {
+          delete newErrors[name];
+        }
+        break;
+
+      case 'password':
+        if (!value) {
+          newErrors[name] = 'Passwort ist erforderlich.';
+        } else if (value.length < 6) {
+          newErrors[name] = 'Passwort muss mindestens 6 Zeichen lang sein.';
+        } else {
+          delete newErrors[name];
+        }
+        break;
+
+      case 'confirmPassword':
+        if (value !== formData.password) {
+          newErrors[name] = 'Passwörter stimmen nicht überein.';
+        } else {
+          delete newErrors[name];
+        }
+        break;
+
+      default:
+        break;
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-    if (formErrors[name]) {
-      setFormErrors((prev) => ({ ...prev, [name]: '' }));
+    
+    if (name.startsWith('address.')) {
+      const addressField = name.split('.')[1];
+      setFormData(prev => ({
+        ...prev,
+        address: {
+          ...prev.address,
+          [addressField]: value
+        }
+      }));
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        [name]: value
+      }));
     }
-  };
 
-  const handleBlur = (e) => {
-    const { name, value } = e.target;
-    setTouchedFields((prev) => ({
-      ...prev,
-      [name]: true,
-    }));
+    // Validate field
     validateField(name, value);
   };
 
-  const validateField = (fieldName, value) => {
-    const errors = { ...formErrors };
-    switch (fieldName) {
-      case 'email':
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(value)) {
-          errors[fieldName] = 'Bitte geben Sie eine gültige E-Mail-Adresse ein.';
-        } else {
-          delete errors[fieldName];
-        }
-        break;
-      case 'password':
-        if (value.length < 6) {
-          errors[fieldName] = 'Passwort muss mindestens 6 Zeichen lang sein.';
-        } else {
-          delete errors[fieldName];
-        }
-        break;
-      case 'confirmPassword':
-        if (value !== formData.password) {
-          errors[fieldName] = 'Passwörter stimmen nicht überein.';
-        } else {
-          delete errors[fieldName];
-        }
-        break;
-      case 'zipCode':
-        if (value && (value.length !== 5 || !/^\d+$/.test(value))) {
-          errors[fieldName] = 'PLZ muss genau 5 Ziffern haben.';
-        } else {
-          delete errors[fieldName];
-        }
-        break;
-      default:
-        if (!value.trim()) {
-          errors[fieldName] = 'Dieses Feld ist erforderlich.';
-        } else {
-          delete errors[fieldName];
-        }
-    }
-    setFormErrors(errors);
-  };
-
-  const validateForm = () => {
-    const errors = {};
-    const requiredFields = [
-      'nickname', 'email', 'password', 'confirmPassword',
-      'firstName', 'lastName', 'street', 'city', 'zipCode', 'state'
-    ];
-    requiredFields.forEach((field) => {
-      if (!formData[field] || !formData[field].toString().trim()) {
-        errors[field] = 'Dieses Feld ist erforderlich.';
-      }
-    });
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (formData.email && !emailRegex.test(formData.email)) {
-      errors.email = 'Bitte geben Sie eine gültige E-Mail-Adresse ein.';
-    }
-    if (formData.password && formData.password.length < 6) {
-      errors.password = 'Passwort muss mindestens 6 Zeichen lang sein.';
-    }
-    if (formData.password !== formData.confirmPassword) {
-      errors.confirmPassword = 'Passwörter stimmen nicht überein.';
-    }
-    if (formData.zipCode && (formData.zipCode.length !== 5 || !/^\d+$/.test(formData.zipCode))) {
-      errors.zipCode = 'PLZ muss genau 5 Ziffern haben.';
-    }
-    return errors;
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setIsSubmitting(true);
-    setMessage('');
-    const errors = validateForm();
-    if (Object.keys(errors).length > 0) {
-      setFormErrors(errors);
-      setIsSubmitting(false);
+    console.log('🚀 FORM SUBMITTED! Starting registration process...');
+    console.log('📝 Current formData:', formData);
+    
+    setIsLoading(true);
+
+    // Validate all fields
+    console.log('🔍 Starting validation...');
+    let hasErrors = false;
+    
+    // Check required fields
+    if (!formData.nickname?.trim()) {
+      console.log('❌ Nickname is empty');
+      setErrors(prev => ({ ...prev, nickname: 'Nickname ist erforderlich' }));
+      hasErrors = true;
+    }
+    
+    if (!formData.email?.trim()) {
+      console.log('❌ Email is empty');
+      setErrors(prev => ({ ...prev, email: 'E-Mail ist erforderlich' }));
+      hasErrors = true;
+    }
+    
+    if (!formData.password?.trim()) {
+      console.log('❌ Password is empty');
+      setErrors(prev => ({ ...prev, password: 'Passwort ist erforderlich' }));
+      hasErrors = true;
+    }
+    
+    if (formData.password !== formData.confirmPassword) {
+      console.log('❌ Passwords do not match');
+      setErrors(prev => ({ ...prev, confirmPassword: 'Passwörter stimmen nicht überein' }));
+      hasErrors = true;
+    }
+
+    // Check required address fields
+    if (!formData.address.street?.trim()) {
+      console.log('❌ Street is empty');
+      setErrors(prev => ({ ...prev, 'address.street': 'Straße ist erforderlich' }));
+      hasErrors = true;
+    }
+    
+    if (!formData.address.city?.trim()) {
+      console.log('❌ City is empty');
+      setErrors(prev => ({ ...prev, 'address.city': 'Stadt ist erforderlich' }));
+      hasErrors = true;
+    }
+    
+    if (!formData.address.district?.trim()) {
+      console.log('❌ District is empty');
+      setErrors(prev => ({ ...prev, 'address.district': 'Bezirk ist erforderlich' }));
+      hasErrors = true;
+    }
+    
+    if (!formData.address.state?.trim()) {
+      console.log('❌ State is empty');
+      setErrors(prev => ({ ...prev, 'address.state': 'Bundesland ist erforderlich' }));
+      hasErrors = true;
+    }
+    
+    if (!formData.address.zipCode?.toString().trim()) {
+      console.log('❌ ZipCode is empty');
+      setErrors(prev => ({ ...prev, 'address.zipCode': 'PLZ ist erforderlich' }));
+      hasErrors = true;
+    }
+
+    console.log('🔍 Form validation result:', !hasErrors);
+
+    if (hasErrors) {
+      console.log('❌ Form validation failed, stopping registration');
+      setIsLoading(false);
       return;
     }
+
     try {
+      console.log('📝 Registering user with data:', formData);
+      
+      // Prepare data for backend - convert address to addresses array and zipCode to number
+      const registrationData = {
+        nickname: formData.nickname,
+        email: formData.email,
+        password: formData.password,
+        addresses: [{
+          street: formData.address.street,
+          city: formData.address.city,
+          district: formData.address.district,
+          state: formData.address.state,
+          zipCode: parseInt(formData.address.zipCode) || 0,
+          firstName: formData.address.firstName,
+          lastName: formData.address.lastName
+        }]
+      };
 
-      const response = await fetch(`${API_URL}/auth/register`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          nickname: formData.nickname,
-          email: formData.email,
-          password: formData.password,
-          adress: {
+      console.log('📤 Sending registration data:', registrationData);
 
-            street: formData.street,
-            city: formData.city,
-            district: formData.district,
-            zipCode: parseInt(formData.zip, 10),// <-- Wichtig: "zip" statt "zipCode"
-            firstName: formData.firstName,
-            lastName: formData.lastName
-          }
+      // Use AuthContext register function (which uses api.js with axios)
+      const result = await register(registrationData);
+      console.log('📥 Registration result:', result);
 
-    
-        }),
-      });
-
-      const data = await response.json();
-      if (response.ok) {
-        localStorage.setItem('token', data.token);
-        onSuccess(data);
-
-        navigate('/login');
-
+      if (result.success) {
+        console.log('✅ Registration successful');
+        setIsSuccess(true);
+        setTimeout(() => {
+          onSuccess(result);
+          navigate('/profile');
+        }, 2000);
       } else {
-        setMessage(`❌ ${result.message || 'Registrierung fehlgeschlagen'}`);
+        console.error('❌ Registration failed:', result.message);
+        setErrors({ general: result.message || 'Registrierung fehlgeschlagen' });
       }
     } catch (error) {
       console.error('Registration error:', error);
-      setMessage('❌ Ein unerwarteter Fehler ist aufgetreten.');
+      setErrors({ general: 'Verbindungsfehler. Bitte versuchen Sie es später erneut.' });
     } finally {
-      setIsSubmitting(false);
+      setIsLoading(false);
     }
   };
 
-  const fieldLabels = {
-    nickname: 'Spitzname *',
-    email: 'E-Mail *',
-    password: 'Passwort *',
-    confirmPassword: 'Passwort bestätigen *',
-    firstName: 'Vorname *',
-    lastName: 'Nachname *',
-    street: 'Straße *',
-    city: 'Stadt *',
-    district: 'Landkreis oder Stadtteil',
-    zipCode: 'PLZ *',
-    state: 'Bundesland *',
-  };
-
-  const getFieldIcon = (field) => {
-    switch (field) {
-      case 'email': return <Mail size={16} />;
-      case 'password':
-      case 'confirmPassword': return <Lock size={16} />;
-      case 'nickname': return <User size={16} />;
-      case 'street':
-      case 'city':
-      case 'district':
-      case 'zipCode':
-      case 'state': return <MapPin size={16} />;
-      default: return <User size={16} />;
-    }
-  };
+  if (isSuccess) {
+    return (
+      <div className="register-success">
+        <CheckCircle size={64} className="success-icon" />
+        <h2>Registrierung erfolgreich!</h2>
+        <p>Bitte bestätigen Sie Ihre E-Mail-Adresse.</p>
+      </div>
+    );
+  }
 
   return (
-    <div className="register-form-container">
-      <div className="logo-background">
-        <img src={logo} alt="Hand in Hand Logo" className="animated-logo" />
-      </div>
-      <form onSubmit={handleSubmit} className="register-form" noValidate>
-        <div className="form-header">
+    <div className="register-container">
+      <div className="register-card">
+        <div className="register-header">
           <h2>Registrierung</h2>
-          <p>Werden Sie Teil unserer Nachbarschaftsgemeinschaft</p>
+          <p>Werden Sie Teil unserer Nachbarschaftsgemeinschaft!</p>
         </div>
-        <div className="form-grid">
-          {Object.keys(fieldLabels).map((field) => (
-            <div key={field} className="form-group">
-              <label className="register-label">
-                {fieldLabels[field]}:
-                <div className="input-container">
-                  <span className="input-icon">
-                    {getFieldIcon(field)}
-                  </span>
-                  <input
-                    type={
-                      field === 'email' ? 'email' :
-                      (field === 'password' || field === 'confirmPassword') ? 
-                        (field === 'password' ? (showPassword ? 'text' : 'password') : 
-                         (showConfirmPassword ? 'text' : 'password')) :
-                      field === 'zipCode' ? 'text' : 'text'
-                    }
-                    name={field}
-                    value={formData[field]}
-                    onChange={handleChange}
-                    onBlur={handleBlur}
-                    required={[
-                      'nickname', 'email', 'password', 'confirmPassword', 
-                      'firstName', 'lastName', 'street', 'city', 'zipCode', 'state'
-                    ].includes(field)}
-                    className={`register-input ${
-                      touchedFields[field] ? 'touched' : ''
-                    } ${formErrors[field] ? 'error' : ''}`}
-                    placeholder={`${fieldLabels[field]} eingeben`}
-                    autoComplete={
-                      field === 'email' ? 'email' :
-                      field === 'password' ? 'new-password' :
-                      field === 'confirmPassword' ? 'new-password' :
-                      'off'
-                    }
-                  />
-                  {(field === 'password' || field === 'confirmPassword') && (
-                    <button
-                      type="button"
-                      className="password-toggle"
-                      onClick={() => field === 'password' ? 
-                        setShowPassword(!showPassword) : 
-                        setShowConfirmPassword(!showConfirmPassword)
-                      }
-                      aria-label={
-                        (field === 'password' ? showPassword : showConfirmPassword) ? 
-                        'Passwort verbergen' : 'Passwort anzeigen'
-                      }
-                    >
-                      {(field === 'password' ? showPassword : showConfirmPassword) ? 
-                        <EyeOff size={16} /> : <Eye size={16} />
-                      }
-                    </button>
-                  )}
-                </div>
-                {formErrors[field] && (
-                  <p className="register-error">{formErrors[field]}</p>
-                )}
-              </label>
+
+        <form onSubmit={handleSubmit} className="register-form">
+          {errors.general && (
+            <div className="error-message">
+              {errors.general}
             </div>
-          ))}
-        </div>
-        <button
-          type="submit"
-          disabled={isSubmitting}
-          className={`register-button ${isSubmitting ? 'loading' : ''}`}
-        >
-          {isSubmitting ? (
-            <>
-              <Loader size={20} className="spinner" />
-              Registrierung läuft...
-            </>
-          ) : (
-            <>
-              <CheckCircle size={20} />
-              Registrieren
-            </>
           )}
-        </button>
-        {message && (
-          <div className={`message ${message.includes('✅') ? 'success' : 'error'}`}>
-            {message}
+
+          <div className="form-group">
+            <label htmlFor="nickname">
+              <User size={20} />
+              Nickname
+            </label>
+            <input
+              type="text"
+              id="nickname"
+              name="nickname"
+              value={formData.nickname}
+              onChange={handleChange}
+              required
+              placeholder="Ihr Nickname"
+              className={errors.nickname ? 'error' : ''}
+            />
+            {errors.nickname && <span className="error-text">{errors.nickname}</span>}
           </div>
-        )}
-        <div className="form-footer">
+
+          <div className="form-group">
+            <label htmlFor="email">
+              <Mail size={20} />
+              E-Mail-Adresse
+            </label>
+            <input
+              type="email"
+              id="email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              required
+              placeholder="ihre.email@beispiel.de"
+              className={errors.email ? 'error' : ''}
+            />
+            {errors.email && <span className="error-text">{errors.email}</span>}
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="password">
+              <Lock size={20} />
+              Passwort
+            </label>
+            <div className="password-input-container">
+              <input
+                type={showPassword ? 'text' : 'password'}
+                id="password"
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
+                required
+                placeholder="Mindestens 6 Zeichen"
+                className={errors.password ? 'error' : ''}
+              />
+              <button
+                type="button"
+                className="password-toggle"
+                onClick={() => setShowPassword(!showPassword)}
+              >
+                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+              </button>
+            </div>
+            {errors.password && <span className="error-text">{errors.password}</span>}
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="confirmPassword">
+              <Lock size={20} />
+              Passwort bestätigen
+            </label>
+            <div className="password-input-container">
+              <input
+                type={showConfirmPassword ? 'text' : 'password'}
+                id="confirmPassword"
+                name="confirmPassword"
+                value={formData.confirmPassword}
+                onChange={handleChange}
+                required
+                placeholder="Passwort wiederholen"
+                className={errors.confirmPassword ? 'error' : ''}
+              />
+              <button
+                type="button"
+                className="password-toggle"
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+              >
+                {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+              </button>
+            </div>
+            {errors.confirmPassword && <span className="error-text">{errors.confirmPassword}</span>}
+          </div>
+
+          <div className="address-section">
+            <h3>
+              <MapPin size={20} />
+              Adresse
+            </h3>
+            
+            <div className="form-row">
+              <div className="form-group">
+                <label htmlFor="address.firstName">Vorname (optional)</label>
+                <input
+                  type="text"
+                  id="address.firstName"
+                  name="address.firstName"
+                  value={formData.address.firstName}
+                  onChange={handleChange}
+                  placeholder="Max"
+                />
+              </div>
+              <div className="form-group">
+                <label htmlFor="address.lastName">Nachname (optional)</label>
+                <input
+                  type="text"
+                  id="address.lastName"
+                  name="address.lastName"
+                  value={formData.address.lastName}
+                  onChange={handleChange}
+                  placeholder="Mustermann"
+                />
+              </div>
+            </div>
+            
+            <div className="form-row">
+              <div className="form-group">
+                <label htmlFor="address.street">Straße & Hausnummer *</label>
+                <input
+                  type="text"
+                  id="address.street"
+                  name="address.street"
+                  value={formData.address.street}
+                  onChange={handleChange}
+                  placeholder="Musterstraße 123"
+                  required
+                  className={errors['address.street'] ? 'error' : ''}
+                />
+                {errors['address.street'] && <span className="error-text">{errors['address.street']}</span>}
+              </div>
+            </div>
+
+            <div className="form-row">
+              <div className="form-group">
+                <label htmlFor="address.zipCode">PLZ *</label>
+                <input
+                  type="number"
+                  id="address.zipCode"
+                  name="address.zipCode"
+                  value={formData.address.zipCode}
+                  onChange={handleChange}
+                  placeholder="12345"
+                  required
+                  className={errors['address.zipCode'] ? 'error' : ''}
+                />
+                {errors['address.zipCode'] && <span className="error-text">{errors['address.zipCode']}</span>}
+              </div>
+              <div className="form-group">
+                <label htmlFor="address.city">Stadt *</label>
+                <input
+                  type="text"
+                  id="address.city"
+                  name="address.city"
+                  value={formData.address.city}
+                  onChange={handleChange}
+                  placeholder="Musterstadt"
+                  required
+                  className={errors['address.city'] ? 'error' : ''}
+                />
+                {errors['address.city'] && <span className="error-text">{errors['address.city']}</span>}
+              </div>
+            </div>
+
+            <div className="form-row">
+              <div className="form-group">
+                <label htmlFor="address.district">Bezirk/Ortsteil *</label>
+                <input
+                  type="text"
+                  id="address.district"
+                  name="address.district"
+                  value={formData.address.district}
+                  onChange={handleChange}
+                  placeholder="Stadtmitte"
+                  required
+                  className={errors['address.district'] ? 'error' : ''}
+                />
+                {errors['address.district'] && <span className="error-text">{errors['address.district']}</span>}
+              </div>
+              <div className="form-group">
+                <label htmlFor="address.state">Bundesland *</label>
+                <input
+                  type="text"
+                  id="address.state"
+                  name="address.state"
+                  value={formData.address.state}
+                  onChange={handleChange}
+                  placeholder="Nordrhein-Westfalen"
+                  required
+                  className={errors['address.state'] ? 'error' : ''}
+                />
+                {errors['address.state'] && <span className="error-text">{errors['address.state']}</span>}
+              </div>
+            </div>
+          </div>
+
+          <button
+            type="submit"
+            className={`register-button ${isLoading ? 'loading' : ''}`}
+            disabled={isLoading}
+          >
+            {isLoading ? (
+              <>
+                <Loader className="spinner" size={20} />
+                Wird registriert...
+              </>
+            ) : (
+              'Registrieren'
+            )}
+          </button>
+        </form>
+
+        <div className="register-footer">
           <p>
-            Bereits registriert? 
+            Haben Sie bereits ein Konto?{' '}
             <Link to="/login" className="login-link">
-              Hier anmelden
+              Jetzt anmelden
             </Link>
           </p>
         </div>
-      </form>
-    </div>
-  );
-};
-
-RegisterForm.defaultProps = {
-  onSuccess: () => {},
-};
-
-export default RegisterForm;
-        break;
-      case 'confirmPassword':
-        if (value !== formData.password) {
-          errors[fieldName] = 'Passwörter stimmen nicht überein.';
-        } else {
-          delete errors[fieldName];
-        }
-        break;
-      case 'zipCode':
-        if (value && (value.length !== 5 || !/^\d+$/.test(value))) {
-          errors[fieldName] = 'PLZ muss genau 5 Ziffern haben.';
-        } else {
-          delete errors[fieldName];
-        }
-        break;
-      default:
-        if (!value.trim()) {
-          errors[fieldName] = 'Dieses Feld ist erforderlich.';
-        } else {
-          delete errors[fieldName];
-        }
-    }
-    setFormErrors(errors);
-  };
-
-  const validateForm = () => {
-    const errors = {};
-    const requiredFields = [
-      'nickname', 'email', 'password', 'confirmPassword',
-      'firstName', 'lastName', 'street', 'city', 'zipCode', 'state'
-    ];
-    requiredFields.forEach((field) => {
-      if (!formData[field] || !formData[field].toString().trim()) {
-        errors[field] = 'Dieses Feld ist erforderlich.';
-      }
-    });
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (formData.email && !emailRegex.test(formData.email)) {
-      errors.email = 'Bitte geben Sie eine gültige E-Mail-Adresse ein.';
-    }
-    if (formData.password && formData.password.length < 6) {
-      errors.password = 'Passwort muss mindestens 6 Zeichen lang sein.';
-    }
-    if (formData.password !== formData.confirmPassword) {
-      errors.confirmPassword = 'Passwörter stimmen nicht überein.';
-    }
-    if (formData.zipCode && (formData.zipCode.length !== 5 || !/^\d+$/.test(formData.zipCode))) {
-      errors.zipCode = 'PLZ muss genau 5 Ziffern haben.';
-    }
-    return errors;
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-    setMessage('');
-    const errors = validateForm();
-    if (Object.keys(errors).length > 0) {
-      setFormErrors(errors);
-      setIsSubmitting(false);
-      return;
-    }
-    try {
-
-      const response = await fetch(`${API_URL}/auth/register`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          nickname: formData.nickname,
-          email: formData.email,
-          password: formData.password,
-          adress: {
-
-            street: formData.street,
-            city: formData.city,
-            district: formData.district,
-            zipCode: parseInt(formData.zip, 10),// <-- Wichtig: "zip" statt "zipCode"
-            firstName: formData.firstName,
-            lastName: formData.lastName
-          }
-
-    
-        }),
-      });
-
-      const data = await response.json();
-      if (response.ok) {
-        localStorage.setItem('token', data.token);
-        onSuccess(data);
-
-        navigate('/login');
-
-      } else {
-        setMessage(`❌ ${result.message || 'Registrierung fehlgeschlagen'}`);
-      }
-    } catch (error) {
-      console.error('Registration error:', error);
-      setMessage('❌ Ein unerwarteter Fehler ist aufgetreten.');
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const fieldLabels = {
-    nickname: 'Spitzname *',
-    email: 'E-Mail *',
-    password: 'Passwort *',
-    confirmPassword: 'Passwort bestätigen *',
-    firstName: 'Vorname *',
-    lastName: 'Nachname *',
-    street: 'Straße *',
-    city: 'Stadt *',
-    district: 'Landkreis oder Stadtteil',
-    zipCode: 'PLZ *',
-    state: 'Bundesland *',
-  };
-
-  const getFieldIcon = (field) => {
-    switch (field) {
-      case 'email': return <Mail size={16} />;
-      case 'password':
-      case 'confirmPassword': return <Lock size={16} />;
-      case 'nickname': return <User size={16} />;
-      case 'street':
-      case 'city':
-      case 'district':
-      case 'zipCode':
-      case 'state': return <MapPin size={16} />;
-      default: return <User size={16} />;
-    }
-  };
-
-  return (
-    <div className="register-form-container">
-      <div className="logo-background">
-        <img src={logo} alt="Hand in Hand Logo" className="animated-logo" />
       </div>
-      <form onSubmit={handleSubmit} className="register-form" noValidate>
-        <div className="form-header">
-          <h2>Registrierung</h2>
-          <p>Werden Sie Teil unserer Nachbarschaftsgemeinschaft</p>
-        </div>
-        <div className="form-grid">
-          {Object.keys(fieldLabels).map((field) => (
-            <div key={field} className="form-group">
-              <label className="register-label">
-                {fieldLabels[field]}:
-                <div className="input-container">
-                  <span className="input-icon">
-                    {getFieldIcon(field)}
-                  </span>
-                  <input
-                    type={
-                      field === 'email' ? 'email' :
-                      (field === 'password' || field === 'confirmPassword') ? 
-                        (field === 'password' ? (showPassword ? 'text' : 'password') : 
-                         (showConfirmPassword ? 'text' : 'password')) :
-                      field === 'zipCode' ? 'text' : 'text'
-                    }
-                    name={field}
-                    value={formData[field]}
-                    onChange={handleChange}
-                    onBlur={handleBlur}
-                    required={[
-                      'nickname', 'email', 'password', 'confirmPassword', 
-                      'firstName', 'lastName', 'street', 'city', 'zipCode', 'state'
-                    ].includes(field)}
-                    className={`register-input ${
-                      touchedFields[field] ? 'touched' : ''
-                    } ${formErrors[field] ? 'error' : ''}`}
-                    placeholder={`${fieldLabels[field]} eingeben`}
-                    autoComplete={
-                      field === 'email' ? 'email' :
-                      field === 'password' ? 'new-password' :
-                      field === 'confirmPassword' ? 'new-password' :
-                      'off'
-                    }
-                  />
-                  {(field === 'password' || field === 'confirmPassword') && (
-                    <button
-                      type="button"
-                      className="password-toggle"
-                      onClick={() => field === 'password' ? 
-                        setShowPassword(!showPassword) : 
-                        setShowConfirmPassword(!showConfirmPassword)
-                      }
-                      aria-label={
-                        (field === 'password' ? showPassword : showConfirmPassword) ? 
-                        'Passwort verbergen' : 'Passwort anzeigen'
-                      }
-                    >
-                      {(field === 'password' ? showPassword : showConfirmPassword) ? 
-                        <EyeOff size={16} /> : <Eye size={16} />
-                      }
-                    </button>
-                  )}
-                </div>
-                {formErrors[field] && (
-                  <p className="register-error">{formErrors[field]}</p>
-                )}
-              </label>
-            </div>
-          ))}
-        </div>
-        <button
-          type="submit"
-          disabled={isSubmitting}
-          className={`register-button ${isSubmitting ? 'loading' : ''}`}
-        >
-          {isSubmitting ? (
-            <>
-              <Loader size={20} className="spinner" />
-              Registrierung läuft...
-            </>
-          ) : (
-            <>
-              <CheckCircle size={20} />
-              Registrieren
-            </>
-          )}
-        </button>
-        {message && (
-          <div className={`message ${message.includes('✅') ? 'success' : 'error'}`}>
-            {message}
-          </div>
-        )}
-        <div className="form-footer">
-          <p>
-            Bereits registriert? 
-            <Link to="/login" className="login-link">
-              Hier anmelden
-            </Link>
-          </p>
-        </div>
-      </form>
     </div>
   );
-};
-
-RegisterForm.defaultProps = {
-  onSuccess: () => {},
 };
 
 export default RegisterForm;

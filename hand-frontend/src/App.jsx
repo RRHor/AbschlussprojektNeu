@@ -1,6 +1,6 @@
 
-import { Router, Routes, Route } from 'react-router-dom';
-
+import React from 'react';
+import { Routes, Route } from 'react-router-dom';
 
 import Navbar from './components/Navbar';
 import LandingPage from './pages/LandingPage';
@@ -9,18 +9,17 @@ import Register from './pages/Register';
 import Profile from './pages/Profile';
 import Help from './pages/Help'; 
 import Blog from './pages/Blog';
+import Events from './pages/Events';
+import EventDetail from './pages/EventDetail';
 import Exchange from './pages/Exchange/Exchange'; 
 import ForgotPassword from './components/ForgotPassword';
 import Home from './pages/Home';
 
-i
-
-
 function App() {
   return (
-    <Router>
-      <Navbar /> {/* Die Navbar wird immer angezeigt, unabhängig von der Route */}
-      <div className="container"> {/* Optional: Ein Container für deinen Seiteninhalt */}
+    <>
+      <Navbar />
+      <div className="container">
         <Routes>
           <Route path="/" element={<LandingPage/>} /> 
           <Route path="/home" element={<LandingPage />} />
@@ -38,8 +37,7 @@ function App() {
 
         </Routes>
       </div>
-    </Router>
-
+    </>
   );
 }
 

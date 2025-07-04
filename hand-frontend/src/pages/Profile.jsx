@@ -5,6 +5,7 @@ import api from '../api';
 import exchangeService from '../services/exchangeService';
 import './Profile.css';
 import ExchangeEditModal from '../components/ExchangeEditModal';
+import Footer from '../components/Footer';
 
 const emptyAddress = {
   firstName: '',
@@ -19,7 +20,7 @@ const Profile = () => {
   const { user, loading: authLoading } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [profileData, setProfileData] = useState({
-    username: '',
+    nickname: '',
     email: '',
     password: '••••••••••',
     addresses: [ { ...emptyAddress } ],
@@ -40,39 +41,37 @@ const Profile = () => {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
+        console.log('📦 Loading user profile data...');
 
-        const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-        if (!token) {
+        // Use api instance instead of fetch
+        const response = await api.get('/auth/users/me');
+        
+        const userData = response.data;
+        console.log('✅ User data loaded:', userData);
+        
+        const formattedData = {
+          nickname: userData.nickname || '',
+          email: userData.email || '',
+          password: '••••••••••',
+          addresses: Array.isArray(userData.addresses) && userData.addresses.length > 0
+            ? userData.addresses
+            : [ { ...emptyAddress } ],
+          profileImage: userData.profileImage || null
+        };
+        setProfileData(formattedData);
+        setEditData(formattedData);
+
+      } catch (error) {
+        console.error('❌ Error loading user data:', error);
+        
+        // If 401, redirect to login
+        if (error.response?.status === 401) {
+          console.log('🔓 Token invalid, redirecting to login');
+          localStorage.removeItem('token');
           window.location.href = '/login';
           return;
         }
-        const response = await fetch(`${API_URL}/auth/users/me`, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
-        });
-        if (response.ok) {
-          const userData = await response.json();
-          const formattedData = {
-            nickname: userData.nickname || '',
-            email: userData.email || '',
-            password: '••••••••••',
-            addresses: Array.isArray(userData.addresses) && userData.addresses.length > 0
-              ? userData.addresses
-              : [ { ...emptyAddress } ],
-            profileImage: userData.profileImage || null
-          };
-          setProfileData(formattedData);
-          setEditData(formattedData);
-        } else {
-          localStorage.removeItem('token');
-          sessionStorage.removeItem('token');
-          window.location.href = '/login';
-        }
-
-      } catch (error) {
-        console.error('Fehler beim Laden der User-Daten:', error);
+        
         setError('Fehler beim Laden der Profildaten');
       } finally {
         setIsLoading(false);
@@ -112,37 +111,32 @@ const Profile = () => {
 
   const handleSave = async () => {
     try {
+      console.log('💾 Saving profile data...');
+      setIsSaving(true);
 
-      const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-      const response = await fetch(`${API_URL}/auth/users/me`, {
-        method: 'PUT',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          nickname: editData.nickname,
-          email: editData.email,
-          addresses: editData.addresses.map(addr => ({
-            firstName: addr.firstName,
-            lastName: addr.lastName,
-            street: addr.street,
-            city: addr.city,
-            district: addr.district,
-            zipCode: parseInt(addr.zipCode, 10) || ''
-          }))
-        })
+      // Use api instance instead of fetch
+      const response = await api.put('/auth/users/me', {
+        nickname: editData.nickname,
+        email: editData.email,
+        addresses: editData.addresses.map(addr => ({
+          firstName: addr.firstName,
+          lastName: addr.lastName,
+          street: addr.street,
+          city: addr.city,
+          district: addr.district,
+          zipCode: parseInt(addr.zipCode, 10) || ''
+        }))
       });
-      if (response.ok) {
 
-        setProfileData({ ...editData });
-        setIsEditing(false);
-        setError(null);
-        alert('Profil erfolgreich aktualisiert!');
-      }
+      console.log('✅ Profile saved successfully');
+      setProfileData({ ...editData });
+      setIsEditing(false);
+      setError(null);
+      alert('Profil erfolgreich aktualisiert!');
+
     } catch (error) {
-      console.error('Fehler beim Speichern:', error);
-      setError('Fehler beim Speichern der Änderungen');
+      console.error('❌ Error saving profile:', error);
+      setError('Fehler beim Speichern der Profildaten');
     } finally {
       setIsSaving(false);
     }
@@ -288,377 +282,409 @@ const Profile = () => {
   }
 
   return (
-    <div className="profile-container">
-      <div className="profile-wrapper">
-        {/* Header */}
-        <div className="profile-header">
-          <div className="header-content">
-            <div className="header-text">
-              <h1>Mein Profil</h1>
-              <p>Verwalten Sie Ihre persönlichen Daten</p>
-            </div>
-            <div className="header-buttons">
-              {!isEditing ? (
-                <button onClick={handleEdit} className="btn btn-edit">
-                  <Edit3 size={18} />
-                  Bearbeiten
-                </button>
-              ) : (
-                <div className="btn-group">
-                  <button 
-                    onClick={handleSave} 
-                    disabled={isSaving}
-                    className="btn btn-save"
-                  >
-                    {isSaving ? <Loader size={18} className="spinner" /> : <Save size={18} />}
-                    {isSaving ? 'Speichern...' : 'Speichern'}
+    <div className="profile-page">
+      <div className="profile-container">
+        <div className="profile-wrapper">
+          {/* Header */}
+          <div className="profile-header">
+            <div className="header-content">
+              <div className="header-text">
+                <h1>Mein Profil</h1>
+                <p>Verwalten Sie Ihre persönlichen Daten</p>
+              </div>
+              <div className="header-buttons">
+                {!isEditing ? (
+                  <button onClick={handleEdit} className="btn btn-edit">
+                    <Edit3 size={18} />
+                    Bearbeiten
                   </button>
-                  <button 
-                    onClick={handleCancel} 
-                    disabled={isSaving}
-                    className="btn btn-cancel"
-                  >
-                    <X size={18} />
-                    Abbrechen
-                  </button>
-                </div>
-              )}
+                ) : (
+                  <div className="btn-group">
+                    <button 
+                      onClick={handleSave} 
+                      disabled={isSaving}
+                      className="btn btn-save"
+                    >
+                      {isSaving ? <Loader size={18} className="spinner" /> : <Save size={18} />}
+                      {isSaving ? 'Speichern...' : 'Speichern'}
+                    </button>
+                    <button 
+                      onClick={handleCancel} 
+                      disabled={isSaving}
+                      className="btn btn-cancel"
+                    >
+                      <X size={18} />
+                      Abbrechen
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* Main Content */}
-        <div className="profile-content">
-          <div className="profile-grid">
-            {/* Profile Image Section */}
-            <div className="profile-image-section">
-              <div className="image-container">
-                <div className="profile-image">
-                  {(isEditing ? editData.profileImage : profileData.profileImage) ? (
-                    <img 
-                      src={isEditing ? editData.profileImage : profileData.profileImage} 
-                      alt="Profilbild" 
-                    />
-                  ) : (
-                    <div className="default-avatar">
-                      <User size={48} />
-                    </div>
-                  )}
-                  {isEditing && (
-                    <label className="image-upload-btn">
-                      <Camera size={20} />
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={handleImageUpload}
-                        style={{ display: 'none' }}
+          {/* Main Content */}
+          <div className="profile-content">
+            <div className="profile-grid">
+              {/* Profile Image Section */}
+              <div className="profile-image-section">
+                <div className="image-container">
+                  <div className="profile-image">
+                    {(isEditing ? editData.profileImage : profileData.profileImage) ? (
+                      <img 
+                        src={isEditing ? editData.profileImage : profileData.profileImage} 
+                        alt="Profilbild" 
                       />
-                    </label>
-                  )}
-                </div>
-                <h2 className="profile-name">
-
-                  {isEditing
-                    ? editData.addresses[0]?.firstName + ' ' + editData.addresses[0]?.lastName
-                    : profileData.addresses[0]?.firstName + ' ' + profileData.addresses[0]?.lastName}
-
-                </h2>
-                <p className="profile-username">
-                  @{profileData.username || 'unbekannt'}
-                </p>
-              </div>
-            </div>
-
-            {/* Form Section */}
-            <div className="profile-form-section">
-              {/* Account Information */}
-              <div className="form-group">
-                <h3 className="section-title">
-                  <User size={20} />
-                  Account Informationen
-                </h3>
-                <div className="form-row">
-                  <div className="input-group">
-                    <label>Benutzername</label>
-                    <div className="input-container">
-                      {isEditing ? (
+                    ) : (
+                      <div className="default-avatar">
+                        <User size={48} />
+                      </div>
+                    )}
+                    {isEditing && (
+                      <label className="image-upload-btn">
+                        <Camera size={20} />
                         <input
-                          type="text"
-                          value={editData.username}
-                          onChange={(e) => handleInputChange('username', e.target.value)}
+                          type="file"
+                          accept="image/*"
+                          onChange={handleImageUpload}
+                          style={{ display: 'none' }}
                         />
-                      ) : (
-                        <div className="input-display">{profileData.username || 'Nicht angegeben'}</div>
-                      )}
-                    </div>
+                      </label>
+                    )}
                   </div>
-                  <div className="input-group">
-                    <label>E-Mail</label>
-                    <div className="input-container">
-                      {isEditing ? (
-                        <input
-                          type="email"
-                          value={editData.email}
-                          onChange={(e) => handleInputChange('email', e.target.value)}
-                        />
-                      ) : (
-                        <div className="input-display">{profileData.email || 'Nicht angegeben'}</div>
-                      )}
-                    </div>
-                  </div>
+                  <h2 className="profile-name">
+
+                    {isEditing
+                      ? editData.addresses[0]?.firstName + ' ' + editData.addresses[0]?.lastName
+                      : profileData.addresses[0]?.firstName + ' ' + profileData.addresses[0]?.lastName}
+
+                  </h2>
+                  <p className="profile-username">
+                    @{profileData.nickname || 'unbekannt'}
+                  </p>
                 </div>
               </div>
 
-              {/* Address Information (Mehrere Adressen) */}
-              <div className="form-group">
-
-                <h3 className="section-title">Adressen</h3>
-                {editData.addresses.map((address, idx) => (
-                  <div key={idx} className="address-block">
-                    <div className="form-row">
-                      <div className="input-group">
-                        <label>Vorname</label>
-                        <div className="input-container">
-                          {isEditing ? (
-                            <input
-                              type="text"
-                              value={address.firstName}
-                              onChange={e => handleAddressChange(idx, 'firstName', e.target.value)}
-                            />
-                          ) : (
-                            <div className="input-display">{address.firstName}</div>
-                          )}
-                        </div>
-                      </div>
-                      <div className="input-group">
-                        <label>Nachname</label>
-                        <div className="input-container">
-                          {isEditing ? (
-                            <input
-                              type="text"
-                              value={address.lastName}
-                              onChange={e => handleAddressChange(idx, 'lastName', e.target.value)}
-                            />
-                          ) : (
-                            <div className="input-display">{address.lastName}</div>
-                          )}
-                        </div>
-                      </div>
-                    </div>
+              {/* Form Section */}
+              <div className="profile-form-section">
+                {/* Account Information */}
+                <div className="form-group">
+                  <h3 className="section-title">
+                    <User size={20} />
+                    Account Informationen
+                  </h3>
+                  <div className="form-row">
                     <div className="input-group">
-                      <label>Straße & Hausnummer</label>
+                      <label>Benutzername</label>
                       <div className="input-container">
                         {isEditing ? (
                           <input
                             type="text"
-                            value={address.street}
-                            onChange={e => handleAddressChange(idx, 'street', e.target.value)}
+                            value={editData.nickname}
+                            onChange={(e) => handleInputChange('nickname', e.target.value)}
                           />
                         ) : (
-                          <div className="input-display">{address.street}</div>
+                          <div className="input-display">{profileData.nickname || 'Nicht angegeben'}</div>
                         )}
                       </div>
                     </div>
-                    <div className="form-row address-row">
-                      <div className="input-group">
-                        <label>PLZ</label>
-                        <div className="input-container">
-                          {isEditing ? (
-                            <input
-                              type="text"
-                              value={address.zipCode}
-                              onChange={e => handleAddressChange(idx, 'zipCode', e.target.value)}
-                            />
-                          ) : (
-                            <div className="input-display">{address.zipCode}</div>
-                          )}
-                        </div>
-                      </div>
-                      <div className="input-group">
-                        <label>Stadt</label>
-                        <div className="input-container">
-                          {isEditing ? (
-                            <input
-                              type="text"
-                              value={address.city}
-                              onChange={e => handleAddressChange(idx, 'city', e.target.value)}
-                            />
-                          ) : (
-                            <div className="input-display">{address.city}</div>
-                          )}
-                        </div>
-                      </div>
-                      <div className="input-group">
-                        <label>Ortsteil</label>
-                        <div className="input-container">
-                          {isEditing ? (
-                            <input
-                              type="text"
-                              value={address.district}
-                              onChange={e => handleAddressChange(idx, 'district', e.target.value)}
-                            />
-                          ) : (
-                            <div className="input-display">{address.district}</div>
-                          )}
-                        </div>
+                    <div className="input-group">
+                      <label>E-Mail</label>
+                      <div className="input-container">
+                        {isEditing ? (
+                          <input
+                            type="email"
+                            value={editData.email}
+                            onChange={(e) => handleInputChange('email', e.target.value)}
+                          />
+                        ) : (
+                          <div className="input-display">{profileData.email || 'Nicht angegeben'}</div>
+                        )}
                       </div>
                     </div>
-                    {isEditing && editData.addresses.length > 1 && (
-                      <button
-                        type="button"
-                        className="btn btn-remove-address"
-                        onClick={() => handleRemoveAddress(idx)}
-                      >
-                        Adresse entfernen
-                      </button>
-
-                    )}
-                    <hr />
                   </div>
-                ))}
-                {isEditing && (
-                  <button
-                    type="button"
-                    className="btn btn-add-address"
-                    onClick={handleAddAddress}
-                  >
-                    + Adresse hinzufügen
-                  </button>
-                )}
+                </div>
 
-              </div>
+                {/* Address Information (Mehrere Adressen) */}
+                <div className="form-group">
 
-              {/* Meine Exchange-Anzeigen */}
-              <div className="profile-form-section">
-                <h2 className="section-title">Meine Exchange-Anzeigen</h2>
-                {loadingPosts ? (
-                  <div className="loading-spinner">Lade Anzeigen...</div>
-                ) : myExchangePosts.length === 0 ? (
-                  <div className="no-posts">
-                    <p>Sie haben noch keine Exchange-Anzeigen erstellt.</p>
-                    <button 
-                      className="btn btn-edit"
-                      onClick={() => window.location.href = '/exchange'}
-                    >
-                      Erste Anzeige erstellen
-                    </button>
-                  </div>
-                ) : (
-                  <div className="exchange-posts-grid">
-                    {myExchangePosts.map(post => (
-                      <div key={post._id} className="exchange-post-card">
-                        <div className="post-image">
-                          <img src={post.picture} alt={post.title} />
-                          <div className={`status-badge status-${post.status}`}>
-                            {post.status === 'aktiv' ? 'Aktiv' : 
-                             post.status === 'reserviert' ? 'Reserviert' : 'Abgeschlossen'}
+                  <h3 className="section-title">Adressen</h3>
+                  {editData.addresses.map((address, idx) => (
+                    <div key={idx} className="address-block">
+                      <div className="form-row">
+                        <div className="input-group">
+                          <label>Vorname</label>
+                          <div className="input-container">
+                            {isEditing ? (
+                              <input
+                                type="text"
+                                value={address.firstName}
+                                onChange={e => handleAddressChange(idx, 'firstName', e.target.value)}
+                              />
+                            ) : (
+                              <div className="input-display">{address.firstName}</div>
+                            )}
                           </div>
                         </div>
-                        <div className="post-content">
-                          <div className="post-header">
-                            <h3 className="post-title">{post.title}</h3>
-                            <span className={`category-badge category-${post.category}`}>
-                              {post.category === 'verschenken' ? '🎁 Verschenken' :
-                               post.category === 'tauschen' ? '🔄 Tauschen' : '🔍 Suchen'}
-                            </span>
-                          </div>
-                          <p className="post-description">{post.description}</p>
-                          {post.tauschGegen && (
-                            <p className="post-trade">
-                              <strong>Tausche gegen:</strong> {post.tauschGegen}
-                            </p>
-                          )}
-                          <div className="post-meta">
-                            <span className="post-date">
-                              Erstellt: {new Date(post.createdAt).toLocaleDateString('de-DE')}
-                            </span>
-                            <span className="post-views">👁 {post.views} Aufrufe</span>
-                          </div>
-                          <div className="post-actions">
-                            <select 
-                              value={post.status}
-                              onChange={(e) => handleStatusChange(post._id, e.target.value)}
-                              className="status-select"
-                            >
-                              <option value="aktiv">Aktiv</option>
-                              <option value="reserviert">Reserviert</option>
-                              <option value="abgeschlossen">Abgeschlossen</option>
-                            </select>
-                            <button 
-                              className="btn-action btn-edit-post"
-                              onClick={() => handleEditPost(post)}
-                            >
-                              ✏️ Bearbeiten
-                            </button>
-                            <button 
-                              className="btn-action btn-delete-post"
-                              onClick={() => handleDeletePost(post._id)}
-                            >
-                              🗑️ Löschen
-                            </button>
+                        <div className="input-group">
+                          <label>Nachname</label>
+                          <div className="input-container">
+                            {isEditing ? (
+                              <input
+                                type="text"
+                                value={address.lastName}
+                                onChange={e => handleAddressChange(idx, 'lastName', e.target.value)}
+                              />
+                            ) : (
+                              <div className="input-display">{address.lastName}</div>
+                            )}
                           </div>
                         </div>
                       </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
+                      <div className="input-group">
+                        <label>Straße & Hausnummer</label>
+                        <div className="input-container">
+                          {isEditing ? (
+                            <input
+                              type="text"
+                              value={address.street}
+                              onChange={e => handleAddressChange(idx, 'street', e.target.value)}
+                            />
+                          ) : (
+                            <div className="input-display">{address.street}</div>
+                          )}
+                        </div>
+                      </div>
+                      <div className="form-row address-row">
+                        <div className="input-group">
+                          <label>PLZ</label>
+                          <div className="input-container">
+                            {isEditing ? (
+                              <input
+                                type="text"
+                                value={address.zipCode}
+                                onChange={e => handleAddressChange(idx, 'zipCode', e.target.value)}
+                              />
+                            ) : (
+                              <div className="input-display">{address.zipCode}</div>
+                            )}
+                          </div>
+                        </div>
+                        <div className="input-group">
+                          <label>Stadt</label>
+                          <div className="input-container">
+                            {isEditing ? (
+                              <input
+                                type="text"
+                                value={address.city}
+                                onChange={e => handleAddressChange(idx, 'city', e.target.value)}
+                              />
+                            ) : (
+                              <div className="input-display">{address.city}</div>
+                            )}
+                          </div>
+                        </div>
+                        <div className="input-group">
+                          <label>Ortsteil</label>
+                          <div className="input-container">
+                            {isEditing ? (
+                              <input
+                                type="text"
+                                value={address.district}
+                                onChange={e => handleAddressChange(idx, 'district', e.target.value)}
+                              />
+                            ) : (
+                              <div className="input-display">{address.district}</div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="input-group">
+                        <label>Typ (optional)</label>
+                        <div className="input-container">
+                          {isEditing ? (
+                            <input
+                              type="text"
+                              value={address.type || ''}
+                              onChange={e => handleAddressChange(idx, 'type', e.target.value)}
+                            />
+                          ) : (
+                            <div className="input-display">{address.type || '-'}</div>
+                          )}
+                        </div>
+                      </div>
+                      <div className="input-group">
+                        <label>Hauptadresse</label>
+                        <div className="input-container">
+                          {isEditing ? (
+                            <input
+                              type="checkbox"
+                              checked={!!address.isPrimary}
+                              onChange={e => handleAddressChange(idx, 'isPrimary', e.target.checked)}
+                            />
+                          ) : (
+                            <div className="input-display">{address.isPrimary ? 'Ja' : 'Nein'}</div>
+                          )}
+                        </div>
+                      </div>
+                      {isEditing && editData.addresses.length > 1 && (
+                        <button
+                          type="button"
+                          className="btn btn-remove-address"
+                          onClick={() => handleRemoveAddress(idx)}
+                        >
+                          Adresse entfernen
+                        </button>
 
-        {/* Edit Post Modal */}
-        {showEditModal && editingPost && (
-          <div className="edit-post-modal">
-            <div className="modal-content">
-              <h3>Anzeige bearbeiten</h3>
-              <div className="modal-body">
-                <div className="input-group">
-                  <label>Titel</label>
-                  <input
-                    type="text"
-                    value={editingPost.title}
-                    onChange={(e) => setEditingPost(prev => ({ ...prev, title: e.target.value }))}
-                    placeholder="Titel der Anzeige"
-                  />
+                      )}
+                      <hr />
+                    </div>
+                  ))}
+                  {isEditing && (
+                    <button
+                      type="button"
+                      className="btn btn-add-address"
+                      onClick={handleAddAddress}
+                    >
+                      + Adresse hinzufügen
+                    </button>
+                  )}
+
                 </div>
-                <div className="input-group">
-                  <label>Beschreibung</label>
-                  <textarea
-                    value={editingPost.description}
-                    onChange={(e) => setEditingPost(prev => ({ ...prev, description: e.target.value }))}
-                    placeholder="Beschreibung der Anzeige"
-                  />
+
+                {/* Meine Exchange-Anzeigen */}
+                <div className="profile-form-section">
+                  <h2 className="section-title">Meine Exchange-Anzeigen</h2>
+                  {loadingPosts ? (
+                    <div className="loading-spinner">Lade Anzeigen...</div>
+                  ) : myExchangePosts.length === 0 ? (
+                    <div className="no-posts">
+                      <p>Sie haben noch keine Exchange-Anzeigen erstellt.</p>
+                      <button 
+                        className="btn btn-edit"
+                        onClick={() => window.location.href = '/exchange'}
+                      >
+                        Erste Anzeige erstellen
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="exchange-posts-grid">
+                      {myExchangePosts.map(post => (
+                        <div key={post._id} className="exchange-post-card">
+                          <div className="post-image">
+                            <img src={post.picture} alt={post.title} />
+                            <div className={`status-badge status-${post.status}`}>
+                              {post.status === 'aktiv' ? 'Aktiv' : 
+                               post.status === 'reserviert' ? 'Reserviert' : 'Abgeschlossen'}
+                            </div>
+                          </div>
+                          <div className="post-content">
+                            <div className="post-header">
+                              <h3 className="post-title">{post.title}</h3>
+                              <span className={`category-badge category-${post.category}`}>
+                                {post.category === 'verschenken' ? '🎁 Verschenken' :
+                                 post.category === 'tauschen' ? '🔄 Tauschen' : '🔍 Suchen'}
+                              </span>
+                            </div>
+                            <p className="post-description">{post.description}</p>
+                            {post.tauschGegen && (
+                              <p className="post-trade">
+                                <strong>Tausche gegen:</strong> {post.tauschGegen}
+                              </p>
+                            )}
+                            <div className="post-meta">
+                              <span className="post-date">
+                                Erstellt: {new Date(post.createdAt).toLocaleDateString('de-DE')}
+                              </span>
+                              <span className="post-views">👁 {post.views} Aufrufe</span>
+                            </div>
+                            <div className="post-actions">
+                              <select 
+                                value={post.status}
+                                onChange={(e) => handleStatusChange(post._id, e.target.value)}
+                                className="status-select"
+                              >
+                                <option value="aktiv">Aktiv</option>
+                                <option value="reserviert">Reserviert</option>
+                                <option value="abgeschlossen">Abgeschlossen</option>
+                              </select>
+                              <button 
+                                className="btn-action btn-edit-post"
+                                onClick={() => handleEditPost(post)}
+                              >
+                                ✏️ Bearbeiten
+                              </button>
+                              <button 
+                                className="btn-action btn-delete-post"
+                                onClick={() => handleDeletePost(post._id)}
+                              >
+                                🗑️ Löschen
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
-                <div className="input-group">
-                  <label>Status</label>
-                  <select
-                    value={editingPost.status}
-                    onChange={(e) => setEditingPost(prev => ({ ...prev, status: e.target.value }))}
-                  >
-                    <option value="active">Aktiv</option>
-                    <option value="inactive">Inaktiv</option>
-                  </select>
-                </div>
-              </div>
-              <div className="modal-actions">
-                <button 
-                  onClick={() => handleUpdatePost(editingPost._id, editingPost)} 
-                  className="btn btn-save"
-                >
-                  Speichern
-                </button>
-                <button 
-                  onClick={() => setShowEditModal(false)} 
-                  className="btn btn-cancel"
-                >
-                  Abbrechen
-                </button>
               </div>
             </div>
           </div>
-        )}
+
+          {/* Edit Post Modal */}
+          {showEditModal && editingPost && (
+            <div className="edit-post-modal">
+              <div className="modal-content">
+                <h3>Anzeige bearbeiten</h3>
+                <div className="modal-body">
+                  <div className="input-group">
+                    <label>Titel</label>
+                    <input
+                      type="text"
+                      value={editingPost.title}
+                      onChange={(e) => setEditingPost(prev => ({ ...prev, title: e.target.value }))}
+                      placeholder="Titel der Anzeige"
+                    />
+                  </div>
+                  <div className="input-group">
+                    <label>Beschreibung</label>
+                    <textarea
+                      value={editingPost.description}
+                      onChange={(e) => setEditingPost(prev => ({ ...prev, description: e.target.value }))}
+                      placeholder="Beschreibung der Anzeige"
+                    />
+                  </div>
+                  <div className="input-group">
+                    <label>Status</label>
+                    <select
+                      value={editingPost.status}
+                      onChange={(e) => setEditingPost(prev => ({ ...prev, status: e.target.value }))}
+                    >
+                      <option value="active">Aktiv</option>
+                      <option value="inactive">Inaktiv</option>
+                    </select>
+                  </div>
+                </div>
+                <div className="modal-actions">
+                  <button 
+                    onClick={() => handleUpdatePost(editingPost._id, editingPost)} 
+                    className="btn btn-save"
+                  >
+                    Speichern
+                  </button>
+                  <button 
+                    onClick={() => setShowEditModal(false)} 
+                    className="btn btn-cancel"
+                  >
+                    Abbrechen
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
+      {/* Footer */}
+      <Footer />
     </div>
   );
 };
