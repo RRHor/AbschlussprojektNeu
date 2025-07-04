@@ -2,6 +2,12 @@
 import dotenv from "dotenv";
 import { fileURLToPath } from 'url';
 import path from 'path';
+// Dotenv zuerst laden
+dotenv.config();
+
+// // Debug: Überprüfe ob .env geladen wurde
+// console.log('🔧 .env loaded - MONGODB_URI exists:', !!process.env.MONGODB_URI);
+// console.log('🔧 PORT:', process.env.PORT);
 
 // SOFORT dotenv laden - vor allen anderen Imports
 dotenv.config();
@@ -16,7 +22,10 @@ import mongoose from 'mongoose';
 import connectDB from './database/database.js';
 import authRoutes from './routes/authRoutes.js';
 import verifyRoutes from './routes/verifyRoutes.js';
+import userRoutes from './routes/userRoutes.js';
+import profileRoutes from './routes/profileRoutes.js';
 import blogRoutes from './routes/blogRoutes.js';
+import blogCommentRoutes from './routes/blogCommentRoutes.js';
 import adRoutes from './routes/adRoutes.js';
 import eventRoutes from './routes/eventRoutes.js';
 import commentRoutes from './routes/commentRoutes.js';
@@ -26,6 +35,8 @@ import passwordResetRequestRoute from './routes/passwordResetRequestRoute.js';
 import passwordResetRoutes from './routes/passwordResetRoute.js';
 import publicUserRoutes from './routes/publicUserRoutes.js';
 import exchangeRoutes from './routes/exchangeRoutes.js';
+import helpQuestionRoutes from './routes/helpQuestionRoutes.js';
+import helpAnswerRoutes from './routes/helpAnswerRoutes.js';
 
 // ES6 Module __dirname workaround
 const __filename = fileURLToPath(import.meta.url);
@@ -38,6 +49,8 @@ console.log('MONGO_URI value:', process.env.MONGO_URI ? 'Set' : 'NOT SET');
 console.log('JWT_SECRET exists:', !!process.env.JWT_SECRET);
 console.log('PORT:', process.env.PORT);
 
+
+
 const app = express();
 const PORT = process.env.PORT || 4000;
 
@@ -45,7 +58,7 @@ const PORT = process.env.PORT || 4000;
 connectDB();
 
 // Mongoose Debug-Modus aktivieren
-mongoose.set('debug', true);
+// mongoose.set('debug', true);
 
 // Middleware
 app.use(cors());
@@ -59,6 +72,12 @@ app.use((req, res, next) => {
   next();
 });
 
+// Debug: Log alle eingehenden Requests
+app.use((req, res, next) => {
+    console.log(`📥 ${req.method} ${req.path}`, req.body);
+    next();
+});
+
 // Authentifizierungs-/Login-/Passwort-Routen
 app.use('/api/auth', authRoutes);
 app.use('/api/auth', verifyRoutes);
@@ -68,15 +87,19 @@ app.use('/api/auth', passwordResetRoutes);
 
 // User-Routen
 app.use('/api', publicUserRoutes);
+app.use('/api', profileRoutes);
 app.use('/api', adressRoutes);
 
 // Content-Routen
 app.use('/api/blogs', blogRoutes);
+app.use('/api', blogCommentRoutes);
 app.use('/api/ads', adRoutes);
 app.use('/api/events', eventRoutes);
 app.use('/api/posts', postRoutes);
 app.use('/api/comments', commentRoutes);
 app.use('/api/exchange', exchangeRoutes);
+app.use('/api/help', helpQuestionRoutes);
+app.use('/api/help/answer', helpAnswerRoutes);
 
 app.get('/', (req, res) => {
   res.send('Willkommen im "Hand in Hand"-Backend!');

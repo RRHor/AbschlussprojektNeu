@@ -1,8 +1,13 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import './ForgotPassword.css';
 import api from '../api'; // <-- API-Client für Backend-Aufrufe
+import { useAuth } from '../context/AuthContext';
 
 const ForgotPassword = () => {
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const { login } = useAuth();
   const [step, setStep] = useState('email'); // 'email', 'verification', 'reset', 'success'
   const [formData, setFormData] = useState({
     email: '',
@@ -12,6 +17,16 @@ const ForgotPassword = () => {
   });
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
+
+  // Check for code parameter in URL (from email link)
+  useEffect(() => {
+    const codeFromUrl = searchParams.get('code');
+    if (codeFromUrl) {
+      console.log('🔗 Code from email link detected:', codeFromUrl);
+      setFormData(prev => ({ ...prev, verificationCode: codeFromUrl }));
+      setStep('reset'); // Skip directly to password reset
+    }
+  }, [searchParams]);
 
   const handleInputChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -70,17 +85,20 @@ const ForgotPassword = () => {
       return;
     }
 
-    setIsLoading(true);
-    // Hier ggf. API-Call zur Code-Prüfung einbauen, falls Backend das unterstützt
-    setTimeout(() => {
-      setIsLoading(false);
-      setStep('reset');
-    }, 1500);
+    // Einfach zum nächsten Schritt - Code wird beim finalen Reset validiert
+    setStep('reset');
   };
 
   const handlePasswordReset = async (e) => {
     e.preventDefault();
     const newErrors = {};
+
+    // E-Mail validieren (falls über Link gekommen)
+    if (!formData.email) {
+      newErrors.email = 'E-Mail-Adresse ist erforderlich';
+    } else if (!validateEmail(formData.email)) {
+      newErrors.email = 'Bitte geben Sie eine gültige E-Mail-Adresse ein';
+    }
 
     if (!formData.newPassword) {
       newErrors.newPassword = 'Neues Passwort ist erforderlich';
@@ -101,12 +119,20 @@ const ForgotPassword = () => {
 
     setIsLoading(true);
     try {
-      await api.post('/auth/password-reset', {
+      const response = await api.post('/auth/password-reset', {
         email: formData.email,
         resetCode: formData.verificationCode,
         newPassword: formData.newPassword
       });
-      setStep('success');
+      
+      // Wenn das Backend ein Token zurückgibt, User automatisch einloggen
+      if (response.data.token) {
+        console.log('🔑 Token received from password reset, logging user in automatically');
+        login(response.data.token, response.data.user);
+        navigate('/profile'); // Direkt zum Profil nach erfolgreichem Reset
+      } else {
+        setStep('success');
+      }
     } catch (error) {
       setErrors({ newPassword: error.response?.data?.message || 'Fehler beim Zurücksetzen des Passworts' });
     } finally {
@@ -126,7 +152,7 @@ const ForgotPassword = () => {
   };
 
   const goBackToLogin = () => {
-    window.location.href = '/login';
+    navigate('/login');
   };
 
   const renderEmailStep = () => (
@@ -223,6 +249,24 @@ const ForgotPassword = () => {
       </div>
       
       <form onSubmit={handlePasswordReset}>
+        {/* E-Mail-Feld anzeigen, falls über Link gekommen */}
+        {!formData.email && (
+          <div className="input-group">
+            <label>E-Mail-Adresse</label>
+            <div className="input-container">
+              <input
+                type="email"
+                value={formData.email}
+                onChange={(e) => handleInputChange('email', e.target.value)}
+                placeholder="ihre.email@beispiel.de"
+                className={errors.email ? 'error' : ''}
+                required
+              />
+              {errors.email && <span className="error-message">{errors.email}</span>}
+            </div>
+          </div>
+        )}
+        
         <div className="input-group">
           <label>Neues Passwort</label>
           <div className="input-container">

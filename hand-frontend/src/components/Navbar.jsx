@@ -99,7 +99,15 @@ function Navbar() {
                 </Link>
               </li>
               <li className="nav-item">
-
+                <Link 
+                  to="/blog" 
+                  className={`nav-links ${isActive('/blog') ? 'active' : ''}`}
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  Blog
+                </Link>
+              </li>
+              <li className="nav-item">
                 <Link 
                   to="/help" 
                   className={`nav-links ${isActive('/help') ? 'active' : ''}`}
@@ -107,7 +115,6 @@ function Navbar() {
                 >
                   Hilfe
                 </Link>
-
               </li>
               
               {user ? (

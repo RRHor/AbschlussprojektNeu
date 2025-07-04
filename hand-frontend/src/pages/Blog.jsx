@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Calendar, User, Search, Tag, PlusCircle } from 'lucide-react';
 import './Blog.css';
+import Footer from '../components/Footer';
 
 const Blog = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -119,134 +120,138 @@ const Blog = () => {
   };
 
   return (
-    <div className="blog-container">
-      <div className="blog-header">
-        <h1>Nachbarschafts-Blog</h1>
-        <p>Geschichten, Tipps und Erfahrungen aus unserer Gemeinschaft</p>
-      </div>
-
-      <div className="blog-filters">
-        <div className="search-bar">
-          <Search className="search-icon" aria-hidden="true" />
-          <input
-            type="text"
-            placeholder="Blog durchsuchen..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            aria-label="Blog durchsuchen"
-          />
+    <div className="blog-page">
+      <div className="blog-container">
+        <div className="blog-header">
+          <h1>Nachbarschafts-Blog</h1>
+          <p>Geschichten, Tipps und Erfahrungen aus unserer Gemeinschaft</p>
         </div>
 
-        <div className="category-filter">
-          <Tag className="filter-icon" aria-hidden="true" />
-          <select
-            value={selectedCategory}
-            onChange={(e) => setSelectedCategory(e.target.value)}
-            aria-label="Kategorie filtern"
-          >
-            {categories.map(category => (
-              <option key={category.value} value={category.value}>
-                {category.label}
-              </option>
-            ))}
-          </select>
+        <div className="blog-filters">
+          <div className="search-bar">
+            <Search className="search-icon" aria-hidden="true" />
+            <input
+              type="text"
+              placeholder="Blog durchsuchen..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              aria-label="Blog durchsuchen"
+            />
+          </div>
+
+          <div className="category-filter">
+            <Tag className="filter-icon" aria-hidden="true" />
+            <select
+              value={selectedCategory}
+              onChange={(e) => setSelectedCategory(e.target.value)}
+              aria-label="Kategorie filtern"
+            >
+              {categories.map(category => (
+                <option key={category.value} value={category.value}>
+                  {category.label}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
-      </div>
 
-      <div className="blog-content">
-        <div className="blog-posts">
-          {filteredPosts.length > 0 ? (
-            filteredPosts.map(post => (
-              <article key={post.id} className="blog-card">
-                <div className="blog-image">
-                  <img src={post.image} alt={`Bild für den Beitrag: ${post.title}`} />
-                  <div className="blog-category">
-                    {getCategoryLabel(post.category)}
-                  </div>
-                </div>
-
-                <div className="blog-content-area">
-                  <h2 className="blog-title">{post.title}</h2>
-                  <p className="blog-excerpt">{post.excerpt}</p>
-
-                  <div className="blog-meta">
-                    <div className="meta-left">
-                      <div className="meta-item">
-                        <User className="meta-icon" aria-hidden="true" />
-                        <span>{post.author}</span>
-                      </div>
-                      <div className="meta-item">
-                        <Calendar className="meta-icon" aria-hidden="true" />
-                        <span>{formatDate(post.date)}</span>
-                      </div>
+        <div className="blog-content">
+          <div className="blog-posts">
+            {filteredPosts.length > 0 ? (
+              filteredPosts.map(post => (
+                <article key={post.id} className="blog-card">
+                  <div className="blog-image">
+                    <img src={post.image} alt={`Bild für den Beitrag: ${post.title}`} />
+                    <div className="blog-category">
+                      {getCategoryLabel(post.category)}
                     </div>
                   </div>
 
-                  <div className="blog-actions">
-                    <button
-                      className="read-more-btn"
-                      onClick={() => handleReadMore(post.id)}
-                      aria-label={`Weiterlesen: ${post.title}`}
-                    >
-                      Weiterlesen
-                    </button>
+                  <div className="blog-content-area">
+                    <h2 className="blog-title">{post.title}</h2>
+                    <p className="blog-excerpt">{post.excerpt}</p>
+
+                    <div className="blog-meta">
+                      <div className="meta-left">
+                        <div className="meta-item">
+                          <User className="meta-icon" aria-hidden="true" />
+                          <span>{post.author}</span>
+                        </div>
+                        <div className="meta-item">
+                          <Calendar className="meta-icon" aria-hidden="true" />
+                          <span>{formatDate(post.date)}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="blog-actions">
+                      <button
+                        className="read-more-btn"
+                        onClick={() => handleReadMore(post.id)}
+                        aria-label={`Weiterlesen: ${post.title}`}
+                      >
+                        Weiterlesen
+                      </button>
+                    </div>
                   </div>
-                </div>
-              </article>
-            ))
-          ) : (
-            <div className="no-posts">
-              <p>Keine Beiträge gefunden. Versuchen Sie es mit anderen Suchbegriffen oder Filtern.</p>
+                </article>
+              ))
+            ) : (
+              <div className="no-posts">
+                <p>Keine Beiträge gefunden. Versuchen Sie es mit anderen Suchbegriffen oder Filtern.</p>
+              </div>
+            )}
+          </div>
+
+          <aside className="blog-sidebar">
+            <div className="sidebar-widget">
+              <h3>Beliebte Kategorien</h3>
+              <div className="category-tags">
+                {categories.slice(1).map(category => (
+                  <button
+                    key={category.value}
+                    className={`category-tag ${selectedCategory === category.value ? 'active' : ''}`}
+                    onClick={() => setSelectedCategory(category.value)}
+                    aria-label={`Filter nach Kategorie: ${category.label}`}
+                  >
+                    {category.label}
+                  </button>
+                ))}
+              </div>
             </div>
-          )}
+
+            <div className="sidebar-widget">
+              <h3>Neueste Beiträge</h3>
+              <div className="recent-posts">
+                {blogPosts.slice(0, 3).map(post => (
+                  <div key={post.id} className="recent-post">
+                    <img src={post.image} alt={`Vorschaubild für den Beitrag: ${post.title}`} />
+                    <div className="recent-post-content">
+                      <h4>{post.title}</h4>
+                      <span className="recent-date">{formatDate(post.date)}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="sidebar-widget">
+              <h3>Schreib einen Beitrag</h3>
+              <p>Teile deine Geschichte mit der Nachbarschaft!</p>
+              <button
+                className="write-post-btn"
+                onClick={handleWritePost}
+                aria-label="Neuen Blogbeitrag schreiben"
+              >
+                <PlusCircle className="action-icon" aria-hidden="true" style={{ marginRight: '6px' }} />
+                <span className='action-icon-text'>Beitrag schreiben</span>
+              </button>
+            </div>
+          </aside>
         </div>
-
-        <aside className="blog-sidebar">
-          <div className="sidebar-widget">
-            <h3>Beliebte Kategorien</h3>
-            <div className="category-tags">
-              {categories.slice(1).map(category => (
-                <button
-                  key={category.value}
-                  className={`category-tag ${selectedCategory === category.value ? 'active' : ''}`}
-                  onClick={() => setSelectedCategory(category.value)}
-                  aria-label={`Filter nach Kategorie: ${category.label}`}
-                >
-                  {category.label}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="sidebar-widget">
-            <h3>Neueste Beiträge</h3>
-            <div className="recent-posts">
-              {blogPosts.slice(0, 3).map(post => (
-                <div key={post.id} className="recent-post">
-                  <img src={post.image} alt={`Vorschaubild für den Beitrag: ${post.title}`} />
-                  <div className="recent-post-content">
-                    <h4>{post.title}</h4>
-                    <span className="recent-date">{formatDate(post.date)}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="sidebar-widget">
-            <h3>Schreib einen Beitrag</h3>
-            <p>Teile deine Geschichte mit der Nachbarschaft!</p>
-            <button
-              className="write-post-btn"
-              onClick={handleWritePost}
-              aria-label="Neuen Blogbeitrag schreiben"
-            >
-              <PlusCircle className="action-icon" aria-hidden="true" style={{ marginRight: '6px' }} />
-              <span className='action-icon-text'>Beitrag schreiben</span>
-            </button>
-          </div>
-        </aside>
       </div>
+      {/* Footer */}
+      <Footer />
     </div>
   );
 };

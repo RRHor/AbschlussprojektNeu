@@ -19,24 +19,43 @@ const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Check if user is logged in on app start
+  // Check if user is logged in on app start + Listen for token changes across tabs
   useEffect(() => {
     const token = localStorage.getItem('token');
-    console.log('🔍 Initial token check:', { 
-      exists: !!token, 
-      length: token?.length, 
-      isString: typeof token,
-      value: token === 'undefined' ? 'STRING_UNDEFINED' : (token === null ? 'NULL' : 'VALID')
-    });
-    
-    if (token && token !== 'undefined' && token !== 'null' && token.length > 10) {
+    if (token) {
+      console.log('🔍 Found token, verifying user...');
       fetchUser();
     } else {
-      console.log('⚠️ Invalid token found, cleaning up...');
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
+      console.log('ℹ️ No token found, user not logged in');
       setLoading(false);
     }
+
+    // Listen for storage changes (token updates from other tabs)
+    const handleStorageChange = (e) => {
+      if (e.key === 'token') {
+        console.log('🔄 Token changed in another tab, syncing...');
+        
+        if (e.newValue) {
+          // New token was set in another tab
+          console.log('✅ New token detected, fetching user data...');
+          fetchUser();
+        } else {
+          // Token was removed in another tab
+          console.log('🚪 Token removed in another tab, logging out...');
+          setUser(null);
+          setLoading(false);
+        }
+      }
+    };
+
+    // Add storage event listener
+    window.addEventListener('storage', handleStorageChange);
+
+    // Cleanup listener on unmount
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchUser = async () => {
@@ -61,33 +80,26 @@ const AuthProvider = ({ children }) => {
     }
   };
 
-  const login = async (email, password) => {
+  const login = async (email, password, rememberMe = false) => {
     try {
-      console.log('🔐 Attempting login...');
-      const response = await api.post('/auth/login', { email, password });
-      const { token, user } = response.data;
+      console.log('🔐 AuthContext login called with:', { email, rememberMe });
       
-      console.log('✅ Login successful:', { 
-        userReceived: !!user, 
-        tokenReceived: !!token,
-        tokenLength: token?.length 
+      const response = await api.post('/auth/login', { 
+        email, 
+        password,
+        rememberMe 
       });
       
-      // Validiere Token vor dem Speichern
-      if (!token || token === 'undefined' || token.length < 10) {
-        console.error('❌ Invalid token received from server:', token);
-        return {
-          success: false,
-          message: 'Ungültiger Token vom Server erhalten'
-        };
-      }
+      const { token, user } = response.data;
+      
+      console.log('✅ Login response received:', { token: token ? 'present' : 'missing', user: user ? 'present' : 'missing' });
       
       localStorage.setItem('token', token);
       setUser(user);
       
       return { success: true };
     } catch (error) {
-      console.error('❌ Login failed:', error.response?.data);
+      console.error('❌ Login error:', error.response?.data || error);
       return {
         success: false,
         message: error.response?.data?.message || 'Login fehlgeschlagen'
@@ -97,10 +109,14 @@ const AuthProvider = ({ children }) => {
 
   const register = async (userData) => {
     try {
-      console.log('📝 Attempting registration...');
+      console.log('📝 AuthContext register called with:', userData);
+      
       const response = await api.post('/auth/register', userData);
       
-      console.log('📥 Registration response:', response.data);
+      console.log('✅ Registration response received:', { token: token ? 'present' : 'missing', user: user ? 'present' : 'missing' });
+      
+      localStorage.setItem('token', token);
+      setUser(user);
       
       // Bei Registrierung wird möglicherweise kein Token zurückgegeben (wegen E-Mail-Verifizierung)
       if (response.data.token && response.data.user) {
@@ -114,7 +130,7 @@ const AuthProvider = ({ children }) => {
         data: response.data 
       };
     } catch (error) {
-      console.error('❌ Registration failed:', error.response?.data);
+      console.error('❌ Registration error:', error.response?.data || error);
       return {
         success: false,
         message: error.response?.data?.message || 'Registrierung fehlgeschlagen'
@@ -123,18 +139,25 @@ const AuthProvider = ({ children }) => {
   };
 
   const logout = () => {
-    console.log('🚪 Logging out...');
+    console.log('🚪 Logging out');
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     setUser(null);
   };
 
-  // Context Value
-  const contextValue = {
+  // Additional helper function for setting token directly if needed
+  const setTokenDirectly = (token) => {
+    console.log('🔑 Setting token directly');
+    localStorage.setItem('token', token);
+    fetchUser(); // Fetch user data with the new token
+  };
+
+  const value = {
     user,
     login,
     register,
     logout,
+    setTokenDirectly,
     loading
   };
 

@@ -2,17 +2,17 @@ import mongoose from 'mongoose';
 
 const connectDB = async () => {
   try {
-    console.log('🔄 Verbinde mit MongoDB...');
-    console.log('📍 MongoDB URI:', process.env.MONGO_URI ? 'URI vorhanden' : 'URI FEHLT!');
+    // console.log('🔄 Verbinde mit MongoDB...');
+    // console.log('📍 MongoDB URI:', process.env.MONGO_URI ? 'URI vorhanden' : 'URI FEHLT!');
     
-    if (!process.env.MONGO_URI) {
-      throw new Error('MONGO_URI ist nicht in der .env-Datei definiert');
+    if (!process.env.MONGODB_URI) {
+      throw new Error('MONGODB_URI ist nicht in der .env-Datei definiert');
     }
     
-    const conn = await mongoose.connect(process.env.MONGO_URI);
+    const conn = await mongoose.connect(process.env.MONGODB_URI);
     
-    console.log('✅ MongoDB verbunden:', conn.connection.host);
-    console.log('📊 Database Name:', conn.connection.name);
+    console.log('✅ Mit MongoDB verbunden:');
+    // console.log('📊 Database Name:', conn.connection.name);
     
     // Connection Event Listeners
     mongoose.connection.on('error', (err) => {
@@ -30,3 +30,6 @@ const connectDB = async () => {
 };
 
 export default connectDB;
+
+// server.js - Nach connectDB() hinzufügen:
+

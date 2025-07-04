@@ -72,6 +72,92 @@ const ExchangeList = ({ posts, loading, activeCategory, onRefresh }) => {
     return date.toLocaleDateString('de-DE');
   };
 
+  if (activeCategory === 'alle') {
+    // Nach Kategorie gruppieren
+    const kategorien = [
+      { key: 'verschenken', label: '🎁 Verschenken' },
+      { key: 'tauschen', label: '🔄 Tauschen' },
+      { key: 'suchen', label: '🔍 Suchen' }
+    ];
+    return (
+      <div className="exchange-list">
+        <div className="list-header">
+          <h2>Alle Anzeigen <span className="count">({posts.length})</span></h2>
+          <button onClick={onRefresh} className="refresh-btn">
+            🔄 Aktualisieren
+          </button>
+        </div>
+        {kategorien.map(kat => {
+          const kPosts = posts.filter(p => p.category === kat.key);
+          if (kPosts.length === 0) return null;
+          return (
+            <div key={kat.key} className="category-section">
+              <h3>{kat.label}</h3>
+              <div className="posts-grid">
+                {kPosts.map(post => (
+                  <Link
+                    key={post._id}
+                    to={`/exchange/post/${post._id}`}
+                    className="post-card"
+                  >
+                    <div className="post-image">
+                      <img src={post.picture} alt={post.title} />
+                      <div 
+                        className="status-badge"
+                        style={{ backgroundColor: getStatusColor(post.status) }}
+                      >
+                        {post.status === 'aktiv' ? 'Verfügbar' : 
+                         post.status === 'reserviert' ? 'Reserviert' : 'Vergeben'}
+                      </div>
+                      <div className="category-badge">
+                        {getCategoryIcon(post.category)} {getCategoryLabel(post.category)}
+                      </div>
+                    </div>
+                    <div className="post-content">
+                      <h3 className="post-title">{post.title}</h3>
+                      <p className="post-description">
+                        {post.description.length > 120 
+                          ? `${post.description.substring(0, 120)}...` 
+                          : post.description
+                        }
+                      </p>
+                      {post.tauschGegen && (
+                        <div className="trade-info">
+                          <strong>Tausche gegen:</strong> {post.tauschGegen}
+                        </div>
+                      )}
+                      <div className="post-meta">
+                        <div className="author-info">
+                          <User size={16} />
+                          <span>{post.author?.nickname || 'Unbekannt'}</span>
+                        </div>
+                        <div className="post-stats">
+                          <div className="stat">
+                            <Eye size={14} />
+                            <span>{post.views}</span>
+                          </div>
+                          <div className="stat">
+                            <Clock size={14} />
+                            <span>{formatDate(post.createdAt)}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          );
+        })}
+        {/* Hilfe-Abschnitt */}
+        <div className="category-section help-section">
+          <h3>❓ Hilfe</h3>
+          <p>Du hast Fragen oder brauchst Unterstützung? <Link to="/help">Hier geht's zur Hilfeseite</Link>.</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="exchange-list">
       <div className="list-header">
