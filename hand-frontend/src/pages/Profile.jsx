@@ -5,26 +5,26 @@ import { useNavigate } from 'react-router-dom';
 import api from '../api';
 import exchangeService from '../services/exchangeService';
 import './Profile.css';
-import ExchangeEditModal from '../components/ExchangeEditModal';
+import Footer from '../components/Footer';
 
 const Profile = () => {
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
-  
-  // ========================================
+
   // STATES - Profil-Daten
-  // ========================================
   const [isEditing, setIsEditing] = useState(false);
   const [profileData, setProfileData] = useState({
-    username: '',
+    nickname: '',
     email: '',
     firstName: '',
     lastName: '',
-    district: '',
-    city: '',
-    zipCode: '',
-    street: '',
-    state: '',
+    address: {
+      street: '',
+      city: '',
+      zip: '',
+      state: '',
+      district: ''
+    },
     profileImage: null
   });
   const [editData, setEditData] = useState({ ...profileData });
@@ -32,128 +32,101 @@ const Profile = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState(null);
 
-  // ========================================
   // STATES - Exchange Posts
-  // ========================================
   const [myExchangePosts, setMyExchangePosts] = useState([]);
   const [loadingPosts, setLoadingPosts] = useState(false);
-  const [showEditModal, setShowEditModal] = useState(false);
-  const [editingPost, setEditingPost] = useState(null);
 
-  // ========================================
   // STATES - Events & Navigation
-  // ========================================
-  const [activeTab, setActiveTab] = useState('profile'); // 'profile', 'exchange', 'events'
+  const [activeTab, setActiveTab] = useState('profile');
   const [userEvents, setUserEvents] = useState([]);
   const [eventsLoading, setEventsLoading] = useState(false);
 
-  // ========================================
-  // EFFECT - User-Daten beim Laden abrufen
-  // ========================================
+  // User-Daten laden
   useEffect(() => {
     const fetchUserData = async () => {
       try {
         setIsLoading(true);
         const response = await api.get('/auth/users/me');
-        console.log('🔍 Raw API Response:', response.data);
-        
-        // Moderne Datenstruktur (address als Objekt) in flache Struktur umwandeln
-        const formattedData = {
-          username: response.data.nickname || '',
-          email: response.data.email || '',
-          firstName: response.data.firstName || '',
-          lastName: response.data.lastName || '',
-          state: response.data.address?.state || '',
-          city: response.data.address?.city || '',
-          zipCode: response.data.address?.zip || '',
-          street: response.data.address?.street || '',
-          district: response.data.address?.district || '',
-          profileImage: response.data.profileImage || null
-        };
-        
-        console.log('📋 Formatted Data:', formattedData);
-        setProfileData(formattedData);
-        setEditData(formattedData);
+        const data = response.data;
+        setProfileData({
+          nickname: data.nickname || '',
+          email: data.email || '',
+          firstName: data.firstName || '',
+          lastName: data.lastName || '',
+          address: {
+            street: data.address?.street || '',
+            city: data.address?.city || '',
+            zip: data.address?.zip || '',
+            state: data.address?.state || '',
+            district: data.address?.district || ''
+          },
+          profileImage: data.profileImage || null
+        });
+        setEditData({
+          nickname: data.nickname || '',
+          email: data.email || '',
+          firstName: data.firstName || '',
+          lastName: data.lastName || '',
+          address: {
+            street: data.address?.street || '',
+            city: data.address?.city || '',
+            zip: data.address?.zip || '',
+            state: data.address?.state || '',
+            district: data.address?.district || ''
+          },
+          profileImage: data.profileImage || null
+        });
         setError(null);
       } catch (error) {
-        console.error('Fehler beim Laden der User-Daten:', error);
         setError('Fehler beim Laden der Profildaten');
       } finally {
         setIsLoading(false);
       }
     };
-
-    // Nur laden wenn Auth fertig ist und User existiert
-    if (!authLoading && user) {
-      fetchUserData();
-    }
+    if (!authLoading && user) fetchUserData();
   }, [user, authLoading]);
 
-  // ========================================
-  // EFFECT - Exchange Posts laden
-  // ========================================
+  // Exchange Posts laden
   useEffect(() => {
     const fetchMyExchangePosts = async () => {
       setLoadingPosts(true);
       try {
         const result = await exchangeService.getMyPosts();
-        if (result.success) {
-          setMyExchangePosts(result.data);
-        }
+        if (result.success) setMyExchangePosts(result.data);
       } catch (error) {
-        console.error('Fehler beim Laden der Exchange-Posts:', error);
+        // Fehler ignorieren
       } finally {
         setLoadingPosts(false);
       }
     };
+    if (profileData.nickname) fetchMyExchangePosts();
+  }, [profileData.nickname]);
 
-    // Nur laden wenn Profil-Daten vorhanden sind
-    if (profileData.username) {
-      fetchMyExchangePosts();
-    }
-  }, [profileData.username]);
-
-  // ========================================
-  // EFFECT - Events laden wenn Events-Tab aktiv
-  // ========================================
+  // Events laden wenn Events-Tab aktiv
   useEffect(() => {
-    if (activeTab === 'events' && user) {
-      loadUserEvents();
-    }
+    if (activeTab === 'events' && user) loadUserEvents();
+    // eslint-disable-next-line
   }, [activeTab, user]);
 
-  // ========================================
-  // FUNCTION - User-Events von Backend laden
-  // ========================================
+  // User-Events von Backend laden
   const loadUserEvents = async () => {
     try {
       setEventsLoading(true);
-      console.log('📥 Loading user events...');
-      
-      // API-Call zur neuen Route
       const response = await api.get('/auth/users/me/events');
-      console.log('📥 User events loaded:', response.data);
-      
-      // Events aus Response extrahieren
       setUserEvents(response.data.events || []);
     } catch (error) {
-      console.error('❌ Error loading user events:', error);
       setUserEvents([]);
     } finally {
       setEventsLoading(false);
     }
   };
 
-  // ========================================
-  // FUNCTION - Event-Detail-Seite öffnen
-  // ========================================
+  // Event-Detail-Seite öffnen
   const handleEventClick = (event) => {
     navigate(`/events/${event._id}`, { state: { event } });
   };
 
-  // ========================================
-  // PROFILE FUNCTIONS - Bearbeiten/Speichern
-  // ========================================
+  // Bearbeiten/Speichern
   const handleEdit = () => {
     setIsEditing(true);
     setEditData({ ...profileData });
@@ -162,34 +135,25 @@ const Profile = () => {
   const handleSave = async () => {
     try {
       setIsSaving(true);
-      
-      // Flache Struktur zurück in moderne Backend-Struktur umwandeln
       const updateData = {
-        nickname: editData.username,
+        nickname: editData.nickname,
         email: editData.email,
         firstName: editData.firstName,
         lastName: editData.lastName,
         address: {
-          street: editData.street,
-          city: editData.city,
-          state: editData.state,
-          zip: editData.zipCode,
-          district: editData.district
+          street: editData.address.street,
+          city: editData.address.city,
+          zip: editData.address.zip,
+          state: editData.address.state,
+          district: editData.address.district
         }
       };
-
-      console.log('💾 Sending update data:', updateData);
-
-      const response = await api.put('/auth/users/me', updateData);
-
-      if (response.status === 200) {
-        setProfileData({ ...editData });
-        setIsEditing(false);
-        setError(null);
-        alert('Profil erfolgreich aktualisiert!');
-      }
+      await api.put('/auth/users/me', updateData);
+      setProfileData({ ...editData });
+      setIsEditing(false);
+      setError(null);
+      alert('Profil erfolgreich aktualisiert!');
     } catch (error) {
-      console.error('Fehler beim Speichern:', error);
       setError('Fehler beim Speichern der Änderungen');
     } finally {
       setIsSaving(false);
@@ -206,10 +170,15 @@ const Profile = () => {
     setEditData(prev => ({ ...prev, [field]: value }));
   };
 
-  // ========================================
-  // FUNCTION - Profilbild hochladen
-  // ========================================
-  const handleImageUpload = async (e) => {
+  const handleAddressChange = (field, value) => {
+    setEditData(prev => ({
+      ...prev,
+      address: { ...prev.address, [field]: value }
+    }));
+  };
+
+  // Profilbild hochladen
+  const handleImageUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
       if (file.size > 5 * 1024 * 1024) {
@@ -226,40 +195,39 @@ const Profile = () => {
     }
   };
 
-  // ========================================
-  // EXCHANGE FUNCTIONS - Posts verwalten
-  // ========================================
+  // Exchange-Post löschen
   const handleDeletePost = async (postId) => {
-    if (!window.confirm('Sind Sie sicher, dass Sie diese Anzeige löschen möchten?')) {
-      return;
-    }
+    if (!window.confirm('Sind Sie sicher, dass Sie diese Anzeige löschen möchten?')) return;
     try {
       const result = await exchangeService.deletePost(postId);
       if (result.success) {
         setMyExchangePosts(prev => prev.filter(post => post._id !== postId));
         alert('Anzeige erfolgreich gelöscht!');
       }
-    } catch (error) {
-      console.error('Fehler beim Löschen:', error);
+    } catch {
       alert('Fehler beim Löschen der Anzeige');
     }
   };
 
+  // Exchange-Post Status ändern
   const handleStatusChange = async (postId, newStatus) => {
     try {
       const result = await exchangeService.updateStatus(postId, newStatus);
       if (result.success) {
-        setMyExchangePosts(prev => 
-          prev.map(post => 
+        setMyExchangePosts(prev =>
+          prev.map(post =>
             post._id === postId ? { ...post, status: newStatus } : post
           )
         );
       }
-    } catch (error) {
-      console.error('Fehler beim Status-Update:', error);
+    } catch {
       alert('Fehler beim Ändern des Status');
     }
   };
+
+  // Exchange-Post bearbeiten
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editingPost, setEditingPost] = useState(null);
 
   const handleEditPost = (post) => {
     setEditingPost(post);
@@ -270,8 +238,8 @@ const Profile = () => {
     try {
       const result = await exchangeService.updatePost(postId, updatedData);
       if (result.success) {
-        setMyExchangePosts(prev => 
-          prev.map(post => 
+        setMyExchangePosts(prev =>
+          prev.map(post =>
             post._id === postId ? result.data : post
           )
         );
@@ -279,15 +247,12 @@ const Profile = () => {
         setEditingPost(null);
         alert('Anzeige erfolgreich aktualisiert!');
       }
-    } catch (error) {
-      console.error('Fehler beim Update:', error);
+    } catch {
       alert('Fehler beim Aktualisieren der Anzeige');
     }
   };
 
-  // ========================================
   // LOADING & ERROR STATES
-  // ========================================
   if (authLoading || isLoading) {
     return (
       <div className="profile-container">
@@ -312,76 +277,71 @@ const Profile = () => {
     );
   }
 
-  // ========================================
   // MAIN RENDER
-  // ========================================
   return (
-    <div className="profile-container">
-      <div className="profile-wrapper">
-        
-        {/* ========================================
-            HEADER - Titel und Bearbeiten-Button
-            ======================================== */}
-        <div className="profile-header">
-          <div className="header-content">
-            <div className="header-text">
-              <h1>Mein Profil</h1>
-              <p>Verwalten Sie Ihre persönlichen Daten</p>
-            </div>
-            <div className="header-buttons">
-              {!isEditing ? (
-                <button onClick={handleEdit} className="btn btn-edit">
-                  <Edit3 size={18} />
-                  Bearbeiten
-                </button>
-              ) : (
-                <div className="btn-group">
-                  <button 
-                    onClick={handleSave} 
-                    disabled={isSaving}
-                    className="btn btn-save"
-                  >
-                    {isSaving ? <Loader size={18} className="spinner" /> : <Save size={18} />}
-                    {isSaving ? 'Speichern...' : 'Speichern'}
+    <div className="profile-page">
+      <div className="profile-container">
+        <div className="profile-wrapper">
+          {/* Header */}
+          <div className="profile-header">
+            <div className="header-content">
+              <div className="header-text">
+                <h1>Mein Profil</h1>
+                <p>Verwalten Sie Ihre persönlichen Daten</p>
+              </div>
+              <div className="header-buttons">
+                {!isEditing ? (
+                  <button onClick={handleEdit} className="btn btn-edit">
+                    <Edit3 size={18} />
+                    Bearbeiten
                   </button>
-                  <button 
-                    onClick={handleCancel} 
-                    disabled={isSaving}
-                    className="btn btn-cancel"
-                  >
-                    <X size={18} />
-                    Abbrechen
-                  </button>
-                </div>
-              )}
+                ) : (
+                  <div className="btn-group">
+                    <button
+                      onClick={handleSave}
+                      disabled={isSaving}
+                      className="btn btn-save"
+                    >
+                      {isSaving ? <Loader size={18} className="spinner" /> : <Save size={18} />}
+                      {isSaving ? 'Speichern...' : 'Speichern'}
+                    </button>
+                    <button
+                      onClick={handleCancel}
+                      disabled={isSaving}
+                      className="btn btn-cancel"
+                    >
+                      <X size={18} />
+                      Abbrechen
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
 
-        {/* ========================================
-            TAB NAVIGATION - Profil/Exchange/Events
-            ======================================== */}
+        {/* TAB NAVIGATION */}
         <div className="profile-tabs">
-          <button 
+          <button
             className={`tab-button ${activeTab === 'profile' ? 'active' : ''}`}
             onClick={() => setActiveTab('profile')}
           >
             <User size={18} />
             Profil
           </button>
-          <button 
+          <button
             className={`tab-button ${activeTab === 'exchange' ? 'active' : ''}`}
             onClick={() => setActiveTab('exchange')}
           >
             <MapPin size={18} />
             Exchange ({myExchangePosts.length})
           </button>
-          <button 
+          <button
             className={`tab-button ${activeTab === 'events' ? 'active' : ''}`}
             onClick={() => {
               setActiveTab('events');
               if (userEvents.length === 0) {
-                loadUserEvents(); // Events laden wenn noch nicht geladen
+                loadUserEvents();
               }
             }}
           >
@@ -390,25 +350,19 @@ const Profile = () => {
           </button>
         </div>
 
-        {/* ========================================
-            MAIN CONTENT - Je nach aktivem Tab
-            ======================================== */}
+        {/* MAIN CONTENT */}
         <div className="profile-content">
-          
-          {/* ========================================
-              PROFILE TAB - Persönliche Daten
-              ======================================== */}
+          {/* PROFILE TAB */}
           {activeTab === 'profile' && (
             <div className="profile-grid">
-              
               {/* Profilbild-Section */}
               <div className="profile-image-section">
                 <div className="image-container">
                   <div className="profile-image">
-                    {(isEditing ? editData.profileImage : profileData.profileImage) ? (
-                      <img 
-                        src={isEditing ? editData.profileImage : profileData.profileImage} 
-                        alt="Profilbild" 
+                    {editData.profileImage || profileData.profileImage ? (
+                      <img
+                        src={isEditing ? editData.profileImage : profileData.profileImage}
+                        alt="Profilbild"
                       />
                     ) : (
                       <div className="default-avatar">
@@ -428,20 +382,20 @@ const Profile = () => {
                     )}
                   </div>
                   <h2 className="profile-name">
-                    {profileData.firstName || profileData.lastName 
-                      ? `${profileData.firstName} ${profileData.lastName}`.trim()
-                      : 'Unbekannter Benutzer'
-                    }
+                    {(editData.firstName || editData.lastName) && isEditing
+                      ? `${editData.firstName} ${editData.lastName}`.trim()
+                      : (profileData.firstName || profileData.lastName)
+                        ? `${profileData.firstName} ${profileData.lastName}`.trim()
+                        : 'Unbekannter Benutzer'}
                   </h2>
                   <p className="profile-username">
-                    @{profileData.username || 'unbekannt'}
+                    @{profileData.nickname || 'unbekannt'}
                   </p>
                 </div>
               </div>
 
               {/* Formular-Section */}
               <div className="profile-form-section">
-                
                 {/* Account Informationen */}
                 <div className="form-group">
                   <h3 className="section-title">
@@ -455,11 +409,11 @@ const Profile = () => {
                         {isEditing ? (
                           <input
                             type="text"
-                            value={editData.username}
-                            onChange={(e) => handleInputChange('username', e.target.value)}
+                            value={editData.nickname}
+                            onChange={e => handleInputChange('nickname', e.target.value)}
                           />
                         ) : (
-                          <div className="input-display">{profileData.username || 'Nicht angegeben'}</div>
+                          <div className="input-display">{profileData.nickname || 'Nicht angegeben'}</div>
                         )}
                       </div>
                     </div>
@@ -470,7 +424,7 @@ const Profile = () => {
                           <input
                             type="email"
                             value={editData.email}
-                            onChange={(e) => handleInputChange('email', e.target.value)}
+                            onChange={e => handleInputChange('email', e.target.value)}
                           />
                         ) : (
                           <div className="input-display">{profileData.email || 'Nicht angegeben'}</div>
@@ -494,7 +448,7 @@ const Profile = () => {
                           <input
                             type="text"
                             value={editData.firstName}
-                            onChange={(e) => handleInputChange('firstName', e.target.value)}
+                            onChange={e => handleInputChange('firstName', e.target.value)}
                           />
                         ) : (
                           <div className="input-display">{profileData.firstName || 'Nicht angegeben'}</div>
@@ -508,7 +462,7 @@ const Profile = () => {
                           <input
                             type="text"
                             value={editData.lastName}
-                            onChange={(e) => handleInputChange('lastName', e.target.value)}
+                            onChange={e => handleInputChange('lastName', e.target.value)}
                           />
                         ) : (
                           <div className="input-display">{profileData.lastName || 'Nicht angegeben'}</div>
@@ -530,11 +484,11 @@ const Profile = () => {
                       {isEditing ? (
                         <input
                           type="text"
-                          value={editData.street}
-                          onChange={(e) => handleInputChange('street', e.target.value)}
+                          value={editData.address.street}
+                          onChange={e => handleAddressChange('street', e.target.value)}
                         />
                       ) : (
-                        <div className="input-display">{profileData.street || 'Nicht angegeben'}</div>
+                        <div className="input-display">{profileData.address.street || 'Nicht angegeben'}</div>
                       )}
                     </div>
                   </div>
@@ -545,12 +499,12 @@ const Profile = () => {
                         {isEditing ? (
                           <input
                             type="text"
-                            value={editData.zipCode}
-                            onChange={(e) => handleInputChange('zipCode', e.target.value)}
+                            value={editData.address.zip}
+                            onChange={e => handleAddressChange('zip', e.target.value)}
                             maxLength="5"
                           />
                         ) : (
-                          <div className="input-display">{profileData.zipCode || 'Nicht angegeben'}</div>
+                          <div className="input-display">{profileData.address.zip || 'Nicht angegeben'}</div>
                         )}
                       </div>
                     </div>
@@ -560,11 +514,11 @@ const Profile = () => {
                         {isEditing ? (
                           <input
                             type="text"
-                            value={editData.city}
-                            onChange={(e) => handleInputChange('city', e.target.value)}
+                            value={editData.address.city}
+                            onChange={e => handleAddressChange('city', e.target.value)}
                           />
                         ) : (
-                          <div className="input-display">{profileData.city || 'Nicht angegeben'}</div>
+                          <div className="input-display">{profileData.address.city || 'Nicht angegeben'}</div>
                         )}
                       </div>
                     </div>
@@ -574,11 +528,25 @@ const Profile = () => {
                         {isEditing ? (
                           <input
                             type="text"
-                            value={editData.state}
-                            onChange={(e) => handleInputChange('state', e.target.value)}
+                            value={editData.address.state}
+                            onChange={e => handleAddressChange('state', e.target.value)}
                           />
                         ) : (
-                          <div className="input-display">{profileData.state || 'Nicht angegeben'}</div>
+                          <div className="input-display">{profileData.address.state || 'Nicht angegeben'}</div>
+                        )}
+                      </div>
+                    </div>
+                    <div className="input-group">
+                      <label>Ortsteil</label>
+                      <div className="input-container">
+                        {isEditing ? (
+                          <input
+                            type="text"
+                            value={editData.address.district}
+                            onChange={e => handleAddressChange('district', e.target.value)}
+                          />
+                        ) : (
+                          <div className="input-display">{profileData.address.district || 'Nicht angegeben'}</div>
                         )}
                       </div>
                     </div>
@@ -588,16 +556,13 @@ const Profile = () => {
             </div>
           )}
 
-          {/* ========================================
-              EXCHANGE TAB - Exchange-Anzeigen
-              ======================================== */}
+          {/* EXCHANGE TAB */}
           {activeTab === 'exchange' && (
             <div className="exchange-content">
               <h2 className="section-title">
                 <MapPin size={20} />
                 Meine Exchange-Anzeigen
               </h2>
-              
               {loadingPosts ? (
                 <div className="loading-spinner">
                   <Loader className="spinner" />
@@ -608,7 +573,7 @@ const Profile = () => {
                   <div className="no-posts-icon">📦</div>
                   <h3>Keine Anzeigen</h3>
                   <p>Sie haben noch keine Exchange-Anzeigen erstellt.</p>
-                  <button 
+                  <button
                     className="btn btn-primary"
                     onClick={() => navigate('/exchange')}
                   >
@@ -622,8 +587,8 @@ const Profile = () => {
                       <div className="post-image">
                         <img src={post.picture} alt={post.title} />
                         <div className={`status-badge status-${post.status}`}>
-                          {post.status === 'aktiv' ? 'Aktiv' : 
-                           post.status === 'reserviert' ? 'Reserviert' : 'Abgeschlossen'}
+                          {post.status === 'aktiv' ? 'Aktiv' :
+                            post.status === 'reserviert' ? 'Reserviert' : 'Abgeschlossen'}
                         </div>
                       </div>
                       <div className="post-content">
@@ -631,7 +596,7 @@ const Profile = () => {
                           <h3 className="post-title">{post.title}</h3>
                           <span className={`category-badge category-${post.category}`}>
                             {post.category === 'verschenken' ? '🎁 Verschenken' :
-                             post.category === 'tauschen' ? '🔄 Tauschen' : '🔍 Suchen'}
+                              post.category === 'tauschen' ? '🔄 Tauschen' : '🔍 Suchen'}
                           </span>
                         </div>
                         <p className="post-description">{post.description}</p>
@@ -647,22 +612,22 @@ const Profile = () => {
                           <span className="post-views">👁 {post.views} Aufrufe</span>
                         </div>
                         <div className="post-actions">
-                          <select 
+                          <select
                             value={post.status}
-                            onChange={(e) => handleStatusChange(post._id, e.target.value)}
+                            onChange={e => handleStatusChange(post._id, e.target.value)}
                             className="status-select"
                           >
                             <option value="aktiv">Aktiv</option>
                             <option value="reserviert">Reserviert</option>
                             <option value="abgeschlossen">Abgeschlossen</option>
                           </select>
-                          <button 
+                          <button
                             className="btn-action btn-edit-post"
                             onClick={() => handleEditPost(post)}
                           >
                             ✏️ Bearbeiten
                           </button>
-                          <button 
+                          <button
                             className="btn-action btn-delete-post"
                             onClick={() => handleDeletePost(post._id)}
                           >
@@ -677,16 +642,13 @@ const Profile = () => {
             </div>
           )}
 
-          {/* ========================================
-              EVENTS TAB - User Events
-              ======================================== */}
+          {/* EVENTS TAB */}
           {activeTab === 'events' && (
             <div className="events-content">
               <h2 className="section-title">
                 <Calendar size={20} />
                 Meine Events
               </h2>
-              
               {eventsLoading ? (
                 <div className="loading-spinner">
                   <Loader className="spinner" />
@@ -697,7 +659,7 @@ const Profile = () => {
                   <div className="no-events-icon">📅</div>
                   <h3>Keine Events</h3>
                   <p>Du nimmst aktuell an keinen Events teil.</p>
-                  <button 
+                  <button
                     className="btn btn-primary"
                     onClick={() => navigate('/events')}
                   >
@@ -707,17 +669,17 @@ const Profile = () => {
               ) : (
                 <div className="user-events-grid">
                   {userEvents.map(event => (
-                    <div 
-                      key={event._id} 
+                    <div
+                      key={event._id}
                       className="user-event-card"
                       onClick={() => handleEventClick(event)}
                     >
                       {/* Event-Bild */}
                       <div className="event-image">
-                        <img 
-                          src={event.image || '/placeholder-event.jpg'} 
+                        <img
+                          src={event.image || '/placeholder-event.jpg'}
                           alt={event.title}
-                          onError={(e) => {
+                          onError={e => {
                             e.target.style.display = 'none';
                             e.target.nextSibling.style.display = 'flex';
                           }}
@@ -726,7 +688,6 @@ const Profile = () => {
                           <Calendar size={48} />
                         </div>
                       </div>
-                      
                       {/* Event-Informationen */}
                       <div className="event-info">
                         <h3>{event.title}</h3>
@@ -757,9 +718,7 @@ const Profile = () => {
           )}
         </div>
 
-        {/* ========================================
-            MODAL - Exchange-Post bearbeiten
-            ======================================== */}
+        {/* MODAL - Exchange-Post bearbeiten */}
         {showEditModal && editingPost && (
           <div className="edit-post-modal">
             <div className="modal-content">
@@ -770,7 +729,7 @@ const Profile = () => {
                   <input
                     type="text"
                     value={editingPost.title}
-                    onChange={(e) => setEditingPost(prev => ({ ...prev, title: e.target.value }))}
+                    onChange={e => setEditingPost(prev => ({ ...prev, title: e.target.value }))}
                     placeholder="Titel der Anzeige"
                   />
                 </div>
@@ -778,7 +737,7 @@ const Profile = () => {
                   <label>Beschreibung</label>
                   <textarea
                     value={editingPost.description}
-                    onChange={(e) => setEditingPost(prev => ({ ...prev, description: e.target.value }))}
+                    onChange={e => setEditingPost(prev => ({ ...prev, description: e.target.value }))}
                     placeholder="Beschreibung der Anzeige"
                   />
                 </div>
@@ -786,7 +745,7 @@ const Profile = () => {
                   <label>Status</label>
                   <select
                     value={editingPost.status}
-                    onChange={(e) => setEditingPost(prev => ({ ...prev, status: e.target.value }))}
+                    onChange={e => setEditingPost(prev => ({ ...prev, status: e.target.value }))}
                   >
                     <option value="active">Aktiv</option>
                     <option value="inactive">Inaktiv</option>
@@ -794,14 +753,14 @@ const Profile = () => {
                 </div>
               </div>
               <div className="modal-actions">
-                <button 
-                  onClick={() => handleUpdatePost(editingPost._id, editingPost)} 
+                <button
+                  onClick={() => handleUpdatePost(editingPost._id, editingPost)}
                   className="btn btn-save"
                 >
                   Speichern
                 </button>
-                <button 
-                  onClick={() => setShowEditModal(false)} 
+                <button
+                  onClick={() => setShowEditModal(false)}
                   className="btn btn-cancel"
                 >
                   Abbrechen
@@ -811,6 +770,8 @@ const Profile = () => {
           </div>
         )}
       </div>
+      {/* Footer */}
+      <Footer />
     </div>
   );
 };

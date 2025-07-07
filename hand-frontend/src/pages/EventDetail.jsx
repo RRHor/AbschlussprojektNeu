@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext.jsx';
 import api from '../api.js';
 import logo from '../assets/logo.png'; 
 import './EventDetail.css';
+import Footer from '../components/Footer';
 
 const EventDetail = () => {
   const { state } = useLocation();
@@ -299,6 +300,9 @@ const EventDetail = () => {
         </a>
         <p className="inspire-text">„Alle Rechte vorbehalten bei Hand in Hand e.V."</p>
       </div>
+
+      {/* Footer */}
+      <Footer />
     </div>
   );
 };

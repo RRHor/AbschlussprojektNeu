@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import ImageCarousel from '../components/ImageCarousel';
+import Footer from '../components/Footer';
 import './LandingPage.css';
 
 
@@ -139,28 +140,7 @@ function LandingPage() {
         </section>
         
         {/* Footer */}
-        <footer className="app-footer">
-          <div className="footer-content">
-            <nav className="footer-links" aria-label="Footer Navigation">
-              {footerNavigation.map((navItem) => (
-                <a 
-                  key={navItem.href}
-                  href={navItem.href}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    scrollToSection(navItem.href.substring(1));
-                  }}
-                >
-                  {navItem.text}
-                </a>
-              ))}
-            </nav>
-            <p>
-              &copy; {new Date().getFullYear()} Hand in Hand – Nachbarschaft verbindet. 
-              Alle Rechte vorbehalten von Rea, Dominik, Nazli, Dagmar, Brian, Arben.
-            </p>
-          </div>
-        </footer>
+        <Footer />
       </section>
 
     </div>

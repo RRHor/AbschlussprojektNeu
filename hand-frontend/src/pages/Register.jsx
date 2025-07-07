@@ -1,5 +1,6 @@
 import React from 'react';
 import RegisterForm from '../components/RegisterForm.jsx';
+import Footer from '../components/Footer';
 
 const Register = ({ onSuccess }) => {
   const handleSubmit = async (e) => {
@@ -23,6 +24,8 @@ const Register = ({ onSuccess }) => {
   return (
     <div className="register-page">
       <RegisterForm onSuccess={onSuccess} />
+      {/* Footer */}
+      <Footer />
     </div>
   );
 };

@@ -39,26 +39,14 @@ const validateAddress = async (address) => {
  */
 router.post('/register', async (req, res) => {
   try {
-    console.log('🔥 VOLLSTÄNDIGER REGISTER-REQUEST:', JSON.stringify(req.body, null, 2));
-    console.log('📋 Adress-Daten vom Frontend:', req.body.adress);
-    console.log('🔍 ZIP specifically:', req.body.adress?.zip);
-
     const {
       nickname,
       email,
       password,
       firstName,
       lastName,
-      adress
+      adress // oder addresses, je nach Modell
     } = req.body;
-
-    // Validierung
-    if (!nickname || !email || !password) {
-      return res.status(400).json({
-        success: false,
-        message: 'Nickname, E-Mail und Passwort sind erforderlich'
-      });
-    }
 
     // Prüfe ob User bereits existiert
     const existingUser = await User.findOne({
@@ -79,8 +67,6 @@ router.post('/register', async (req, res) => {
       { expiresIn: '24h' }
     );
 
-    console.log('🎫 Verifizierungstoken generiert:', verificationToken);
-
     // User erstellen
     const user = new User({
       username: nickname,
@@ -92,7 +78,7 @@ router.post('/register', async (req, res) => {
       address: adress ? {
         street: adress.street,
         city: adress.city,
-        zip: adress.zip?.toString(),        // ← KORRIGIERT: zip statt postalCode
+        zip: adress.zip?.toString(),
         district: adress.district,
         state: adress.state
       } : undefined,
@@ -102,31 +88,14 @@ router.post('/register', async (req, res) => {
       registeredAt: new Date()
     });
 
-    console.log('🏠 Address data being saved:', user.address);
-    console.log('🔍 ZIP specifically:', user.address?.zip);
-
     await user.save();
-    console.log('💾 User gespeichert mit ID:', user._id);
 
-    // Sofort User aus DB laden:
-    const savedUser = await User.findById(user._id);
-    console.log('🔍 User aus DB nach Speichern:', savedUser.address);
-
-    // E-MAIL VERSENDEN
-    console.log('📧 Starte E-Mail-Versand...');
+    // E-Mail-Versand
     try {
-      const emailResult = await sendVerificationEmail(email, verificationToken);
-      console.log('📧 E-Mail-Service Ergebnis:', emailResult);
-      
-      if (emailResult.success) {
-        console.log('✅ Verifizierungs-E-Mail erfolgreich "gesendet"');
-      } else {
-        console.log('⚠️ E-Mail-Versand fehlgeschlagen:', emailResult.message);
-      }
+      await sendVerificationEmail(email, verificationToken);
     } catch (emailError) {
       console.error('❌ E-Mail-Service Fehler:', emailError);
     }
-    console.log('📧 E-Mail-Versand-Prozess abgeschlossen');
 
     res.status(201).json({
       success: true,
@@ -383,4 +352,3 @@ router.get("/users/me/events", protect, async (req, res) => {
 });
 
 export default router;
-

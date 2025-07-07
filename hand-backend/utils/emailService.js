@@ -6,32 +6,67 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 // E-Mail-Transporter konfigurieren
-const createTransporter = () => {
-  // Für Entwicklung: Ethereal Email (Test-Service)
-  if (process.env.NODE_ENV === 'development' || !process.env.EMAIL_HOST) {
-    console.log('📧 Using development email mode (no real emails sent)');
-    return nodemailer.createTransport({  // ← KORRIGIERT: createTransport (nicht createTransporter)
-      host: 'smtp.ethereal.email',
-      port: 587,
-      auth: {
-        user: 'ethereal.user@example.com',
-        pass: 'ethereal.pass'
-      }
-    });
-  }
+const transporter = nodemailer.createTransport({
+  // service: 'gmail',
+  service: process.env.EMAIL_SERVICE,
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
+  },
+  debug: process.env.NODE_ENV !== 'production', // Debug nur in Entwicklungsumgebung
+});
+/**
+ * Funktion zum Versenden einer Verifizierungs-E-Mail
+ * @param {string} to - E-Mail-Adresse des Empfängers
+ * @param {string} verificationCode - Der Verifizierungscode
+ * @returns {Promise<Object>} - Erfolgs- oder Fehlerstatus Das gib die Funktion zurück
+ */
+// export const sendVerificationEmail = async (to, verificationCode,userId) => {
+//   try {
+//     console.log('📧 Versuche E-Mail zu senden an:', to);
+//     console.log('🔢 Verifizierungscode:', verificationCode);
+    
+//     const mailOptions = {
+//       from: process.env.EMAIL_FROM,
+//       to,
+//       subject: 'Bestätige deine E-Mail-Adresse für Hand-Hand',
+//       html: `
+//         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #E1E1E1; border-radius: 5px;">
+//           <h2 style="color: #333;">Willkommen bei Hand-Hand!</h2>
+//           <p>Danke für deine Registrierung in unserer Nachbarschafts-App.</p>
+//           <p>Um dein Konto zu aktivieren, gib bitte den folgenden Verifizierungscode ein:</p>
+//           <div style="background-color: #F5F5F5; padding: 10px; border-radius: 4px; font-size: 20px; letter-spacing: 2px; text-align: center; margin: 20px 0;">
+//             <strong>${verificationCode}</strong>
+//           </div>
+//           <p>Oder klicke auf diesen Link, um deine E-Mail direkt zu bestätigen:</p>
+//           <p><a href="http://localhost:4000/api/auth/verify-link?userId=${userId}&code=${verificationCode}" style="background-color: #4CAF50; 
+//           color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px; display: inline-block;">
+//           E-Mail bestätigen</a></p>
+//           <p>Dieser Code ist 24 Stunden gültig.</p>
+//           <p>Viele Grüße,<br>Dein Hand-Hand Team</p>
+//         </div>
+//       `,
+//     };
+//     const info = await transporter.sendMail(mailOptions);
+//     console.log('E-Mail gesendet:', info.messageId);
+//     return { success: true, messageId: info.messageId };
+//   } catch (error) {
+//     console.error('Fehler beim Senden der E-Mail:', error);
+//     return { success: false, error: error.message };
+//   }
 
-  // Für Produktion: Echter E-Mail-Service
-  return nodemailer.createTransport({
-    host: process.env.EMAIL_HOST,
-    port: process.env.EMAIL_PORT || 587,
-    secure: process.env.EMAIL_SECURE === 'true',
-    auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASS
-    },
-    debug: process.env.NODE_ENV !== 'production'
-  });
-};
+//   // Für Produktion: Echter E-Mail-Service
+//   return nodemailer.createTransport({
+//     host: process.env.EMAIL_HOST,
+//     port: process.env.EMAIL_PORT || 587,
+//     secure: process.env.EMAIL_SECURE === 'true',
+//     auth: {
+//       user: process.env.EMAIL_USER,
+//       pass: process.env.EMAIL_PASS
+//     },
+//     debug: process.env.NODE_ENV !== 'production'
+//   });
+// };
 
 /**
  * Verifizierungs-E-Mail senden (Token-basiert für moderne Auth)
@@ -61,32 +96,15 @@ export const sendVerificationEmail = async (email, verificationToken) => {
       to: email,
       subject: 'E-Mail-Adresse verifizieren - Hand in Hand',
       html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <h2 style="color: #2c5f6f;">Willkommen bei Hand in Hand!</h2>
-          
-          <p>Vielen Dank für Ihre Registrierung. Um Ihr Konto zu aktivieren, klicken Sie bitte auf den folgenden Link:</p>
-          
-          <div style="text-align: center; margin: 30px 0;">
-            <a href="${verificationLink}" 
-               style="background-color: #ff6b6b; color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; font-weight: bold;">
-              E-Mail-Adresse verifizieren
-            </a>
-          </div>
-          
-          <p>Falls der Button nicht funktioniert, kopieren Sie diesen Link in Ihren Browser:</p>
-          <p style="background-color: #f5f5f5; padding: 10px; border-radius: 5px; word-break: break-all;">
-            ${verificationLink}
-          </p>
-          
-          <p style="color: #666; font-size: 14px;">
-            Dieser Link ist 24 Stunden gültig. Falls Sie diese E-Mail nicht angefordert haben, ignorieren Sie sie einfach.
-          </p>
-          
-          <hr style="margin: 30px 0; border: none; border-top: 1px solid #eee;">
-          <p style="color: #999; font-size: 12px; text-align: center;">
-            Hand in Hand - Nachbarschaftshilfe<br>
-            Diese E-Mail wurde automatisch generiert.
-          </p>
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #E1E1E1; border-radius: 5px;">
+          <h2 style="color: #333;">Passwort zurücksetzen</h2>
+          <p>Du erhältst diese E-Mail, weil du (oder jemand anderes) ein Zurücksetzen deines Passworts angefordert hat.</p>
+          ${codeHtml}
+          <p>Klicke auf den folgenden Link, um dein Passwort zurückzusetzen:</p>
+          <p><a href="http://localhost:5173/forgot-password?code=${resetToken}" style="background-color: #4CAF50; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px; display: inline-block;">Passwort zurücksetzen</a></p>
+          <p>Dieser Link ist 1 Stunde gültig.</p>
+          <p>Wenn du das nicht angefordert hast, ignoriere diese E-Mail bitte.</p>
+          <p>Viele Grüße,<br>Dein Hand-Hand Team</p>
         </div>
       `
     };
