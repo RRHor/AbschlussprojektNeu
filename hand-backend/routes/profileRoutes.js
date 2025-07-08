@@ -1,6 +1,8 @@
 import express from 'express';
 import {protect} from '../middleware/authMiddleware.js'; // oder { protect } je nach Export
 import User from '../models/UserModel.js';
+import Post from '../models/postModel.js'; // Importiere das Post-Modell
+
 
 const router = express.Router();
 
@@ -64,7 +66,7 @@ router.post('/profile/posts', protect, async (req, res) => {
     res.status(201).json(newPost);
   } catch (err) {
     res.status(500).json({ message: 'Serverfehler' });
-  }
+  // }
 });
 */
 

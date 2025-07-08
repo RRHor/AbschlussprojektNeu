@@ -32,7 +32,10 @@ export async function protect(req, res, next) {
 
     next();
   } catch (error) {
-    console.error('❌ Auth middleware error:', error);
+    // console.error('❌ Auth middleware error:', error);
+    if (process.env.NODE_ENV === 'development') {
+      console.warn('⚠️ Auth middleware error:', error.message);
+    }
     res.status(401).json({
       success: false,
       message: 'Nicht autorisiert - Token ungültig'

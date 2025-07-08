@@ -154,6 +154,7 @@ const RegisterForm = ({ onSuccess = () => {} }) => {
     try {
       // Adresse als Array für das Backend
       const registrationData = {
+
         nickname: formData.nickname,
         email: formData.email,
         password: formData.password,
@@ -169,6 +170,12 @@ const RegisterForm = ({ onSuccess = () => {} }) => {
           }
         ]
       };
+
+      console.log('📝 Registration data being sent:', JSON.stringify(registrationData));
+      console.log('🏠 Address being sent:', registrationData.adress);
+      console.log('🔍 ZIP being sent:', registrationData.adress.zip); // New
+
+      // Use AuthContext register function (which uses api.js with axios)
 
       const result = await register(registrationData);
 

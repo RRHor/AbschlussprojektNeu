@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import bcrypt from "bcrypt";
 
+
 // User-Schema Definition
 const userSchema = new mongoose.Schema(
   {
@@ -97,6 +98,8 @@ userSchema.pre("save", async function (next) {
 userSchema.methods.matchPassword = async function (enteredPassword) {
   return await bcrypt.compare(enteredPassword, this.password);
 };
+
+
 
 // User-Modell exportieren (verhindert Mehrfach-Registrierung bei Hot-Reload)
 const User = mongoose.models.User || mongoose.model("User", userSchema);

@@ -10,6 +10,7 @@ import Footer from '../components/Footer';
 const emptyAddress = {
   street: '',
   city: '',
+
   zip: '',
   state: '',
   district: ''
@@ -29,6 +30,7 @@ const Profile = () => {
     addresses: [ { ...emptyAddress } ],
     profileImage: null
   });
+  
   const [editData, setEditData] = useState({ ...profileData });
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
