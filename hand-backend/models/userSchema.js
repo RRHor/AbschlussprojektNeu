@@ -62,12 +62,14 @@ userSchema.pre("save", async function (next) {
     const isBcryptHash = /^\$2[abxy]\$\d{2}\$.{53}$/.test(this.password);
     
     if (isBcryptHash) {
-        console.log('🔄 Password is already hashed, skipping hash middleware');
+        // 🔄 Passwort ist bereits ein Hash, Middleware übersprungen
+        // console.log('🔄 Password is already hashed, skipping hash middleware');
         return next();
     }
     
     try {
-        console.log('🔐 Hashing password in middleware');
+        // 🔐 Passwort wird in Middleware gehasht
+        // console.log('🔐 Hashing password in middleware');
         const salt = await bcrypt.genSalt(10);
         this.password = await bcrypt.hash(this.password, salt);
         next();
@@ -81,4 +83,4 @@ userSchema.methods.matchPassword = async function (enteredPassword) {
     return bcrypt.compare(enteredPassword, this.password);
 };
 
-export default mongoose.models.User || mongoose.model("User", userSchema);
+export { userSchema };
