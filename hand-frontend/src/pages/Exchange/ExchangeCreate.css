@@ -1,4 +1,4 @@
-/* ExchangeCreate.css */
+/* ExchangeCreate.css
 .exchange-create {
   max-width: 800px;
   margin: 0 auto;
@@ -275,7 +275,7 @@
   cursor: not-allowed;
 }
 
-/* Responsive */
+/* Responsive 
 @media (max-width: 768px) {
   .create-form {
     padding: 1rem;
@@ -292,4 +292,4 @@
   .form-actions {
     flex-direction: column;
   }
-}
+} */

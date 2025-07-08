@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { User, MapPin, Edit3, Save, X, Camera, Loader, Calendar, Users } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -6,6 +6,14 @@ import api from '../api';
 import exchangeService from '../services/exchangeService';
 import './Profile.css';
 import Footer from '../components/Footer';
+
+const emptyAddress = {
+  street: '',
+  city: '',
+  zip: '',
+  state: '',
+  district: ''
+};
 
 const Profile = () => {
   const { user, loading: authLoading } = useAuth();
@@ -18,13 +26,7 @@ const Profile = () => {
     email: '',
     firstName: '',
     lastName: '',
-    address: {
-      street: '',
-      city: '',
-      zip: '',
-      state: '',
-      district: ''
-    },
+    addresses: [ { ...emptyAddress } ],
     profileImage: null
   });
   const [editData, setEditData] = useState({ ...profileData });
@@ -53,13 +55,9 @@ const Profile = () => {
           email: data.email || '',
           firstName: data.firstName || '',
           lastName: data.lastName || '',
-          address: {
-            street: data.address?.street || '',
-            city: data.address?.city || '',
-            zip: data.address?.zip || '',
-            state: data.address?.state || '',
-            district: data.address?.district || ''
-          },
+          addresses: Array.isArray(data.addresses) && data.addresses.length > 0
+            ? data.addresses
+            : [ { ...emptyAddress } ],
           profileImage: data.profileImage || null
         });
         setEditData({
@@ -67,13 +65,9 @@ const Profile = () => {
           email: data.email || '',
           firstName: data.firstName || '',
           lastName: data.lastName || '',
-          address: {
-            street: data.address?.street || '',
-            city: data.address?.city || '',
-            zip: data.address?.zip || '',
-            state: data.address?.state || '',
-            district: data.address?.district || ''
-          },
+          addresses: Array.isArray(data.addresses) && data.addresses.length > 0
+            ? data.addresses
+            : [ { ...emptyAddress } ],
           profileImage: data.profileImage || null
         });
         setError(null);
@@ -85,6 +79,8 @@ const Profile = () => {
     };
     if (!authLoading && user) fetchUserData();
   }, [user, authLoading]);
+
+
 
   // Exchange Posts laden
   useEffect(() => {
@@ -140,13 +136,15 @@ const Profile = () => {
         email: editData.email,
         firstName: editData.firstName,
         lastName: editData.lastName,
-        address: {
-          street: editData.address.street,
-          city: editData.address.city,
-          zip: editData.address.zip,
-          state: editData.address.state,
-          district: editData.address.district
-        }
+        addresses: [
+          {
+            street: editData.addresses?.[0]?.street || '',
+            city: editData.addresses?.[0]?.city || '',
+            zip: editData.addresses?.[0]?.zip || '',
+            state: editData.addresses?.[0]?.state || '',
+            district: editData.addresses?.[0]?.district || ''
+          }
+        ]
       };
       await api.put('/auth/users/me', updateData);
       setProfileData({ ...editData });
@@ -173,7 +171,12 @@ const Profile = () => {
   const handleAddressChange = (field, value) => {
     setEditData(prev => ({
       ...prev,
-      address: { ...prev.address, [field]: value }
+      addresses: [
+        {
+          ...prev.addresses[0],
+          [field]: value
+        }
+      ]
     }));
   };
 
@@ -484,27 +487,27 @@ const Profile = () => {
                       {isEditing ? (
                         <input
                           type="text"
-                          value={editData.address.street}
+                          value={editData.addresses?.[0]?.street || ''}
                           onChange={e => handleAddressChange('street', e.target.value)}
                         />
                       ) : (
-                        <div className="input-display">{profileData.address.street || 'Nicht angegeben'}</div>
+                        <div className="input-display">{profileData.addresses?.[0]?.street || 'Nicht angegeben'}</div>
                       )}
                     </div>
                   </div>
-                  <div className="form-row address-row">
+                  <div className="form-row adress-row">
                     <div className="input-group">
                       <label>PLZ</label>
                       <div className="input-container">
                         {isEditing ? (
-                          <input
-                            type="text"
-                            value={editData.address.zip}
-                            onChange={e => handleAddressChange('zip', e.target.value)}
-                            maxLength="5"
-                          />
-                        ) : (
-                          <div className="input-display">{profileData.address.zip || 'Nicht angegeben'}</div>
+                        <input
+                          type="text"
+                          value={editData.addresses?.[0]?.zip || ''}
+                          onChange={e => handleAddressChange('zip', e.target.value)}
+                          maxLength="5"
+                        />
+                      ) : (
+                          <div className="input-display">{profileData.addresses?.[0]?.zip || 'Nicht angegeben'}</div>
                         )}
                       </div>
                     </div>
@@ -512,13 +515,13 @@ const Profile = () => {
                       <label>Stadt</label>
                       <div className="input-container">
                         {isEditing ? (
-                          <input
-                            type="text"
-                            value={editData.address.city}
-                            onChange={e => handleAddressChange('city', e.target.value)}
-                          />
-                        ) : (
-                          <div className="input-display">{profileData.address.city || 'Nicht angegeben'}</div>
+                        <input
+                          type="text"
+                          value={editData.addresses?.[0]?.city || ''}
+                          onChange={e => handleAddressChange('city', e.target.value)}
+                        />
+                      ) : (
+                          <div className="input-display">{profileData.addresses?.[0]?.city || 'Nicht angegeben'}</div>
                         )}
                       </div>
                     </div>
@@ -526,13 +529,13 @@ const Profile = () => {
                       <label>Bundesland</label>
                       <div className="input-container">
                         {isEditing ? (
-                          <input
-                            type="text"
-                            value={editData.address.state}
-                            onChange={e => handleAddressChange('state', e.target.value)}
-                          />
-                        ) : (
-                          <div className="input-display">{profileData.address.state || 'Nicht angegeben'}</div>
+                        <input
+                          type="text"
+                          value={editData.addresses?.[0]?.state || ''}
+                          onChange={e => handleAddressChange('state', e.target.value)}
+                        />
+                      ) : (
+                          <div className="input-display">{profileData.addresses?.[0]?.state || 'Nicht angegeben'}</div>
                         )}
                       </div>
                     </div>
@@ -540,13 +543,13 @@ const Profile = () => {
                       <label>Ortsteil</label>
                       <div className="input-container">
                         {isEditing ? (
-                          <input
-                            type="text"
-                            value={editData.address.district}
-                            onChange={e => handleAddressChange('district', e.target.value)}
-                          />
-                        ) : (
-                          <div className="input-display">{profileData.address.district || 'Nicht angegeben'}</div>
+                        <input
+                          type="text"
+                          value={editData.addresses?.[0]?.district || ''}
+                          onChange={e => handleAddressChange('district', e.target.value)}
+                        />
+                      ) : (
+                          <div className="input-display">{profileData.addresses?.[0]?.district || 'Nicht angegeben'}</div>
                         )}
                       </div>
                     </div>

@@ -73,14 +73,10 @@ const transporter = nodemailer.createTransport({
  */
 export const sendVerificationEmail = async (email, verificationToken) => {
   try {
-    // Für Entwicklung: Nur in Console loggen
     if (process.env.NODE_ENV === 'development') {
       console.log('📧 DEVELOPMENT MODE - E-Mail würde gesendet werden:');
       console.log('🎯 An:', email);
       console.log('🔗 Verifizierungslink:', `http://localhost:5173/verify/${verificationToken}`);
-      console.log('🎫 Token:', verificationToken);
-      
-      // Simuliere erfolgreiche E-Mail
       return {
         success: true,
         message: 'Development mode - E-Mail simuliert',
@@ -97,13 +93,14 @@ export const sendVerificationEmail = async (email, verificationToken) => {
       subject: 'E-Mail-Adresse verifizieren - Hand in Hand',
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #E1E1E1; border-radius: 5px;">
-          <h2 style="color: #333;">Passwort zurücksetzen</h2>
-          <p>Du erhältst diese E-Mail, weil du (oder jemand anderes) ein Zurücksetzen deines Passworts angefordert hat.</p>
-          ${codeHtml}
-          <p>Klicke auf den folgenden Link, um dein Passwort zurückzusetzen:</p>
-          <p><a href="http://localhost:5173/forgot-password?code=${resetToken}" style="background-color: #4CAF50; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px; display: inline-block;">Passwort zurücksetzen</a></p>
-          <p>Dieser Link ist 1 Stunde gültig.</p>
-          <p>Wenn du das nicht angefordert hast, ignoriere diese E-Mail bitte.</p>
+          <h2 style="color: #333;">Willkommen bei Hand in Hand!</h2>
+          <p>Danke für deine Registrierung in unserer Nachbarschafts-App.</p>
+          <p>Um dein Konto zu aktivieren, klicke bitte auf den folgenden Link:</p>
+          <p><a href="${verificationLink}" style="background-color: #4CAF50; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px; display: inline-block;">
+            E-Mail bestätigen
+          </a></p>
+          <p>Oder kopiere diesen Link in deinen Browser:</p>
+          <p>${verificationLink}</p>
           <p>Viele Grüße,<br>Dein Hand-Hand Team</p>
         </div>
       `
@@ -281,3 +278,16 @@ export const sendWelcomeEmail = async (to, username) => {
     };
   }
 };
+
+function createTransporter() {
+  return nodemailer.createTransport({
+    host: process.env.EMAIL_HOST,
+    port: parseInt(process.env.EMAIL_PORT) || 587,
+    secure: process.env.EMAIL_SECURE === 'true',
+    auth: {
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS,
+    },
+    debug: process.env.NODE_ENV !== 'production',
+  });
+}

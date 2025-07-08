@@ -22,7 +22,6 @@ import mongoose from 'mongoose';
 import connectDB from './database/database.js';
 import authRoutes from './routes/authRoutes.js';
 import verifyRoutes from './routes/verifyRoutes.js';
-import userRoutes from './routes/userRoutes.js';
 import profileRoutes from './routes/profileRoutes.js';
 import blogRoutes from './routes/blogRoutes.js';
 import blogCommentRoutes from './routes/blogCommentRoutes.js';

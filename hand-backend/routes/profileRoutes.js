@@ -1,7 +1,6 @@
 import express from 'express';
 import {protect} from '../middleware/authMiddleware.js'; // oder { protect } je nach Export
 import User from '../models/UserModel.js';
-import Post from '../models/postSchema.js'; // Importiere das Post-Modell
 
 const router = express.Router();
 

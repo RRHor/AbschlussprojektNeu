@@ -45,7 +45,7 @@ router.post('/register', async (req, res) => {
       password,
       firstName,
       lastName,
-      adress // oder addresses, je nach Modell
+      addresses // Array!
     } = req.body;
 
     // Prüfe ob User bereits existiert
@@ -69,19 +69,13 @@ router.post('/register', async (req, res) => {
 
     // User erstellen
     const user = new User({
-      username: nickname,
+      username: nickname, // Username immer setzen, z.B. auf Nickname
       nickname: nickname,
       email: email,
       password: password,
       firstName: firstName,
       lastName: lastName,
-      address: adress ? {
-        street: adress.street,
-        city: adress.city,
-        zip: adress.zip?.toString(),
-        district: adress.district,
-        state: adress.state
-      } : undefined,
+      addresses: addresses,
       isVerified: false,
       verificationToken: verificationToken,
       verificationTokenExpires: Date.now() + 24 * 60 * 60 * 1000,
@@ -166,8 +160,9 @@ router.post("/login", async (req, res) => {
         email: user.email,
         firstName: user.firstName,
         lastName: user.lastName,
-        address: user.address,
-        isVerified: user.isVerified
+        addresses: user.addresses,
+        isVerified: user.isVerified,
+        registeredAt: user.registeredAt //HINZUFÜGEN
       },
     });
   } catch (error) {
