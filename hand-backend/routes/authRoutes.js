@@ -12,7 +12,7 @@ import { protect } from "../middleware/authMiddleware.js";
 
 // import User from "../models/UserModel.js"; // Auskommentiert, wir nutzen stattdessen userSchema.js
 // importiertes UserModel.js bleibt erhalten, aber wird nicht verwendet
-const User = mongoose.models.User || mongoose.model("User", userSchema);
+// const User = mongoose.models.User || mongoose.model("User", userSchema);
 
 const router = express.Router();
 

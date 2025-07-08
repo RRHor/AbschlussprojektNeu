@@ -36,6 +36,7 @@ import publicUserRoutes from './routes/publicUserRoutes.js';
 import exchangeRoutes from './routes/exchangeRoutes.js';
 import helpQuestionRoutes from './routes/helpQuestionRoutes.js';
 import helpAnswerRoutes from './routes/helpAnswerRoutes.js';
+import userRoutes from './routes/userRoutes.js';
 
 // ES6 Module __dirname workaround
 const __filename = fileURLToPath(import.meta.url);
