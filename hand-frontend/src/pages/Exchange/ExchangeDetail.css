@@ -1,4 +1,4 @@
-/* ExchangeDetail.css */
+/* ExchangeDetail.css
 .exchange-detail {
   max-width: 1000px;
   margin: 0 auto;
@@ -226,7 +226,7 @@
   color: #666;
 }
 
-/* Modal Styles */
+/* Modal Styles 
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -316,7 +316,7 @@
   cursor: not-allowed;
 }
 
-/* Privacy Notice */
+/* Privacy Notice 
 .privacy-notice {
   display: block;
   margin-top: 0.5rem;
@@ -329,7 +329,7 @@
   border-left: 3px solid var(--mint);
 }
 
-/* Responsive */
+/* Responsive 
 @media (max-width: 768px) {
   .detail-content {
     grid-template-columns: 1fr;
@@ -360,4 +360,4 @@
   .modal-actions {
     flex-direction: column;
   }
-}
+} */

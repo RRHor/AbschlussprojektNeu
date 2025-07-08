@@ -24,15 +24,34 @@ const transporter = nodemailer.createTransport({
  */
 export const sendVerificationEmail = async (to, verificationCode, userId) => {
   try {
+
+    if (process.env.NODE_ENV === 'development') {
+      console.log('📧 DEVELOPMENT MODE - E-Mail würde gesendet werden:');
+      console.log('🎯 An:', email);
+      console.log('🔗 Verifizierungslink:', `http://localhost:5173/verify/${verificationToken}`);
+      return {
+        success: true,
+        message: 'Development mode - E-Mail simuliert',
+        verificationLink: `http://localhost:5173/verify/${verificationToken}`
+      };
+    }
+
+    const transporter = createTransporter();
+    const verificationLink = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/verify/${verificationToken}`;
+
+
     console.log('📧 Versuche E-Mail zu senden an:', to);
     console.log('🔢 Verifizierungscode:', verificationCode);
     
+
     const mailOptions = {
       from: process.env.EMAIL_FROM,
       to,
       subject: 'Bestätige deine E-Mail-Adresse für Hand-Hand',
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #E1E1E1; border-radius: 5px;">
+
+
           <h2 style="color: #333;">Willkommen bei Hand-Hand!</h2>
           <p>Danke für deine Registrierung in unserer Nachbarschafts-App.</p>
           <p>Um dein Konto zu aktivieren, gib bitte den folgenden Verifizierungscode ein:</p>
@@ -44,6 +63,7 @@ export const sendVerificationEmail = async (to, verificationCode, userId) => {
           color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px; display: inline-block;">
           E-Mail bestätigen</a></p>
           <p>Dieser Code ist 24 Stunden gültig.</p>
+
           <p>Viele Grüße,<br>Dein Hand-Hand Team</p>
         </div>
       `,
@@ -66,8 +86,16 @@ export const sendPasswordResetEmail = async (email, resetToken) => {
   
   try {
     console.log('📧 Sending password reset email to:', email);
+
+    
+    // RICHTIG (Query-Parameter)
+    const resetLink = `http://localhost:5173/reset-password?token=${resetToken}`;
+    
+    // Console-Log für Development
+
     const forgotPasswordLink = `${process.env.FRONTEND_URL}/forgot-password?code=${resetToken}`;
     const classicLink = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
+
     console.log('🔗 Password Reset Link für', email + ':');
     // console.log('   ', resetLink);
     console.log('   ', forgotPasswordLink);
@@ -261,3 +289,16 @@ export const sendWelcomeEmail = async (to, username) => {
     };
   }
 };
+
+function createTransporter() {
+  return nodemailer.createTransport({
+    host: process.env.EMAIL_HOST,
+    port: parseInt(process.env.EMAIL_PORT) || 587,
+    secure: process.env.EMAIL_SECURE === 'true',
+    auth: {
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS,
+    },
+    debug: process.env.NODE_ENV !== 'production',
+  });
+}

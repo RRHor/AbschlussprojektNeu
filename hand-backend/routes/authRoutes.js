@@ -1,7 +1,12 @@
 import express from "express";
 import jwt from "jsonwebtoken";
+
+import User from "../models/UserModel.js";
+import Event from "../models/eventModel.js"; // ← DIESE ZEILE HINZUFÜGEN
+
 import mongoose from "mongoose";
 import { userSchema } from "../models/userSchema.js";
+
 import { sendVerificationEmail } from "../utils/emailService.js";
 import { protect } from "../middleware/authMiddleware.js";
 
@@ -43,8 +48,16 @@ const validateAddress = async (address) => {
  */
 router.post('/register', async (req, res) => {
   try {
-    const { nickname, email, password, addresses } = req.body;
-    console.log("Register-Request erhalten", req.body);
+
+    const {
+      nickname,
+      email,
+      password,
+      firstName,
+      lastName,
+      addresses // Array!
+    } = req.body;
+
 
     // Prüfen, ob Nickname oder E-Mail schon vergeben sind
     const existingUser = await User.findOne({ $or: [{ email }, { nickname }] });
@@ -67,8 +80,25 @@ router.post('/register', async (req, res) => {
     }
     */
 
+
+    // User erstellen
+    const user = new User({
+      username: nickname, // Username immer setzen, z.B. auf Nickname
+      nickname: nickname,
+      email: email,
+      password: password,
+      firstName: firstName,
+      lastName: lastName,
+      addresses: addresses,
+      isVerified: false,
+      verificationToken: verificationToken,
+      verificationTokenExpires: Date.now() + 24 * 60 * 60 * 1000,
+      registeredAt: new Date()
+    });
+
     // Prüfen, ob schon ein Admin existiert (erster User wird Admin)
     const adminExists = await User.findOne({ isAdmin: true });
+
 
     // Verifizierungscode generieren (6-stellig, als String)
     const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
@@ -159,8 +189,9 @@ router.post("/login", async (req, res) => {
         email: user.email,
         firstName: user.firstName,
         lastName: user.lastName,
-        address: user.address,
-        isVerified: user.isVerified
+        addresses: user.addresses,
+        isVerified: user.isVerified,
+        registeredAt: user.registeredAt //HINZUFÜGEN
       },
     });
   } catch (error) {
@@ -317,36 +348,31 @@ router.get("/users", async (req, res) => {
 });
 
 /**
- * Passwort zurücksetzen (alternative Route für Team-Konsistenz)
+ * Events des eingeloggten Users abrufen (geschützt)
  */
-router.post("/reset-password", async (req, res) => {
-    try {
-        const { email, resetCode, newPassword } = req.body;
-        
-        // User finden und Code überprüfen
-        const user = await User.findOne({ 
-            email, 
-            resetCode,
-            resetCodeExpires: { $gt: Date.now() } // Code noch gültig
-        });
-        
-        if (!user) {
-            return res.status(400).json({ message: 'Ungültiger oder abgelaufener Code' });
-        }
+router.get("/users/me/events", protect, async (req, res) => {
+  try {
+    console.log('📥 GET /api/auth/users/me/events');
+    console.log('👤 User ID:', req.user._id);
 
-        // Neues Passwort setzen (wird automatisch gehashed durch das User-Schema)
-        user.password = newPassword;
-        user.resetCode = null;
-        user.resetCodeExpires = null;
-        await user.save();
+    // Finde alle Events, an denen der User teilnimmt
+    const events = await Event.find({
+      participants: req.user._id
+    }).populate('organizer', 'nickname firstName lastName');
 
-        res.json({ 
-            message: 'Passwort erfolgreich zurückgesetzt'
-        });
-    } catch (error) {
-        console.error('Reset password error:', error);
-        res.status(500).json({ message: 'Serverfehler beim Passwort zurücksetzen' });
-    }
+    console.log('📊 Found events:', events.length);
+    
+    res.json({
+      success: true,
+      events: events
+    });
+  } catch (error) {
+    console.error('❌ Error fetching user events:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Fehler beim Laden der Events'
+    });
+  }
 });
 
 export default router;

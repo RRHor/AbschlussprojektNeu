@@ -1,0 +1,145 @@
+:root {
+  --text-color: #05004E;
+  --bg-primary: #F8E8C3;
+  --bg-secondary: #2E7EB3;
+  --bg-tertiary: #4FE3C1;
+  --warning-color: #DE887B;
+
+  --deepBlue: #05004E;
+  --skyBlue: #2E7EB3;
+  --mint: #4FE3C1;
+  --cream: #F8E8C3;
+  --coral: #DE887B;
+}
+
+body {
+  font-family: "Nunito", sans-serif;
+  background-color: var(--bg-primary);
+  margin: 0;
+  color: var(--text-color);
+}
+h1{
+  font-family: "Nunito", sans-serif;
+  color: var(--text-color);
+  font-size: larger;
+  font-weight: bold;
+}
+/* Spinner Styles */
+.spinner-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+}
+
+.skeleton-container {
+  position: relative;
+  width: 300px;
+  height: 300px;
+  border-radius: 50%;
+  overflow: hidden;
+}
+
+.skeleton-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, var(--coral) 25%, var(--mint) 50%, var(--skyBlue) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  z-index: 1;
+}
+
+.skeleton-overlay.hidden {
+  display: none;
+}
+
+.spinner-image {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: 50%;
+  animation: spin 5s linear infinite;
+  opacity: 0.9;
+  transition: opacity 0.3s ease;
+}
+
+.loading-text {
+  margin-top: 20px;
+  font-size: 1.5rem;
+  color: var(--skyBlue);
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+/* Not Found Section */
+#notfound {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background-color: var(--bg-primary);
+  direction: rtl;
+  text-align: center;
+}
+
+.notfound {
+  max-width: 600px;
+}
+
+.notfound-404 h1 {
+  font-size: 5rem;
+  color: var(--coral);
+  letter-spacing: 0.3rem;
+}
+
+.notfound-404 h3 {
+  font-size: 2rem;
+  color: var(--text-color);
+  margin-bottom: 1rem;
+}
+
+.notfound h2 {
+  font-size: 1.5rem;
+  margin: 1rem 0;
+  color: var(--skyBlue);
+}
+
+.notfound-button {
+  padding: 0.75rem 1.5rem;
+  background-color: var(--mint);
+  color: var(--deepBlue);
+  border: none;
+  border-radius: 8px;
+  font-weight: bold;
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+
+.notfound-button:hover {
+  background-color: var(--bg-secondary);
+  color: white;
+}

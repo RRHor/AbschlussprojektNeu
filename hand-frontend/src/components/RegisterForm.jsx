@@ -10,14 +10,14 @@ const RegisterForm = ({ onSuccess = () => {} }) => {
     email: '',
     password: '',
     confirmPassword: '',
-    address: {
+    firstName: '',      // <-- NEU
+    lastName: '',       // <-- NEU
+    adress: {
       street: '',
       city: '',
       district: '',
       state: '',
-      zipCode: '',
-      firstName: '',
-      lastName: ''
+      zip: ''
     }
   });
 
@@ -83,13 +83,13 @@ const RegisterForm = ({ onSuccess = () => {} }) => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    
-    if (name.startsWith('address.')) {
+
+    if (name.startsWith('adress.')) {
       const addressField = name.split('.')[1];
       setFormData(prev => ({
         ...prev,
-        address: {
-          ...prev.address,
+        adress: {
+          ...prev.adress,
           [addressField]: value
         }
       }));
@@ -100,115 +100,95 @@ const RegisterForm = ({ onSuccess = () => {} }) => {
       }));
     }
 
-    // Validate field
     validateField(name, value);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('🚀 FORM SUBMITTED! Starting registration process...');
-    console.log('📝 Current formData:', formData);
-    
     setIsLoading(true);
 
-    // Validate all fields
-    console.log('🔍 Starting validation...');
+    // Validate all fields (wie gehabt)
     let hasErrors = false;
-    
-    // Check required fields
     if (!formData.nickname?.trim()) {
-      console.log('❌ Nickname is empty');
       setErrors(prev => ({ ...prev, nickname: 'Nickname ist erforderlich' }));
       hasErrors = true;
     }
-    
     if (!formData.email?.trim()) {
-      console.log('❌ Email is empty');
       setErrors(prev => ({ ...prev, email: 'E-Mail ist erforderlich' }));
       hasErrors = true;
     }
-    
     if (!formData.password?.trim()) {
-      console.log('❌ Password is empty');
       setErrors(prev => ({ ...prev, password: 'Passwort ist erforderlich' }));
       hasErrors = true;
     }
-    
     if (formData.password !== formData.confirmPassword) {
-      console.log('❌ Passwords do not match');
       setErrors(prev => ({ ...prev, confirmPassword: 'Passwörter stimmen nicht überein' }));
       hasErrors = true;
     }
-
-    // Check required address fields
-    if (!formData.address.street?.trim()) {
-      console.log('❌ Street is empty');
-      setErrors(prev => ({ ...prev, 'address.street': 'Straße ist erforderlich' }));
+    if (!formData.adress.street?.trim()) {
+      setErrors(prev => ({ ...prev, 'adress.street': 'Straße ist erforderlich' }));
       hasErrors = true;
     }
-    
-    if (!formData.address.city?.trim()) {
-      console.log('❌ City is empty');
-      setErrors(prev => ({ ...prev, 'address.city': 'Stadt ist erforderlich' }));
+    if (!formData.adress.city?.trim()) {
+      setErrors(prev => ({ ...prev, 'adress.city': 'Stadt ist erforderlich' }));
       hasErrors = true;
     }
-    
-    if (!formData.address.district?.trim()) {
-      console.log('❌ District is empty');
-      setErrors(prev => ({ ...prev, 'address.district': 'Bezirk ist erforderlich' }));
+    if (!formData.adress.district?.trim()) {
+      setErrors(prev => ({ ...prev, 'adress.district': 'Bezirk ist erforderlich' }));
       hasErrors = true;
     }
-    
-    if (!formData.address.state?.trim()) {
-      console.log('❌ State is empty');
-      setErrors(prev => ({ ...prev, 'address.state': 'Bundesland ist erforderlich' }));
+    if (!formData.adress.state?.trim()) {
+      setErrors(prev => ({ ...prev, 'adress.state': 'Bundesland ist erforderlich' }));
       hasErrors = true;
     }
-    
-    if (!formData.address.zipCode?.toString().trim()) {
-      console.log('❌ ZipCode is empty');
-      setErrors(prev => ({ ...prev, 'address.zipCode': 'PLZ ist erforderlich' }));
+    if (!formData.adress.zip?.toString().trim()) {
+      setErrors(prev => ({ ...prev, 'adress.zip': 'PLZ ist erforderlich' }));
       hasErrors = true;
     }
-
-    console.log('🔍 Form validation result:', !hasErrors);
 
     if (hasErrors) {
-      console.log('❌ Form validation failed, stopping registration');
       setIsLoading(false);
       return;
     }
 
     try {
-      console.log('📝 Registering user with data:', formData);
-      
-      // Prepare data for backend - convert address to addresses array and zipCode to number
+      // Adresse als Array für das Backend
       const registrationData = {
-        adress: {
-          state: formData.state
-        }
+
+        nickname: formData.nickname,
+        email: formData.email,
+        password: formData.password,
+        firstName: formData.firstName, // Top-Level!
+        lastName: formData.lastName,   // Top-Level!
+        addresses: [
+          {
+            street: formData.adress.street,
+            city: formData.adress.city,
+            district: formData.adress.district,
+            state: formData.adress.state,
+            zip: formData.adress.zip
+          }
+        ]
       };
+
       console.log('📝 Registration data being sent:', JSON.stringify(registrationData));
       console.log('🏠 Address being sent:', registrationData.adress);
       console.log('🔍 ZIP being sent:', registrationData.adress.zip); // New
 
       // Use AuthContext register function (which uses api.js with axios)
+
       const result = await register(registrationData);
-      console.log('📥 Registration result:', result);
 
       if (result.success) {
-        console.log('✅ Registration successful');
         setIsSuccess(true);
         setTimeout(() => {
           onSuccess(result);
           navigate('/profile');
         }, 2000);
       } else {
-        console.error('❌ Registration failed:', result.message);
         setErrors({ general: result.message || 'Registrierung fehlgeschlagen' });
       }
     } catch (error) {
-      console.error('Registration error:', error);
       setErrors({ general: 'Verbindungsfehler. Bitte versuchen Sie es später erneut.' });
     } finally {
       setIsLoading(false);
@@ -330,7 +310,7 @@ const RegisterForm = ({ onSuccess = () => {} }) => {
             {errors.confirmPassword && <span className="error-text">{errors.confirmPassword}</span>}
           </div>
 
-          <div className="address-section">
+          <div className="adress-section">
             <h3>
               <MapPin size={20} />
               Adresse
@@ -338,23 +318,23 @@ const RegisterForm = ({ onSuccess = () => {} }) => {
             
             <div className="form-row">
               <div className="form-group">
-                <label htmlFor="address.firstName">Vorname (optional)</label>
+                <label htmlFor="firstName">Vorname (optional)</label>
                 <input
                   type="text"
-                  id="address.firstName"
-                  name="address.firstName"
-                  value={formData.address.firstName}
+                  id="firstName"
+                  name="firstName"
+                  value={formData.firstName}
                   onChange={handleChange}
                   placeholder="Max"
                 />
               </div>
               <div className="form-group">
-                <label htmlFor="address.lastName">Nachname (optional)</label>
+                <label htmlFor="lastName">Nachname (optional)</label>
                 <input
                   type="text"
-                  id="address.lastName"
-                  name="address.lastName"
-                  value={formData.address.lastName}
+                  id="lastName"
+                  name="lastName"
+                  value={formData.lastName}
                   onChange={handleChange}
                   placeholder="Mustermann"
                 />
@@ -363,80 +343,80 @@ const RegisterForm = ({ onSuccess = () => {} }) => {
             
             <div className="form-row">
               <div className="form-group">
-                <label htmlFor="address.street">Straße & Hausnummer *</label>
+                <label htmlFor="adress.street">Straße & Hausnummer *</label>
                 <input
                   type="text"
-                  id="address.street"
-                  name="address.street"
-                  value={formData.address.street}
+                  id="adress.street"
+                  name="adress.street"
+                  value={formData.adress.street}
                   onChange={handleChange}
                   placeholder="Musterstraße 123"
                   required
-                  className={errors['address.street'] ? 'error' : ''}
+                  className={errors['adress.street'] ? 'error' : ''}
                 />
-                {errors['address.street'] && <span className="error-text">{errors['address.street']}</span>}
+                {errors['adress.street'] && <span className="error-text">{errors['adress.street']}</span>}
               </div>
             </div>
 
             <div className="form-row">
               <div className="form-group">
-                <label htmlFor="address.zipCode">PLZ *</label>
+                <label htmlFor="adress.zip">PLZ *</label>
                 <input
                   type="number"
-                  id="address.zipCode"
-                  name="address.zipCode"
-                  value={formData.address.zipCode}
+                  id="adress.zip"
+                  name="adress.zip"
+                  value={formData.adress.zip}
                   onChange={handleChange}
                   placeholder="12345"
                   required
-                  className={errors['address.zipCode'] ? 'error' : ''}
+                  className={errors['adress.zip'] ? 'error' : ''}
                 />
-                {errors['address.zipCode'] && <span className="error-text">{errors['address.zipCode']}</span>}
+                {errors['adress.zip'] && <span className="error-text">{errors['adress.zip']}</span>}
               </div>
               <div className="form-group">
-                <label htmlFor="address.city">Stadt *</label>
+                <label htmlFor="adress.city">Stadt *</label>
                 <input
                   type="text"
-                  id="address.city"
-                  name="address.city"
-                  value={formData.address.city}
+                  id="adress.city"
+                  name="adress.city"
+                  value={formData.adress.city}
                   onChange={handleChange}
                   placeholder="Musterstadt"
                   required
-                  className={errors['address.city'] ? 'error' : ''}
+                  className={errors['adress.city'] ? 'error' : ''}
                 />
-                {errors['address.city'] && <span className="error-text">{errors['address.city']}</span>}
+                {errors['adress.city'] && <span className="error-text">{errors['adress.city']}</span>}
               </div>
             </div>
 
             <div className="form-row">
               <div className="form-group">
-                <label htmlFor="address.district">Bezirk/Ortsteil *</label>
+                <label htmlFor="adress.district">Bezirk/Ortsteil *</label>
                 <input
                   type="text"
-                  id="address.district"
-                  name="address.district"
-                  value={formData.address.district}
+                  id="adress.district"
+                  name="adress.district"
+                  value={formData.adress.district}
                   onChange={handleChange}
                   placeholder="Stadtmitte"
                   required
-                  className={errors['address.district'] ? 'error' : ''}
+                  className={errors['adress.district'] ? 'error' : ''}
                 />
-                {errors['address.district'] && <span className="error-text">{errors['address.district']}</span>}
+                {errors['adress.district'] && <span className="error-text">{errors['adress.district']}</span>}
               </div>
               <div className="form-group">
-                <label htmlFor="address.state">Bundesland *</label>
+                <label htmlFor="adress.state">Bundesland *</label>
                 <input
                   type="text"
-                  id="address.state"
-                  name="address.state"
-                  value={formData.address.state}
+                  id="adress.state"
+                  name="adress.state"
+                  value={formData.adress.state}
                   onChange={handleChange}
                   placeholder="Nordrhein-Westfalen"
                   required
-                  className={errors['address.state'] ? 'error' : ''}
+                  className={errors['adress.state'] ? 'error' : ''}
                 />
-                {errors['address.state'] && <span className="error-text">{errors['address.state']}</span>}
+                {errors['adress.state'] && <span className="error-text">{errors['adress.state']}</span>}
               </div>
             </div>
           </div>

@@ -3,6 +3,7 @@ import {protect} from '../middleware/authMiddleware.js'; // oder { protect } je 
 import User from '../models/UserModel.js';
 import Post from '../models/postModel.js'; // Importiere das Post-Modell
 
+
 const router = express.Router();
 
 // Profil-Endpunkt (geschützt) - für Team-Kompatibilität

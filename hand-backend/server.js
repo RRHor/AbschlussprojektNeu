@@ -22,7 +22,6 @@ import cookieParser from 'cookie-parser';
 import connectDB from './database/database.js';
 import authRoutes from './routes/authRoutes.js';
 import verifyRoutes from './routes/verifyRoutes.js';
-import userRoutes from './routes/userRoutes.js';
 import profileRoutes from './routes/profileRoutes.js';
 import blogRoutes from './routes/blogRoutes.js';
 import blogCommentRoutes from './routes/blogCommentRoutes.js';
@@ -32,7 +31,7 @@ import commentRoutes from './routes/commentRoutes.js';
 import adressRoutes from './routes/adressRoutes.js';
 import postRoutes from './routes/postRoutes.js';
 import passwordResetRequestRoute from './routes/passwordResetRequestRoute.js';
-import passwordResetRoutes from './routes/passwordResetRoute.js';
+import passwordResetRoute from './routes/passwordResetRoute.js';
 import publicUserRoutes from './routes/publicUserRoutes.js';
 import exchangeRoutes from './routes/exchangeRoutes.js';
 import helpQuestionRoutes from './routes/helpQuestionRoutes.js';
@@ -82,7 +81,7 @@ app.use((req, res, next) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/auth', verifyRoutes);
 app.use('/api/auth', passwordResetRequestRoute);
-app.use('/api/auth', passwordResetRoutes);
+app.use('/api/auth', passwordResetRoute);
 
 
 // User-Routen

@@ -110,17 +110,16 @@ const AuthProvider = ({ children }) => {
   const register = async (userData) => {
     try {
       console.log('📝 AuthContext register called with:', userData);
-      
+
       const response = await api.post('/auth/register', userData);
-      
+
+      // Extrahiere token und user direkt nach der Antwort
+      const { token, user } = response.data || {};
+
       console.log('✅ Registration response received:', { token: token ? 'present' : 'missing', user: user ? 'present' : 'missing' });
-      
-      localStorage.setItem('token', token);
-      setUser(user);
-      
-      // Bei Registrierung wird möglicherweise kein Token zurückgegeben (wegen E-Mail-Verifizierung)
-      if (response.data.token && response.data.user) {
-        const { token, user } = response.data;
+
+      // Nur speichern, wenn vorhanden (z.B. nach Sofort-Login)
+      if (token && user) {
         localStorage.setItem('token', token);
         setUser(user);
       }

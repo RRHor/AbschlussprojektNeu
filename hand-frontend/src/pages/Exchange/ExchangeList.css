@@ -1,4 +1,4 @@
-/* ExchangeList.css */
+/* ExchangeList.css
 .exchange-list {
   margin-top: 1rem;
 }
@@ -188,7 +188,7 @@
   font-size: 0.8rem;
 }
 
-/* Responsive */
+/* Responsive 
 @media (max-width: 768px) {
   .posts-grid {
     grid-template-columns: 1fr;
@@ -205,4 +205,4 @@
     gap: 0.5rem;
     align-items: flex-start;
   }
-}
+} */
