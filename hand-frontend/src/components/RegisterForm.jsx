@@ -184,40 +184,15 @@ const RegisterForm = ({ onSuccess = () => {} }) => {
       
       // Prepare data for backend - convert address to addresses array and zipCode to number
       const registrationData = {
-        nickname: formData.nickname,
-        email: formData.email,
-        password: formData.password,
-<<<<<<< HEAD
-        confirmPassword: formData.confirmPassword,
-        firstName: formData.firstName,
-        lastName: formData.lastName,
         adress: {
-          street: formData.street,
-          city: formData.city,
-          district: formData.district || "",
-          zip: formData.zipCode || "",     // ← KORRIGIERT: zip statt zipCode + Fallback
           state: formData.state
         }
       };
-      console.log('📋 Registration data being sent:', JSON.stringify(registrationData, null, 2));
+      console.log('📝 Registration data being sent:', JSON.stringify(registrationData));
       console.log('🏠 Address being sent:', registrationData.adress);
-      console.log('🔍 ZIP being sent:', registrationData.adress.zip);  // ← Neuer Debug
-=======
-        addresses: [{
-          street: formData.address.street,
-          city: formData.address.city,
-          district: formData.address.district,
-          state: formData.address.state,
-          zipCode: parseInt(formData.address.zipCode) || 0,
-          firstName: formData.address.firstName,
-          lastName: formData.address.lastName
-        }]
-      };
-
-      console.log('📤 Sending registration data:', registrationData);
+      console.log('🔍 ZIP being sent:', registrationData.adress.zip); // New
 
       // Use AuthContext register function (which uses api.js with axios)
->>>>>>> eeae62961113e322caa88b02f7672ee49b752f1e
       const result = await register(registrationData);
       console.log('📥 Registration result:', result);
 

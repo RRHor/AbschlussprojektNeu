@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { User, MapPin, Edit3, Save, X, Camera, Loader } from 'lucide-react';
 import api from '../api';
@@ -13,7 +13,8 @@ const emptyAddress = {
   street: '',
   city: '',
   district: '',
-  zipCode: ''
+  zipCode: '',
+  state: ''
 };
 
 const Profile = () => {
@@ -33,6 +34,7 @@ const Profile = () => {
     addresses: [ { ...emptyAddress } ],
     profileImage: null
   });
+  
   const [editData, setEditData] = useState({ ...profileData });
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);

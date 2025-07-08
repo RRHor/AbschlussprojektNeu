@@ -56,4 +56,38 @@ router.post('/reset-password/:token', async (req, res) => {
   }
 });
 
+// Route für Password-Reset (ohne Token in der URL, sondern mit Daten im Body)
+router.post('/password-reset', async (req, res) => {
+  try {
+    const { email, resetCode, newPassword } = req.body;
+
+    // User finden und Code überprüfen
+    const user = await User.findOne({
+      email,
+      resetCode,
+      resetCodeExpires: { $gt: Date.now() }
+    });
+
+    if (!user) {
+      return res.status(400).json({ message: 'Ungültiger oder abgelaufener Code' });
+    }
+
+    // Neues Passwort hashen und speichern
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    user.password = hashedPassword;
+    user.resetCode = null;
+    user.resetCodeExpires = null;
+
+    await user.save();
+
+    res.json({ message: 'Passwort erfolgreich zurückgesetzt' });
+  } catch (error) {
+    console.error('❌ Password reset error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Serverfehler beim Zurücksetzen des Passworts'
+    });
+  }
+});
+
 export default router;

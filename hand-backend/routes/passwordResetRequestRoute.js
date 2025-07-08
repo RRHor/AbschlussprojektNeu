@@ -1,18 +1,17 @@
 import express from 'express';
-import User from '../models/UserModel.js';
-import jwt from 'jsonwebtoken';
+import mongoose from 'mongoose';
+import { userSchema } from '../models/userSchema.js';
 import { sendPasswordResetEmail } from '../utils/emailService.js';
 
 console.log("passwordResetRequestRoute.js wurde geladen");
 
+const User = mongoose.models.User || mongoose.model("User", userSchema);
 const router = express.Router();
 
-// Route für Password-Reset-Anfrage
+// Route für Password-Reset-Anfrage (6-stelliger Code)
 router.post('/forgot-password', async (req, res) => {
   try {
     const { email } = req.body;
-    
-    console.log('🔐 Password reset request for:', email);
     
     if (!email) {
       return res.status(400).json({ 
@@ -22,7 +21,6 @@ router.post('/forgot-password', async (req, res) => {
     }
 
     const user = await User.findOne({ email });
-    
     if (!user) {
       return res.status(200).json({ 
         success: true, 
@@ -30,39 +28,25 @@ router.post('/forgot-password', async (req, res) => {
       });
     }
 
-    // Reset-Token generieren
-    const resetToken = jwt.sign(
-      { userId: user._id, email: user.email },
-      process.env.JWT_SECRET,
-      { expiresIn: '6h' }
-    );
-
-    // Token in DB speichern
-    user.resetPasswordToken = resetToken;
-    user.resetPasswordExpires = Date.now() + 6 * 60 * 60 * 1000;
+    // 6-stelligen Reset-Code generieren
+    const resetCode = Math.floor(100000 + Math.random() * 900000).toString();
+    user.resetCode = resetCode;
+    user.resetCodeExpires = Date.now() + 60 * 60 * 1000; // 1 Stunde gültig
     await user.save();
 
-    console.log('🎫 Reset token generated for:', email);
-
-    // E-Mail senden
-    const emailResult = await sendPasswordResetEmail(email, resetToken);
-    
-    if (emailResult.success) {
-      console.log('✅ Password reset email sent successfully');
-    } else {
-      console.error('❌ Failed to send email:', emailResult.message);
-    }
+    // E-Mail mit Reset-Code senden
+    await sendPasswordResetEmail(user.email, resetCode);
+    console.log(`Reset-Code für ${user.email}: ${resetCode}`);
 
     res.status(200).json({ 
       success: true, 
       message: 'Falls ein Account mit dieser E-Mail existiert, wurde eine Reset-E-Mail gesendet.' 
     });
-
   } catch (error) {
-    console.error('❌ Forgot password error:', error);
+    console.error('Reset password request error:', error);
     res.status(500).json({ 
       success: false, 
-      message: 'Serverfehler beim Senden der Reset-E-Mail' 
+      message: 'Serverfehler beim Anfordern des Reset-Codes' 
     });
   }
 });

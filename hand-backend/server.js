@@ -16,7 +16,7 @@ dotenv.config();
 import express from "express";
 import cors from "cors";
 import cookieParser from 'cookie-parser';
-import mongoose from 'mongoose';
+// import mongoose from 'mongoose';
 
 // Alle Route-Imports 
 import connectDB from './database/database.js';
@@ -89,6 +89,7 @@ app.use('/api/auth', passwordResetRoutes);
 app.use('/api', publicUserRoutes);
 app.use('/api', profileRoutes);
 app.use('/api', adressRoutes);
+app.use('/api', userRoutes);
 
 // Content-Routen
 app.use('/api/blogs', blogRoutes);

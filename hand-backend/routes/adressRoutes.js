@@ -8,12 +8,12 @@ const router = express.Router();
  * Fügt dem eingeloggten User eine neue Adresse hinzu.
  * Erwartet die Adressdaten im Request-Body.
  */
-router.post('/users/me/adress', protect, async (req, res) => {
+router.post('/users/me/adresses', protect, async (req, res) => {
     try {
-        const { firstName, lastName, street, zip, city, district, state } = req.body;
+        const { firstName, lastName, street, zipCode, city, district, state } = req.body;
 
         // Validierung
-        if (!firstName || !lastName || !street || !zip || !city || !district || !state) {
+        if (!firstName || !lastName || !street || !zipCode || !city || !district || !state) {
             return res.status(400).json({ message: 'Alle Felder sind erforderlich.' });
         }
 
@@ -21,11 +21,11 @@ router.post('/users/me/adress', protect, async (req, res) => {
         const user = await User.findById(req.user._id);
         
         // Neue Adresse zum Array hinzufügen
-        user.adress.push({
+        user.adresses.push({
             firstName,
             lastName,
             street,
-            zip: parseInt(zip, 10),
+            zipCode: parseInt(zipCode, 10),
             city,
             district,
             state
@@ -35,7 +35,7 @@ router.post('/users/me/adress', protect, async (req, res) => {
 
         res.status(201).json({ 
             message: 'Adresse erfolgreich hinzugefügt', 
-            adress: user.adress 
+            adresses: user.adresses 
         });
     } catch (error) {
         console.error('Fehler beim Hinzufügen der Adresse:', error);
@@ -50,29 +50,28 @@ router.post('/users/me/adress', protect, async (req, res) => {
  * Überschreibt ALLE Adressen des Users mit einer neuen Adresse.
  * Erwartet die Adressdaten im Request-Body.
  */
-router.put('/users/me/adress', protect, async (req, res) => {
+router.put('/users/me/adresses', protect, async (req, res) => {
     try {
-        const { firstName, lastName, street, city, district, zip, state } = req.body;
-
-        if (!firstName || !lastName || !street || !city || !district || !zip || !state) {
+        let addresses = req.body.addresses;
+        // Falls der Client ein einzelnes Objekt schickt, in ein Array umwandeln
+        if (!Array.isArray(addresses) && typeof addresses === 'object') {
+            addresses = [addresses];
+        }
+        // Validierung: alle Felder in jedem Adress-Objekt prüfen
+        if (!addresses || !addresses.length || addresses.some(addr =>
+            !addr.firstName || !addr.lastName || !addr.street || !addr.city || !addr.district || !addr.zipCode || !addr.state
+        )) {
             return res.status(400).json({ message: "Alle Felder sind erforderlich." });
         }
-
         const user = await User.findByIdAndUpdate(
             req.user._id,
-            { adress: [{ 
-                firstName, 
-                lastName, 
-                street, 
-                city, 
-                district, 
-                zip: parseInt(zip, 10), 
-                state 
-            }] },
+            { addresses: addresses.map(addr => ({
+                ...addr,
+                zipCode: parseInt(addr.zipCode, 10)
+            })) },
             { new: true }
         );
-
-        res.json({ message: "Adresse aktualisiert", adress: user.adress });
+        res.json({ message: "Adresse aktualisiert", addresses: user.addresses });
     } catch (error) {
         console.error('Fehler beim Aktualisieren der Adresse:', error);
         res.status(500).json({ 
@@ -86,35 +85,35 @@ router.put('/users/me/adress', protect, async (req, res) => {
  * Aktualisiert eine bestimmte Adresse im Adress-Array des Users anhand des Index.
  * Beispiel: PUT /users/me/adress/0 aktualisiert die erste Adresse.
  */
-router.put('/users/me/adress/:index', protect, async (req, res) => {
+router.put('/users/me/adresses/:index', protect, async (req, res) => {
     try {
         const user = await User.findById(req.user._id);
         const idx = parseInt(req.params.index, 10);
         
-        if (idx < 0 || idx >= user.adress.length) {
+        if (idx < 0 || idx >= user.adresses.length) {
             return res.status(404).json({ message: "Adresse nicht gefunden" });
         }
 
-        const { firstName, lastName, street, city, district, zip, state } = req.body;
+        const { firstName, lastName, street, city, district, zipCode, state } = req.body;
 
         // Validierung
-        if (!firstName || !lastName || !street || !city || !district || !zip || !state) {
+        if (!firstName || !lastName || !street || !city || !district || !zipCode || !state) {
             return res.status(400).json({ message: "Alle Felder sind erforderlich." });
         }
 
         // Adresse aktualisieren
-        user.adress[idx] = {
+        user.adresses[idx] = {
             firstName,
             lastName,
             street,
             city,
             district,
-            zip: parseInt(zip, 10),
+            zipCode: parseInt(zipCode, 10),
             state
         };
 
         await user.save();
-        res.json({ message: "Adresse aktualisiert", adress: user.adress });
+        res.json({ message: "Adresse aktualisiert", adresses: user.adresses });
     } catch (error) {
         console.error('Fehler beim Aktualisieren der Adresse:', error);
         res.status(500).json({ 
@@ -128,19 +127,19 @@ router.put('/users/me/adress/:index', protect, async (req, res) => {
  * Löscht eine bestimmte Adresse im Adress-Array des Users anhand des Index.
  * Beispiel: DELETE /users/me/adress/0 löscht die erste Adresse.
  */
-router.delete('/users/me/adress/:index', protect, async (req, res) => {
+router.delete('/users/me/adresses/:index', protect, async (req, res) => {
     try {
         const user = await User.findById(req.user._id);
         const idx = parseInt(req.params.index, 10);
         
-        if (idx < 0 || idx >= user.adress.length) {
+        if (idx < 0 || idx >= user.adresses.length) {
             return res.status(404).json({ message: "Adresse nicht gefunden" });
         }
 
-        user.adress.splice(idx, 1); // Adresse entfernen
+        user.adresses.splice(idx, 1); // Adresse entfernen
         await user.save();
         
-        res.json({ message: "Adresse gelöscht", adress: user.adress });
+        res.json({ message: "Adresse gelöscht", adresses: user.adresses });
     } catch (error) {
         console.error('Fehler beim Löschen der Adresse:', error);
         res.status(500).json({ 
