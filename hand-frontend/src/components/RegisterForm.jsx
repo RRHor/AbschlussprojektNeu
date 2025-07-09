@@ -1,452 +1,172 @@
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import { Eye, EyeOff, User, Mail, Lock, MapPin, Loader, CheckCircle } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import './RegisterForm.css';
+import logo from '../assets/logo.png';
 
-const RegisterForm = ({ onSuccess = () => {} }) => {
+const RegisterForm = ({ onSuccess }) => {
+  const navigate = useNavigate();
+
   const [formData, setFormData] = useState({
     nickname: '',
     email: '',
     password: '',
-    confirmPassword: '',
-    firstName: '',      // <-- NEU
-    lastName: '',       // <-- NEU
-    adress: {
-      street: '',
-      city: '',
-      district: '',
-      state: '',
-      zip: ''
-    }
+    firstName: '',
+    lastName: '',
+    street: '',
+    city: '',
+    district: '',
+    zip: '',
   });
 
-  const [errors, setErrors] = useState({});
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [isSuccess, setIsSuccess] = useState(false);
+  // Speichert, ob Feld verlassen wurde UND Inhalt hat
+  const [touchedFields, setTouchedFields] = useState({
+    nickname: false,
+    email: false,
+    password: false,
+    firstName: false,
+    lastName: false,
+    street: false,
+    city: false,
+    district: false,
+    zip: false,
+  });
 
-  const navigate = useNavigate();
-  const { register } = useAuth();
-
-  const validateField = (name, value) => {
-    const newErrors = { ...errors };
-
-    switch (name) {
-      case 'nickname':
-        if (!value.trim()) {
-          newErrors[name] = 'Nickname ist erforderlich.';
-        } else if (value.length < 2) {
-          newErrors[name] = 'Nickname muss mindestens 2 Zeichen lang sein.';
-        } else {
-          delete newErrors[name];
-        }
-        break;
-
-      case 'email':
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!value.trim()) {
-          newErrors[name] = 'E-Mail ist erforderlich.';
-        } else if (!emailRegex.test(value)) {
-          newErrors[name] = 'Ungültige E-Mail-Adresse.';
-        } else {
-          delete newErrors[name];
-        }
-        break;
-
-      case 'password':
-        if (!value) {
-          newErrors[name] = 'Passwort ist erforderlich.';
-        } else if (value.length < 6) {
-          newErrors[name] = 'Passwort muss mindestens 6 Zeichen lang sein.';
-        } else {
-          delete newErrors[name];
-        }
-        break;
-
-      case 'confirmPassword':
-        if (value !== formData.password) {
-          newErrors[name] = 'Passwörter stimmen nicht überein.';
-        } else {
-          delete newErrors[name];
-        }
-        break;
-
-      default:
-        break;
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
+  const [message, setMessage] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formErrors, setFormErrors] = useState({});
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
 
-    if (name.startsWith('adress.')) {
-      const addressField = name.split('.')[1];
-      setFormData(prev => ({
-        ...prev,
-        adress: {
-          ...prev.adress,
-          [addressField]: value
-        }
-      }));
-    } else {
-      setFormData(prev => ({
-        ...prev,
-        [name]: value
-      }));
-    }
+  const handleBlur = (e) => {
+    const { name, value } = e.target;
+    const isFilled = value.trim() !== '';
+    setTouchedFields((prev) => ({
+      ...prev,
+      [name]: isFilled,
+    }));
+  };
 
-    validateField(name, value);
+  const validateForm = () => {
+    const errors = {};
+    Object.keys(formData).forEach((key) => {
+      if (!formData[key].trim()) {
+        errors[key] = 'Dieses Feld darf nicht leer sein.';
+      }
+    });
+    return errors;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setIsLoading(true);
+    setIsSubmitting(true);
+    setMessage('');
+    setFormErrors({});
 
-    // Validate all fields (wie gehabt)
-    let hasErrors = false;
-    if (!formData.nickname?.trim()) {
-      setErrors(prev => ({ ...prev, nickname: 'Nickname ist erforderlich' }));
-      hasErrors = true;
-    }
-    if (!formData.email?.trim()) {
-      setErrors(prev => ({ ...prev, email: 'E-Mail ist erforderlich' }));
-      hasErrors = true;
-    }
-    if (!formData.password?.trim()) {
-      setErrors(prev => ({ ...prev, password: 'Passwort ist erforderlich' }));
-      hasErrors = true;
-    }
-    if (formData.password !== formData.confirmPassword) {
-      setErrors(prev => ({ ...prev, confirmPassword: 'Passwörter stimmen nicht überein' }));
-      hasErrors = true;
-    }
-    if (!formData.adress.street?.trim()) {
-      setErrors(prev => ({ ...prev, 'adress.street': 'Straße ist erforderlich' }));
-      hasErrors = true;
-    }
-    if (!formData.adress.city?.trim()) {
-      setErrors(prev => ({ ...prev, 'adress.city': 'Stadt ist erforderlich' }));
-      hasErrors = true;
-    }
-    if (!formData.adress.district?.trim()) {
-      setErrors(prev => ({ ...prev, 'adress.district': 'Bezirk ist erforderlich' }));
-      hasErrors = true;
-    }
-    if (!formData.adress.state?.trim()) {
-      setErrors(prev => ({ ...prev, 'adress.state': 'Bundesland ist erforderlich' }));
-      hasErrors = true;
-    }
-    if (!formData.adress.zip?.toString().trim()) {
-      setErrors(prev => ({ ...prev, 'adress.zip': 'PLZ ist erforderlich' }));
-      hasErrors = true;
-    }
-
-    if (hasErrors) {
-      setIsLoading(false);
+    const errors = validateForm();
+    if (Object.keys(errors).length > 0) {
+      setFormErrors(errors);
+      setIsSubmitting(false);
       return;
     }
 
     try {
-      // Adresse als Array für das Backend
-      const registrationData = {
+      const response = await fetch('http://localhost:3000/api/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          nickname: formData.nickname,
+          email: formData.email,
+          password: formData.password,
+          adress: {
+            firstName: formData.firstName,
+            lastName: formData.lastName,
+            street: formData.street,
+            city: formData.city,
+            district: formData.district,
+            zip: parseInt(formData.zip, 10),
+          },
+        }),
+      });
 
-        nickname: formData.nickname,
-        email: formData.email,
-        password: formData.password,
-        firstName: formData.firstName, // Top-Level!
-        lastName: formData.lastName,   // Top-Level!
-        addresses: [
-          {
-            street: formData.adress.street,
-            city: formData.adress.city,
-            district: formData.adress.district,
-            state: formData.adress.state,
-            zip: formData.adress.zip
-          }
-        ]
-      };
-
-      console.log('📝 Registration data being sent:', JSON.stringify(registrationData));
-      console.log('🏠 Address being sent:', registrationData.adress);
-      console.log('🔍 ZIP being sent:', registrationData.adress.zip); // New
-
-      // Use AuthContext register function (which uses api.js with axios)
-
-      const result = await register(registrationData);
-
-      if (result.success) {
-        setIsSuccess(true);
-        setTimeout(() => {
-          onSuccess(result);
-          navigate('/profile');
-        }, 2000);
+      const data = await response.json();
+      if (response.ok) {
+        localStorage.setItem('token', data.token);
+        onSuccess(data);
+        navigate('/login');
       } else {
-        setErrors({ general: result.message || 'Registrierung fehlgeschlagen' });
+        setMessage(`❌ Fehler: ${data.message || 'Unbekannter Fehler'}`);
       }
     } catch (error) {
-      setErrors({ general: 'Verbindungsfehler. Bitte versuchen Sie es später erneut.' });
+      console.error(error);
+      setMessage('❌ Serverfehler.');
     } finally {
-      setIsLoading(false);
+      setIsSubmitting(false);
     }
   };
 
-  if (isSuccess) {
-    return (
-      <div className="register-success">
-        <CheckCircle size={64} className="success-icon" />
-        <h2>Registrierung erfolgreich!</h2>
-        <p>Bitte bestätigen Sie Ihre E-Mail-Adresse.</p>
-      </div>
-    );
-  }
+  const fieldLabels = {
+    nickname: 'Spitzname',
+    email: 'E-Mail',
+    password: 'Passwort',
+    firstName: 'Vorname',
+    lastName: 'Nachname',
+    street: 'Straße',
+    city: 'Stadt',
+    district: 'Landkreis oder Stadtteil',
+    zip: 'PLZ',
+  };
 
   return (
-    <div className="register-container">
-      <div className="register-card">
-        <div className="register-header">
-          <h2>Registrierung</h2>
-          <p>Werden Sie Teil unserer Nachbarschaftsgemeinschaft!</p>
-        </div>
-
-        <form onSubmit={handleSubmit} className="register-form">
-          {errors.general && (
-            <div className="error-message">
-              {errors.general}
-            </div>
-          )}
-
-          <div className="form-group">
-            <label htmlFor="nickname">
-              <User size={20} />
-              Nickname
-            </label>
-            <input
-              type="text"
-              id="nickname"
-              name="nickname"
-              value={formData.nickname}
-              onChange={handleChange}
-              required
-              placeholder="Ihr Nickname"
-              className={errors.nickname ? 'error' : ''}
-            />
-            {errors.nickname && <span className="error-text">{errors.nickname}</span>}
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="email">
-              <Mail size={20} />
-              E-Mail-Adresse
-            </label>
-            <input
-              type="email"
-              id="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              required
-              placeholder="ihre.email@beispiel.de"
-              className={errors.email ? 'error' : ''}
-            />
-            {errors.email && <span className="error-text">{errors.email}</span>}
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="password">
-              <Lock size={20} />
-              Passwort
-            </label>
-            <div className="password-input-container">
-              <input
-                type={showPassword ? 'text' : 'password'}
-                id="password"
-                name="password"
-                value={formData.password}
-                onChange={handleChange}
-                required
-                placeholder="Mindestens 6 Zeichen"
-                className={errors.password ? 'error' : ''}
-              />
-              <button
-                type="button"
-                className="password-toggle"
-                onClick={() => setShowPassword(!showPassword)}
-              >
-                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-              </button>
-            </div>
-            {errors.password && <span className="error-text">{errors.password}</span>}
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="confirmPassword">
-              <Lock size={20} />
-              Passwort bestätigen
-            </label>
-            <div className="password-input-container">
-              <input
-                type={showConfirmPassword ? 'text' : 'password'}
-                id="confirmPassword"
-                name="confirmPassword"
-                value={formData.confirmPassword}
-                onChange={handleChange}
-                required
-                placeholder="Passwort wiederholen"
-                className={errors.confirmPassword ? 'error' : ''}
-              />
-              <button
-                type="button"
-                className="password-toggle"
-                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-              >
-                {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-              </button>
-            </div>
-            {errors.confirmPassword && <span className="error-text">{errors.confirmPassword}</span>}
-          </div>
-
-          <div className="adress-section">
-            <h3>
-              <MapPin size={20} />
-              Adresse
-            </h3>
-            
-            <div className="form-row">
-              <div className="form-group">
-                <label htmlFor="firstName">Vorname (optional)</label>
-                <input
-                  type="text"
-                  id="firstName"
-                  name="firstName"
-                  value={formData.firstName}
-                  onChange={handleChange}
-                  placeholder="Max"
-                />
-              </div>
-              <div className="form-group">
-                <label htmlFor="lastName">Nachname (optional)</label>
-                <input
-                  type="text"
-                  id="lastName"
-                  name="lastName"
-                  value={formData.lastName}
-                  onChange={handleChange}
-                  placeholder="Mustermann"
-                />
-              </div>
-            </div>
-            
-            <div className="form-row">
-              <div className="form-group">
-                <label htmlFor="adress.street">Straße & Hausnummer *</label>
-                <input
-                  type="text"
-                  id="adress.street"
-                  name="adress.street"
-                  value={formData.adress.street}
-                  onChange={handleChange}
-                  placeholder="Musterstraße 123"
-                  required
-                  className={errors['adress.street'] ? 'error' : ''}
-                />
-                {errors['adress.street'] && <span className="error-text">{errors['adress.street']}</span>}
-              </div>
-            </div>
-
-            <div className="form-row">
-              <div className="form-group">
-                <label htmlFor="adress.zip">PLZ *</label>
-                <input
-                  type="number"
-                  id="adress.zip"
-                  name="adress.zip"
-                  value={formData.adress.zip}
-                  onChange={handleChange}
-                  placeholder="12345"
-                  required
-                  className={errors['adress.zip'] ? 'error' : ''}
-                />
-                {errors['adress.zip'] && <span className="error-text">{errors['adress.zip']}</span>}
-              </div>
-              <div className="form-group">
-                <label htmlFor="adress.city">Stadt *</label>
-                <input
-                  type="text"
-                  id="adress.city"
-                  name="adress.city"
-                  value={formData.adress.city}
-                  onChange={handleChange}
-                  placeholder="Musterstadt"
-                  required
-                  className={errors['adress.city'] ? 'error' : ''}
-                />
-                {errors['adress.city'] && <span className="error-text">{errors['adress.city']}</span>}
-              </div>
-            </div>
-
-            <div className="form-row">
-              <div className="form-group">
-                <label htmlFor="adress.district">Bezirk/Ortsteil *</label>
-                <input
-                  type="text"
-                  id="adress.district"
-                  name="adress.district"
-                  value={formData.adress.district}
-                  onChange={handleChange}
-                  placeholder="Stadtmitte"
-                  required
-                  className={errors['adress.district'] ? 'error' : ''}
-                />
-                {errors['adress.district'] && <span className="error-text">{errors['adress.district']}</span>}
-              </div>
-              <div className="form-group">
-                <label htmlFor="adress.state">Bundesland *</label>
-                <input
-                  type="text"
-                  id="adress.state"
-                  name="adress.state"
-                  value={formData.adress.state}
-                  onChange={handleChange}
-                  placeholder="Nordrhein-Westfalen"
-                  required
-                  className={errors['adress.state'] ? 'error' : ''}
-                />
-                {errors['adress.state'] && <span className="error-text">{errors['adress.state']}</span>}
-              </div>
-            </div>
-          </div>
-
-          <button
-            type="submit"
-            className={`register-button ${isLoading ? 'loading' : ''}`}
-            disabled={isLoading}
-          >
-            {isLoading ? (
-              <>
-                <Loader className="spinner" size={20} />
-                Wird registriert...
-              </>
-            ) : (
-              'Registrieren'
-            )}
-          </button>
-        </form>
-
-        <div className="register-footer">
-          <p>
-            Haben Sie bereits ein Konto?{' '}
-            <Link to="/login" className="login-link">
-              Jetzt anmelden
-            </Link>
-          </p>
-        </div>
+    <>
+      <div className="logo-background">
+        <img src={logo} alt="Logo" className="animated-logo" />
       </div>
-    </div>
+
+      <form onSubmit={handleSubmit} className="register-form" noValidate>
+        {Object.keys(fieldLabels).map((field) => (
+          <label key={field} className="register-label">
+            {fieldLabels[field]}:
+            <input
+              type={
+                field === 'email'
+                  ? 'email'
+                  : field === 'password'
+                  ? 'password'
+                  : field === 'zip'
+                  ? 'number'
+                  : 'text'
+              }
+              name={field}
+              value={formData[field]}
+              onChange={handleChange}
+              onBlur={handleBlur}
+              required
+              className={`register-input ${
+                touchedFields[field] ? 'filled' : ''
+              }`}
+              // placeholder={fieldLabels[field]}
+              autoComplete="off"
+            />
+            {formErrors[field] && (
+              <p className="register-warning">{formErrors[field]}</p>
+            )}
+          </label>
+        ))}
+
+        <button
+          type="submit"
+          disabled={isSubmitting}
+          className={`register-button ${isSubmitting ? 'disabled' : ''}`}
+        >
+          {isSubmitting ? 'Wird gesendet…' : 'Registrieren'}
+        </button>
+
+        {message && <p className="register-warning">{message}</p>}
+      </form>
+    </>
   );
 };
 

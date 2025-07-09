@@ -1,6 +1,5 @@
 // client/src/App.jsx
 
-import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 
@@ -15,7 +14,7 @@ import Events from './pages/Events';
 import EventDetail from './pages/EventDetail';
 import ResetPassword from './pages/ResetPassword';
 import Home from './pages/Home';
-import ForgotPassword from './pages/ForgotPassword';
+import ForgotPassword from './components/ForgotPassword';
 import VerifyEmail from './pages/VerifyEmail';
 import Exchange from './pages/Exchange/Exchange';
 

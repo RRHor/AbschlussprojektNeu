@@ -38,6 +38,15 @@ const EventDetail = () => {
     }
   }, [event, user]);
 
+  // Kommentare vom Backend laden
+  useEffect(() => {
+    if (event?._id) {
+      api.get(`/event-comments/event/${event._id}`)
+        .then(res => setComments(res.data))
+        .catch(err => console.error('Fehler beim Laden der Kommentare:', err));
+    }
+  }, [event]);
+
   // Teilnahme-Status prüfen
   const checkParticipationStatus = async () => {
     try {
@@ -114,22 +123,21 @@ const EventDetail = () => {
   };
 
   // Bestehende Funktionen bleiben gleich...
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!text.trim()) return;
 
-    const newComment = {
-      id: Date.now(),
-      user: {
-        name: user?.nickname || user?.username || 'Unbekannt',  // ← Korrekte User-Properties
-        avatar: user?.avatar || '/default-avatar.png',
-      },
-      text,
-      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-    };
-
-    setComments([newComment, ...comments]);
-    setText('');
+    try {
+      const res = await api.post('/event-comments', {
+        text,
+        event: event._id
+      });
+      setComments([res.data, ...comments]);
+      setText('');
+    } catch (err) {
+      alert('Fehler beim Absenden des Kommentars');
+      console.error(err);
+    }
   };
 
   const handleDelete = (id) => {
