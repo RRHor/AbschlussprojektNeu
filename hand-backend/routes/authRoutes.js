@@ -159,8 +159,8 @@ router.post("/login", async (req, res) => {
       return res.status(401).json({ message: "Ungültige E-Mail oder Passwort" });
     }
 
-    // Prüfe E-Mail-Verifizierung
-    if (!user.isVerify) { // Korrigiert: isVerify statt isVerified
+    // Prüfe E-Mail-Verifizierung (mindestens eins der Felder muss true sein)
+    if (!(user.isVerified || user.isVerify)) {
       return res.status(401).json({ 
         message: "Bitte verifizieren Sie zuerst Ihre E-Mail-Adresse",
         requiresVerification: true,
