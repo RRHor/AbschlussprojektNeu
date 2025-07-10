@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Calendar, User, Search, Tag, PlusCircle, XCircle } from 'lucide-react'; // XCircle für Schließen-Button im Popup
 import './Blog.css';
+import api from '../api'; // ggf. Pfad anpassen
+import { useNavigate } from "react-router-dom";
 
 // HIER EINFÜGEN:
 console.log("Blog.jsx aus pages ist aktiv!");
@@ -8,86 +10,24 @@ console.log("Blog.jsx aus pages ist aktiv!");
 const Blog = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('alle');
-  const [blogPosts, setBlogPosts] = useState([
-    {
-      id: 1,
-      title: "Wie wir unseren Kiez grüner gemacht haben",
-      excerpt: "Ein Jahr lang haben wir gemeinsam daran gearbeitet, mehr Grün in unsere Straßen zu bringen. Hier ist unsere Geschichte...",
-      content: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
-      author: "Maria Grün",
-      date: "2025-06-20",
-      category: "umwelt",
-      readTime: "5 min",
-      image: "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=600&h=300&fit=crop"
-    },
-    {
-      id: 2,
-      title: "Nachbarschaftshilfe in Zeiten des Wandels",
-      excerpt: "Warum gegenseitige Unterstützung wichtiger denn je ist und wie wir alle davon profitieren können.",
-      content: "In unserer schnelllebigen Zeit ist es wichtig, dass wir als Nachbarn zusammenhalten...",
-      author: "Thomas Hilfreich",
-      date: "2025-06-18",
-      category: "gemeinschaft",
-      readTime: "7 min",
-      image: "https://images.unsplash.com/photo-1559027615-cd4628902d4a?w=600&h=300&fit=crop"
-    },
-    {
-      id: 3,
-      title: "DIY-Tipps: Reparieren statt wegwerfen",
-      excerpt: "Einfache Anleitungen für alltägliche Reparaturen, die jeder zu Hause durchführen kann.",
-      content: "Nachhaltigkeit beginnt bei uns zu Hause. Mit diesen einfachen Tipps könnt ihr...",
-      author: "Anna Reparatur",
-      date: "2025-06-15",
-      category: "tipps",
-      readTime: "10 min",
-      image: "https://images.unsplash.com/photo-1581833971358-2c8b550f87b3?w=600&h=300&fit=crop"
-    },
-    {
-      id: 4,
-      title: "Erfolgsgeschichte: Unser Gemeinschaftsgarten",
-      excerpt: "Von der leeren Brachfläche zum blühenden Treffpunkt - wie aus einer Idee Realität wurde.",
-      content: "Es begann mit einer einfachen Idee: Was wäre, wenn wir die ungenutzte Fläche...",
-      author: "Familie Weber",
-      date: "2025-06-12",
-      category: "projekte",
-      readTime: "6 min",
-      image: "https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=600&h=300&fit=crop"
-    },
-    {
-      id: 5,
-      title: "Seniorenbetreuung: Ein Herzensprojekt",
-      excerpt: "Wie junge Familien und Senioren voneinander lernen und sich gegenseitig unterstützen können.",
-      content: "Generationenübergreifende Hilfe ist das Herzstück unserer Nachbarschaft...",
-      author: "Lisa Jung",
-      date: "2025-06-10",
-      category: "soziales",
-      readTime: "8 min",
-      image: "https://images.unsplash.com/photo-1581579438747-1dc8d17bbce4?w=600&h=300&fit=crop"
-    },
-    {
-      id: 6,
-      title: "Lokale Geschäfte unterstützen",
-      excerpt: "Warum der Einkauf um die Ecke nicht nur praktisch ist, sondern auch unsere Gemeinschaft stärkt.",
-      content: "Jeder Euro, den wir in lokalen Geschäften ausgeben, kommt unserer Nachbarschaft zugute...",
-      author: "Peter Lokal",
-      date: "2025-06-08",
-      category: "wirtschaft",
-      readTime: "4 min",
-      image: "https://images.unsplash.com/photo-1556740758-90de374c12ad?w=600&h=300&fit=crop"
-    }
-  ]);
-
+  const [blogPosts, setBlogPosts] = useState([]);
   const [showWritePostPopup, setShowWritePostPopup] = useState(false); // Neuer Zustand für das Popup
   const [newPost, setNewPost] = useState({ // Zustand für das neue Formular
     title: '',
     excerpt: '',
     content: '',
-    author: '',
     category: 'umwelt', // Standardkategorie
     image: '',
     readTime: ''
   });
 
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    api.get("/blogs")
+      .then(res => setBlogPosts(res.data))
+      .catch(() => setBlogPosts([]));
+  }, []);
 
   const categories = [
     { value: 'alle', label: 'Alle Beiträge' },
@@ -100,9 +40,12 @@ const Blog = () => {
   ];
 
   const filteredPosts = blogPosts.filter(post => {
-    const matchesSearch = post.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         post.excerpt.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         post.author.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch =
+      (post.title && post.title.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (post.excerpt && post.excerpt.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (typeof post.author === "object" &&
+        ((post.author.nickname && post.author.nickname.toLowerCase().includes(searchTerm.toLowerCase())) ||
+         (post.author.username && post.author.username.toLowerCase().includes(searchTerm.toLowerCase()))));
     const matchesCategory = selectedCategory === 'alle' || post.category === selectedCategory;
     return matchesSearch && matchesCategory;
   });
@@ -121,8 +64,7 @@ const Blog = () => {
   };
 
   const handleReadMore = (postId) => {
-    console.log(`"Weiterlesen" für Beitrag ID: ${postId} geklickt.`);
-    alert(`Artikel "${blogPosts.find(p => p.id === postId)?.title}" wird geladen.`);
+    navigate(`/blogs/${postId}`);
   };
 
   const handleWritePost = () => {
@@ -137,7 +79,6 @@ const Blog = () => {
       title: '',
       excerpt: '',
       content: '',
-      author: '',
       category: 'umwelt',
       image: '',
       readTime: ''
@@ -154,20 +95,21 @@ const Blog = () => {
 
   const handleNewPostSubmit = async (e) => {
   e.preventDefault();
-  if (!newPost.title || !newPost.content || !newPost.author || !newPost.category) {
-    alert("Bitte füllen Sie alle erforderlichen Felder aus (Titel, Inhalt, Autor, Kategorie).");
+  if (!newPost.title || !newPost.content || !newPost.category) {
+    alert("Bitte füllen Sie alle erforderlichen Felder aus (Titel, Inhalt, Kategorie).");
     return;
   }
 
   try {
-    const token = localStorage.getItem('token'); // Passe ggf. den Key an!
-     // Mapping der Felder wie im Model erwartet:
+    const token = localStorage.getItem('token');
     const blogData = {
       title: newPost.title,
-      description: newPost.excerpt, // excerpt wird zu description
-      tags: newPost.category ? [newPost.category] : [],
-      images: newPost.image ? [newPost.image] : []
-      // user wird im Backend gesetzt!
+      excerpt: newPost.excerpt,
+      content: newPost.content,
+      category: newPost.category,
+      readTime: newPost.readTime,
+      image: newPost.image
+      // author wird im Backend gesetzt!
     };
     const response = await fetch('http://localhost:4000/api/blogs', {
       method: 'POST',
@@ -253,7 +195,9 @@ const Blog = () => {
             filteredPosts.map(post => (
               <article key={post._id} className="blog-card">
                 <div className="blog-image">
-                  <img src={post.image} alt={`Bild für den Beitrag: ${post.title}`} />
+                  {post.image && (
+                    <img src={post.image} alt={`Bild für den Beitrag: ${post.title}`} />
+                  )}
                   <div className="blog-category">
                     {getCategoryLabel(post.category || (post.tags && post.tags[0]))}
                   </div>
@@ -267,7 +211,9 @@ const Blog = () => {
                     <div className="meta-left">
                       <div className="meta-item">
                         <User className="meta-icon" aria-hidden="true" />
-                        <span>{post.author}</span>
+                        <span>
+                          {post.author?.nickname || post.author?.username || "Unbekannt"}
+                        </span>
                       </div>
                       <div className="meta-item">
                         <Calendar className="meta-icon" aria-hidden="true" />
@@ -279,8 +225,7 @@ const Blog = () => {
                   <div className="blog-actions">
                     <button
                       className="read-more-btn"
-                      onClick={() => handleReadMore(post.id)}
-                      aria-label={`Weiterlesen: ${post.title}`}
+                      onClick={() => handleReadMore(post._id)}
                     >
                       Weiterlesen
                     </button>
@@ -388,17 +333,6 @@ const Blog = () => {
                 ></textarea>
               </div>
               <div className="form-group">
-                <label htmlFor="post-author">Autor:</label>
-                <input
-                  type="text"
-                  id="post-author"
-                  name="author"
-                  value={newPost.author}
-                  onChange={handleNewPostChange}
-                  required
-                />
-              </div>
-              <div className="form-group">
                 <label htmlFor="post-category">Kategorie:</label>
                 <select
                   id="post-category"
@@ -443,3 +377,4 @@ const Blog = () => {
 };
 
 export default Blog;
+

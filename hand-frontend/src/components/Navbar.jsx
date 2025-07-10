@@ -45,13 +45,13 @@ function Navbar() {
                 </a>
               </li>
               <li className="nav-item">
-                <a href="/blog" className="nav-links">
+                <a href="/blogs" className="nav-links">
                   Blog
                 </a>
               </li>
               <li className="nav-item">
                 <a href="/help" className="nav-links">
-                  Frage
+                  Hilfe & Support
                 </a>
               </li>
               <li className="nav-item">

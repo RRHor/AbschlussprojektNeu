@@ -1,5 +1,5 @@
 import { useState, useContext, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useParams, useLocation } from 'react-router-dom';
 import { ArrowLeft, Users, Loader } from 'lucide-react';
 import { useAuth } from '../context/AuthContext.jsx';
 import api from '../api.js';
@@ -8,8 +8,9 @@ import './EventDetail.css';
 import Footer from '../components/Footer';
 
 const EventDetail = () => {
+  const { id } = useParams();
   const { state } = useLocation();
-  const event = state?.event;
+  const [event, setEvent] = useState(state?.event || null);
   const { user } = useAuth();
 
   // 🔍 DEBUG: Event-Objekt komplett ausgeben
@@ -33,7 +34,7 @@ const EventDetail = () => {
 
   // Teilnahme-Status beim Laden prüfen
   useEffect(() => {
-    if (event && user) {
+    if (event && event._id && user) {
       checkParticipationStatus();
     }
   }, [event, user]);
@@ -46,6 +47,15 @@ const EventDetail = () => {
         .catch(err => console.error('Fehler beim Laden der Kommentare:', err));
     }
   }, [event]);
+
+  // Event aus Backend laden, falls nicht im State
+  useEffect(() => {
+    if (!event && id) {
+      api.get(`/events/${id}`)
+        .then(res => setEvent(res.data))
+        .catch(() => setEvent(null));
+    }
+  }, [id, event]);
 
   // Teilnahme-Status prüfen
   const checkParticipationStatus = async () => {
@@ -126,11 +136,19 @@ const EventDetail = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!text.trim()) return;
+    if (!event || !event._id) {
+      alert("Event nicht geladen!");
+      return;
+    }
+
+    // Debug-Ausgabe:
+    console.log("event:", event);
+    console.log("event._id:", event?._id);
 
     try {
       const res = await api.post('/event-comments', {
         text,
-        event: event._id
+        event: event._id   // <-- Das muss mitgesendet werden!
       });
       setComments([res.data, ...comments]);
       setText('');
@@ -148,7 +166,7 @@ const EventDetail = () => {
     window.history.back();
   };
 
-  if (!event) return <p>Event nicht gefunden.</p>;
+
 
   const handleLike = (id) => {
     setComments(prevComments =>
@@ -157,6 +175,10 @@ const EventDetail = () => {
       )
     );
   };
+
+  if (!event) {
+    return <div>Lade Event...</div>;
+  }
 
   return (
     <div className="event-detail-wrapper">
@@ -232,11 +254,6 @@ const EventDetail = () => {
                     <div className="participant-name">
                       {participant.nickname || participant.username}
                     </div>
-                    {participant.firstName && participant.lastName && (
-                      <div className="participant-full-name">
-                        {participant.firstName} {participant.lastName}
-                      </div>
-                    )}
                   </div>
                 </div>
               ))}

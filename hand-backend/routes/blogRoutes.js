@@ -19,7 +19,7 @@ router.get('/', async (req, res) => {
       ]
     };
   }
-  const blogs = await Blog.find(filter).populate('user', 'name');
+  const blogs = await Blog.find(filter).populate('author', 'nickname username email');
   res.json(blogs);
 });
 
@@ -30,7 +30,7 @@ Beispiel:
 
 // Einzelnen Blogpost abrufen
 router.get('/:id', async (req, res) => {
-  const blog = await Blog.findById(req.params.id).populate('user', 'name');
+  const blog = await Blog.findById(req.params.id).populate('author', 'nickname username email');
   if (!blog) return res.status(404).json({ message: 'Blogpost nicht gefunden' });
   res.json(blog);
 });
@@ -38,7 +38,7 @@ router.get('/:id', async (req, res) => {
 // Blogpost erstellen
 router.post('/', protect, async (req, res) => {
   try {
-    const blog = new Blog({ ...req.body, user: req.user._id });
+    const blog = new Blog({ ...req.body, author: req.user._id }); // author = eingeloggter User
     await blog.save();
     res.status(201).json(blog);
   } catch (error) {
