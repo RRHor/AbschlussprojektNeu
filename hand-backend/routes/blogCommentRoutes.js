@@ -69,4 +69,24 @@ router.delete("/blog-comments/:id", protect, async (req, res) => {
     }
 });
 
+// Blog-Kommentar bearbeiten (geschützt)
+router.put("/blog-comments/:id", protect, async (req, res) => {
+  try {
+    const comment = await BlogComment.findById(req.params.id);
+    if (!comment) return res.status(404).json({ message: "Kommentar nicht gefunden" });
+
+    // Nur Ersteller darf bearbeiten
+    if (comment.user.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ message: "Nicht berechtigt" });
+    }
+
+    comment.text = req.body.text || comment.text;
+    await comment.save();
+
+    res.json({ message: "Kommentar bearbeitet", comment });
+  } catch (error) {
+    res.status(500).json({ message: "Fehler beim Bearbeiten des Kommentars" });
+  }
+});
+
 export default router;

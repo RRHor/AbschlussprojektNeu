@@ -28,7 +28,6 @@ import blogCommentRoutes from './routes/blogCommentRoutes.js';
 import adRoutes from './routes/adRoutes.js';
 import eventRoutes from './routes/eventRoutes.js';
 import eventCommentRoutes from './routes/eventCommentRoutes.js';
-import adressRoutes from './routes/adressRoutes.js';
 import postRoutes from './routes/postRoutes.js';
 import passwordResetRequestRoute from './routes/passwordResetRequestRoute.js';
 import passwordResetRoute from './routes/passwordResetRoute.js';
@@ -88,7 +87,6 @@ app.use('/api/auth', passwordResetRoute);
 // User-Routen
 app.use('/api', publicUserRoutes);
 app.use('/api', profileRoutes);
-app.use('/api', adressRoutes);
 app.use('/api', userRoutes);
 
 // Content-Routen
