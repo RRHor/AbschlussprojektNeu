@@ -10,6 +10,7 @@ import Register from './pages/Register';
 import Profile from './pages/Profile';
 import Help from './pages/Help'; 
 import Blog from './pages/Blog';
+import BlogDetail from './pages/BlogDetail';
 import Events from './pages/Events';
 import EventDetail from './pages/EventDetail';
 import ResetPassword from './pages/ResetPassword';
@@ -43,7 +44,8 @@ function App() {
           
           {/* Features */}
           <Route path="/exchange/*" element={<Exchange />} />
-          <Route path="/blog" element={<Blog />} />
+          <Route path="/blogs" element={<Blog />} />
+          <Route path="/blogs/:id" element={<BlogDetail />} />
           <Route path="/events" element={<Events />} />
           <Route path="/events/:id" element={<EventDetail />} />
           
