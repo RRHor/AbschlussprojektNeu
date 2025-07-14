@@ -12,7 +12,7 @@ const __dirname = dirname(__filename);
 dotenv.config({ path: join(__dirname, '.env') });
 
 // Import User model
-import User from './models/userSchema.js';
+import User from './models/UserModel.js';
 
 async function resetPasswords() {
     try {

@@ -10,7 +10,9 @@
   --mint: #4fe3c1;
   --cream: #f8e8c3;
   --coral: #de887b;
+  --white: #ffffff; /* Hinzugefügt für Header-Styles */
 }
+
 .nunito-font {
   font-family: "Nunito", sans-serif;
   font-optical-sizing: auto;
@@ -25,13 +27,10 @@
   font-family: "Nunito", sans-serif;
   display: flex;
   flex-direction: column;
-  /*align-items: center;*/
-  /*justify-content: center;*/
   min-height: 100vh;
   box-sizing: border-box;
   margin: 0;
   width: 100%;
-  /*overflow: hidden;*/
   position: relative;
 }
 
@@ -153,33 +152,185 @@
   color: #05004e; /* deepBlue */
 }
 
-
-/*------ FOOTER-----*/
-.events-footer {
-  background-color: var(--coral);
-  color: white;
+/* Header Bereich */
+.blog-header {
   text-align: center;
-  padding: 24px 32px;
-  font-size: 15px;
-  font-family: "Nunito", sans-serif;
-  width: 100%;
-  box-sizing:border-box;
-  margin-top: 40px;
-  margin-bottom: 8px;
-
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+  margin-bottom: 40px;
+  padding: 30px 20px;
+  background: linear-gradient(45deg, var(--deepBlue), var(--skyBlue), var(--mint), var(--coral));
+  background-size: 400% 400%;
+  border-radius: 25px;
+  color: var(--white);
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  animation: 
+    gradientWave 8s ease-in-out infinite,
+    headerSlideIn 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards,
+    headerPulse 4s ease-in-out infinite 2s;
+  transform: translateY(-20px);
+  opacity: 0;
 }
 
-.events-footer p {
-  padding: 16px 0;
+.blog-header::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(circle at 30% 70%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+              radial-gradient(circle at 70% 30%, rgba(255, 255, 255, 0.08) 0%, transparent 50%);
+  animation: backgroundShimmer 6s ease-in-out infinite;
+  z-index: 1;
+}
+
+.blog-header::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: conic-gradient(from 0deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  animation: rotate 10s linear infinite;
+  z-index: 0;
+}
+
+.blog-header h1,
+.blog-header p {
+  position: relative;
+  z-index: 2;
+}
+
+.blog-header h1 {
+  font-size: 2.5rem;
+  margin: 0 0 20px 0;
+  font-weight: 800;
+  text-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  animation: titleGlow 3s ease-in-out infinite alternate;
+  letter-spacing: 2px;
+  background: linear-gradient(45deg, var(--white), var(--cream));
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.blog-header p {
+  font-size: 1.2rem;
   margin: 0;
-  line-height: 1.6;
+  opacity: 0.95;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  animation: subtitleFloat 4s ease-in-out infinite;
 }
-.events-footer a {
-  color: var(--deepBlue);
-  text-decoration: none;
-  font-weight: bold;
+
+/* Keyframe Animationen */
+@keyframes gradientWave {
+  0% {
+    background-position: 0% 50%;
+  }
+  25% {
+    background-position: 100% 50%;
+  }
+  50% {
+    background-position: 100% 100%;
+  }
+  75% {
+    background-position: 0% 100%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
 }
-.events-footer a:hover {
-  text-decoration: underline;
+
+@keyframes headerSlideIn {
+  0% {
+    transform: translateY(-50px) scale(0.9);
+    opacity: 0;
+  }
+  60% {
+    transform: translateY(5px) scale(1.05);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes headerPulse {
+  0%, 100% {
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  }
+  50% {
+    box-shadow: 0 25px 70px rgba(79, 227, 193, 0.4);
+  }
+}
+
+@keyframes backgroundShimmer {
+  0%, 100% {
+    opacity: 0.3;
+    transform: translateX(-10px);
+  }
+  50% {
+    opacity: 0.6;
+    transform: translateX(10px);
+  }
+}
+
+@keyframes rotate {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes titleGlow {
+  0% {
+    text-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  }
+  100% {
+    text-shadow: 0 4px 20px rgba(0, 0, 0, 0.3), 0 0 30px rgba(255, 255, 255, 0.2);
+  }
+}
+
+@keyframes subtitleFloat {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+/* Responsive Anpassungen */
+@media (max-width: 768px) {
+  .blog-header {
+    padding: 50px 15px;
+  }
+
+  .blog-header h1 {
+    font-size: 2.5rem;
+    letter-spacing: 1px;
+  }
+
+  .blog-header p {
+    font-size: 1.1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .blog-header {
+    padding: 40px 10px;
+  }
+
+  .blog-header h1 {
+    font-size: 2rem;
+  }
+
+  .blog-header p {
+    font-size: 1rem;
+  }
 }

@@ -1,62 +1,54 @@
-// client/src/App.jsx
 
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { AuthProvider } from './context/AuthContext';
-
+import React from 'react';
+import { Routes, Route } from 'react-router-dom';
+import Home from './pages/Home'; 
 import Navbar from './components/Navbar';
 import LandingPage from './pages/LandingPage';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Profile from './pages/Profile';
-import Help from './pages/Help'; 
-import Blog from './pages/Blog';
 import Events from './pages/Events';
-import EventDetail from './pages/EventDetail';
-import ResetPassword from './pages/ResetPassword';
-import Home from './pages/Home';
-import ForgotPassword from './components/ForgotPassword';
-import VerifyEmail from './pages/VerifyEmail';
+import EventDetail from './pages/EventDetail.jsx';
+import EventRegister from './pages/EventRegister.jsx';
+import Help from './pages/Help';
 import Exchange from './pages/Exchange/Exchange';
+import ForgotPassword from './components/ForgotPassword';
+import ResetPassword from './components/ResetPassword.jsx';
+import Blog from './pages/Blog'; 
+import Uberuns from './pages/Uberuns.jsx'; // Importiere die "Über uns" Seite
+import Footer from './components/Footer.jsx'; // Importiere den Footer
+import PageNotFound from './pages/PageNotFound.jsx'; // Importiere die 404-Seite
+import VerifyEmail from './components/VerifyEmail.jsx';
 
 function App() {
   return (
-    <AuthProvider>
-      <Navbar />
-      <div className="container">
+    <>
+      <Navbar /> {/* Die Navbar wird immer angezeigt, unabhängig von der Route */}
+      
+      <div className="container"> {/* Optional: Ein Container für deinen Seiteninhalt */}
         <Routes>
-          {/* Hauptseiten */}
-          <Route path="/" element={<LandingPage />} /> 
-          <Route path="/home" element={<Home />} />
-          
-          {/* Authentifizierung */}
+          <Route path="/" element={<LandingPage/>} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
-          <Route path="/forgot-password" element={<ForgotPassword />} />
-          <Route path="/reset-password" element={<ResetPassword />} />
-          
-          {/* E-Mail Verifizierung */}
-          <Route path="/verify/:token" element={<VerifyEmail />} />
-          <Route path="/verify-email/:token" element={<VerifyEmail />} />
-          
-          {/* User-Bereich */}
-          <Route path="/profile" element={<Profile />} />
-          
-          {/* Features */}
-          <Route path="/exchange/*" element={<Exchange />} />
-          <Route path="/blog" element={<Blog />} />
+          <Route path="/verify" element={<VerifyEmail />} />
+          <Route path="/home" element={<Home />} />
+ 
+          <Route path="/help" element={<Help />} />
           <Route path="/events" element={<Events />} />
           <Route path="/events/:id" element={<EventDetail />} />
-          
-          {/* Hilfe */}
-          <Route path="/help" element={<Help />} />
-          
-          {/* Fallback */}
-          <Route path="*" element={<div>Seite nicht gefunden</div>} />
+          <Route path="/events/:id/register" element={<EventRegister />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/exchange/*" element={<Exchange />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password/:token" element={<ResetPassword />} />
+          <Route path="/blog" element={<Blog />} /> 
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/uberuns" element={<Uberuns />} /> {/* Route für die "Über uns" Seite */}
+          <Route path="*" element={<PageNotFound />} /> {/* Fallback für nicht gefundene Seiten */}
         </Routes>
       </div>
-    </AuthProvider>
+      <Footer />
+   </>
   );
 }
-
 export default App;
-

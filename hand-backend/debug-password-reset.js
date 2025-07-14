@@ -1,6 +1,6 @@
 import bcrypt from 'bcryptjs';
 import mongoose from 'mongoose';
-import User from './models/userSchema.js';
+import User from './models/UserModel.js';
 
 // MongoDB-Verbindung
 await mongoose.connect('mongodb://localhost:27017/handinhand');

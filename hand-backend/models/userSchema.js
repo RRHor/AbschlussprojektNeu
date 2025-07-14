@@ -29,17 +29,15 @@ const userSchema = new mongoose.Schema({
         }
     ],
 
+    // ODER-Logik: isAdmin wird gesetzt, wenn es noch keinen Admin gibt
     isAdmin: {
-        type: Boolean,
-        default: false,
+      type: Boolean,
+      default: false,
     },
-    isActive: {
-        type: Boolean,
-        default: true,
-    },
-    isVerify: {
-        type: Boolean,
-        default: false,
+    // Rückbau: Nur noch isVerify, kein isVerified mehr in diesem Schema
+    isVerifid: {
+      type: Boolean,
+      default: false,
     },
     verificationCode: {
         type: Number,
@@ -82,5 +80,14 @@ userSchema.pre("save", async function (next) {
 userSchema.methods.matchPassword = async function (enteredPassword) {
     return bcrypt.compare(enteredPassword, this.password);
 };
+
+// ODER-Validierung: Mindestens username ODER nickname muss gesetzt sein
+userSchema.pre("validate", function (next) {
+  if (!this.username && !this.nickname) {
+    this.invalidate("username", "Entweder Benutzername ODER Nickname ist erforderlich.");
+    this.invalidate("nickname", "Entweder Benutzername ODER Nickname ist erforderlich.");
+  }
+  next();
+});
 
 export { userSchema };

@@ -1,4 +1,3 @@
-
 import nodemailer from 'nodemailer';
 
 const transporter = nodemailer.createTransport({
@@ -12,20 +11,16 @@ const transporter = nodemailer.createTransport({
 });
 
 
-// const sendVerificationEmail = async (email, code) => {
-//   //Hier würdest du z.B. nodemailer verwenden, um eine echte Email zu senden
-//   console.log(`Sende Verifizierungscode ${code} an ${email}`);
-//   //Simuliere Erfolg
-//   return { success: true };
-// };
-
 
 const sendVerificationEmail = async (email, code) => {
-  const mailText = `Dein Bestätigungscode: ${code}`;
+  // Link zur Verifizierung im Frontend
+  const verificationLink = `http://localhost:5173/verify?code=${code}&email=${encodeURIComponent(email)}`;
+  const mailText = `Dein Bestätigungscode: ${code}\n\nOder klicke auf diesen Link, um deine E-Mail zu bestätigen:\n${verificationLink}`;
+
   await transporter.sendMail({
     from: `"Hand in Hand" <${process.env.EMAIL_USER}>`,
     to: email,
-    subject: 'Passwort zurücksetzen',
+    subject: 'E-Mail bestätigen',
     text: mailText
   });
   console.log(`Sende Verifizierungscode ${code} an ${email}`);

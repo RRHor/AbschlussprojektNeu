@@ -1,18 +1,9 @@
 import express from "express";
 import jwt from "jsonwebtoken";
-
-import User from "../models/UserModel.js";
+import User from '../models/UserModel.js';
 import Event from "../models/eventModel.js"; // ← DIESE ZEILE HINZUFÜGEN
-
-import mongoose from "mongoose";
-import { userSchema } from "../models/userSchema.js";
-
 import { sendVerificationEmail } from "../utils/emailService.js";
 import { protect } from "../middleware/authMiddleware.js";
-
-// import User from "../models/UserModel.js"; // Auskommentiert, wir nutzen stattdessen userSchema.js
-// importiertes UserModel.js bleibt erhalten, aber wird nicht verwendet
-// const User = mongoose.models.User || mongoose.model("User", userSchema);
 
 const router = express.Router();
 
@@ -51,90 +42,96 @@ router.post('/register', async (req, res) => {
 
     const {
       nickname,
+      username,
       email,
       password,
-      firstName,
-      lastName,
+      // Wegen Datenschutz nicht hier
+      // firstName,
+      // lastName,
       addresses // Array!
     } = req.body;
 
 
     // Prüfen, ob Nickname oder E-Mail schon vergeben sind
-    const existingUser = await User.findOne({ $or: [{ email }, { nickname }] });
+    const existingUser = await User.findOne({ 
+      $or: [{ email }, 
+      ...(nickname ? [{nickname}] : []),
+      ...(username ? [{username}] : [])
+    ]
+  });
     if (existingUser) {
       return res.status(400).json({ message: 'E-Mail oder Nickname bereits vergeben' });
     }
 
-    // Optional: Adress-Validierung für alle Adressen im Array (deaktiviert)
-    /*
-    if (addresses && addresses.length > 0) {
-      for (const addr of addresses) {
-        const isValid = await validateAddress(addr);
-        if (!isValid) {
-          return res.status(400).json({
-            message: 'Eine eingegebene Adresse konnte nicht gefunden werden. Bitte überprüfen Sie Ihre Eingabe.',
-            hint: 'Falls Sie sicher sind, dass die Adresse korrekt ist, kontaktieren Sie den Support.'
-          });
-        }
-      }
-    }
-    */
-
-
-    // User erstellen
-    const user = new User({
-      username: nickname, // Username immer setzen, z.B. auf Nickname
-      nickname: nickname,
-      email: email,
-      password: password,
-      firstName: firstName,
-      lastName: lastName,
-      addresses: addresses,
-      isVerified: false,
-      verificationToken: verificationToken,
-      verificationTokenExpires: Date.now() + 24 * 60 * 60 * 1000,
-      registeredAt: new Date()
-    });
-
-    // Prüfen, ob schon ein Admin existiert (erster User wird Admin)
+    
+    const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
     const adminExists = await User.findOne({ isAdmin: true });
 
 
-    // Verifizierungscode generieren (6-stellig, als String)
-    const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
-
-    // Neuen User anlegen
-    const newUser = new User({
-      nickname,
+    // ODER-Logik für username/nickname:
+    // Es wird nur das Feld gespeichert, das im Request-Body vorhanden ist.
+    // So wird entweder "nickname" ODER "username" in der Datenbank angelegt – nie beide gleichzeitig.
+    // Das sorgt für ein sauberes, flexibles Datenmodell und verhindert doppelte oder unerwünschte Felder.
+    // Diese Lösung ist besonders nützlich, wenn im Team unterschiedliche User-Modelle verwendet werden.
+    const userData = {
+      // username: nickname, // für UserModel
+      // nickname,
       email,
       password,
+      // firstName,
+      // lastName,
       addresses,
-      isVerify: false,
-      verificationCode,
+      isVerified: false, // für UserModel
+      isVerify: false,   // für userSchema
+      verificationCode,  // für userSchema
+      verificationToken: verificationCode, // für UserModel
+      verificationTokenExpires: Date.now() + 24 * 60 * 60 * 1000, // für UserModel
       isAdmin: !adminExists,
-      // registeredAt: new Date() // entfernt für Kompatibilität mit Abschluss_Rea_02
-    });
+      registeredAt: new Date()
+    };
+
+    // Nur das Feld speichern, das im Body steht:
+    if (nickname) userData.nickname = nickname;
+    if (username) userData.username = username;
+
+    // Rückbau: Nur das Verifizierungsfeld setzen, das im Modell existiert
+    if (User.schema.path('isVerify')) {
+      userData.isVerify = false;
+      // Rückbau: Kein isVerified mehr setzen
+    } else if (User.schema.path('isVerified')) {
+      userData.isVerified = false;
+      // Rückbau: Kein isVerify mehr setzen
+    }
+
+    const newUser = new User(userData);
+
     await newUser.save();
     console.log('👤 User gespeichert, versuche E-Mail zu senden...');
 
     // Verifizierungs-E-Mail senden
     try {
       console.log('📧 Rufe sendVerificationEmail auf...');
-      await sendVerificationEmail(newUser.email, newUser.verificationCode, newUser._id);
+      // ODER-Lösung für Verifizierungscode: user.verificationCode (userSchema) ODER user.verificationToken (UserModel)
+      await sendVerificationEmail(
+        newUser.email,
+        newUser.verificationCode || newUser.verificationToken, // nimmt den Wert, der existiert
+        newUser._id
+      );
       console.log('✅ E-Mail erfolgreich gesendet');
     } catch (emailError) {
       console.error('❌ E-Mail-Versand fehlgeschlagen:', emailError.message);
     }
 
+    // Rückgabe: Nur die wichtigsten Felder
     res.status(201).json({
       message: 'User erfolgreich erstellt',
       _id: newUser._id,
       nickname: newUser.nickname,
       email: newUser.email,
-      addresses: newUser.addresses,
       isAdmin: newUser.isAdmin,
-      isVerify: newUser.isVerify,
-      verificationCode: newUser.verificationCode // Nur für Testing - in Produktion entfernen!
+      isVerified: newUser.isVerified !== undefined ? newUser.isVerified : undefined,
+      isVerify: newUser.isVerify !== undefined ? newUser.isVerify : undefined,
+      verificationCode: newUser.verificationCode || newUser.verificationToken
     });
   } catch (error) {
     console.error('Fehler bei Registrierung:', error);
@@ -147,12 +144,21 @@ router.post('/register', async (req, res) => {
  */
 router.post("/login", async (req, res) => {
   try {
-    const { email, password, rememberMe } = req.body;
-    const user = await User.findOne({ email });
+    // NEU: nickname aus dem Body holen
+    const { email, nickname, password, rememberMe } = req.body;
+
+    // NEU: Suche User mit E-Mail ODER Nickname
+    const user = await User.findOne({
+      $or: [
+        email ? { email } : null,
+        nickname ? { nickname } : null
+      ].filter(Boolean) // entfernt alle null-Werte
+    });
 
     if (!user) {
-      return res.status(401).json({ message: "Ungültige E-Mail oder Passwort" });
+      return res.status(401).json({ message: "Ungültige E-Mail/Nickname oder Passwort" });
     }
+
 
     const isMatch = await user.matchPassword(password);
     if (!isMatch) {
@@ -160,6 +166,7 @@ router.post("/login", async (req, res) => {
     }
 
     // Prüfe E-Mail-Verifizierung (mindestens eins der Felder muss true sein)
+    // ODER-Lösung für Kompatibilität beider Modelle: isVerified (UserModel) ODER isVerify (userSchema)
     if (!(user.isVerified || user.isVerify)) {
       return res.status(401).json({ 
         message: "Bitte verifizieren Sie zuerst Ihre E-Mail-Adresse",
@@ -187,10 +194,12 @@ router.post("/login", async (req, res) => {
         _id: user._id,
         nickname: user.nickname,
         email: user.email,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        addresses: user.addresses,
-        isVerified: user.isVerified,
+        // firstName: user.firstName, // Datenschutz <-- das ist auf oberster Ebene! 
+        // lastName: user.lastName, // Datenschutz <-- das ist auf oberster Ebene! 
+        addresses: user.addresses, // firstName/lastName sind jetzt nur hier enthalten!
+        // isVerified: user.isVerified,
+        // ODER-Lösung: isVerified (UserModel) ODER isVerify (userSchema)
+        isVerified: user.isVerified || user.isVerify,
         registeredAt: user.registeredAt //HINZUFÜGEN
       },
     });
@@ -235,7 +244,17 @@ router.get('/verify/:token', async (req, res) => {
       console.log('📅 FirstVerifiedAt gesetzt:', user.firstVerifiedAt);
     }
 
+    // Kompatibilität: Setze beide Felder, damit Frontend und verschiedene Modelle funktionieren
     user.isVerified = true;
+    user.isVerify = true;
+    // ODER-Logik: Setze nur das Verifizierungsfeld, das im jeweiligen Schema existiert
+    // So steht in MongoDB immer nur isVerify ODER isVerified – nie beide!
+    if (user.schema.path('isVerify')) {
+      user.isVerify = true;
+    }
+    if (user.schema.path('isVerified')) {
+      user.isVerified = true;
+    }
     user.verificationToken = undefined;
     user.verificationTokenExpires = undefined;
 
@@ -277,6 +296,42 @@ router.get('/verify/:token', async (req, res) => {
       success: false,
       message: 'Serverfehler bei der Verifizierung'
     });
+  }
+});
+
+/**
+ * POST /api/auth/verify
+ * Vergleicht den Code aus dem Body mit dem in der Datenbank und setzt isVerified auf true, wenn alles passt.
+ * WICHTIG: Die Verifizierung darf NUR im Backend passieren, damit der Code sicher bleibt und nicht im E-Mail-Service manipuliert werden kann.
+ * Der E-Mail-Service verschickt nur den Code/Link, die eigentliche Prüfung und das Setzen von isVerified gehören IMMER in diese Route!
+ */
+router.post('/verify', async (req, res) => {
+  const { email, code } = req.body;
+  try {
+    // Suche nach User mit passender E-Mail und passendem Code
+    const user = await User.findOne({
+      email,
+      verificationCode: code.toString()
+    });
+    if (!user) {
+      return res.status(400).json({ message: 'Ungültiger Code oder E-Mail' });
+    }
+    // Optional: Prüfe, ob der Code abgelaufen ist
+    if (user.verificationCodeExpires && user.verificationCodeExpires < new Date()) {
+      return res.status(400).json({ message: 'Code ist abgelaufen' });
+    }
+    if (user.isVerified) {
+      return res.status(400).json({ message: 'E-Mail bereits verifiziert' });
+    }
+    // Setze isVerified auf true und lösche den Code
+    user.isVerified = true;
+    user.verificationCode = null;
+    user.verificationCodeExpires = null;
+    await user.save();
+    res.json({ message: 'E-Mail erfolgreich verifiziert!' });
+  } catch (error) {
+    console.error('Verify error:', error);
+    res.status(500).json({ message: 'Serverfehler', error: error.message });
   }
 });
 

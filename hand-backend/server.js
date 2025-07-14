@@ -16,10 +16,11 @@ dotenv.config();
 import express from "express";
 import cors from "cors";
 import cookieParser from 'cookie-parser';
-// import mongoose from 'mongoose';
+import mongoose from 'mongoose';
 
 // Alle Route-Imports 
 import connectDB from './database/database.js';
+import { userSchema } from "./models/userSchema.js";
 import authRoutes from './routes/authRoutes.js';
 import verifyRoutes from './routes/verifyRoutes.js';
 import profileRoutes from './routes/profileRoutes.js';
@@ -28,7 +29,6 @@ import blogCommentRoutes from './routes/blogCommentRoutes.js';
 import adRoutes from './routes/adRoutes.js';
 import eventRoutes from './routes/eventRoutes.js';
 import eventCommentRoutes from './routes/eventCommentRoutes.js';
-import adressRoutes from './routes/adressRoutes.js';
 import postRoutes from './routes/postRoutes.js';
 import passwordResetRequestRoute from './routes/passwordResetRequestRoute.js';
 import passwordResetRoute from './routes/passwordResetRoute.js';
@@ -37,6 +37,14 @@ import exchangeRoutes from './routes/exchangeRoutes.js';
 import helpQuestionRoutes from './routes/helpQuestionRoutes.js';
 import helpAnswerRoutes from './routes/helpAnswerRoutes.js';
 import userRoutes from './routes/userRoutes.js';
+
+
+const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+
+// Registriere das User-Modell mit deinem Schema, falls noch nicht geschehen
+if (!mongoose.models.User) {
+  mongoose.model("User", userSchema);
+}
 
 // ES6 Module __dirname workaround
 const __filename = fileURLToPath(import.meta.url);
@@ -52,7 +60,7 @@ console.log('PORT:', process.env.PORT);
 
 
 const app = express();
-const PORT = process.env.PORT || 4000;
+const PORT = process.env.PORT || 5000;
 
 // Stelle Verbindung zur Datenbank her
 connectDB();
@@ -61,7 +69,10 @@ connectDB();
 // mongoose.set('debug', true);
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: frontendUrl,
+  credentials: true
+}));
 app.use(express.json());
 app.use(cookieParser());
 
@@ -88,7 +99,6 @@ app.use('/api/auth', passwordResetRoute);
 // User-Routen
 app.use('/api', publicUserRoutes);
 app.use('/api', profileRoutes);
-app.use('/api', adressRoutes);
 app.use('/api', userRoutes);
 
 // Content-Routen
