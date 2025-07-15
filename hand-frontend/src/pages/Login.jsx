@@ -1,110 +1,118 @@
-import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import api from '../api.js';  // ← DIESE ZEILE HINZUFÜGEN!
+import React, { useState } from 'react';
+import { Eye, EyeOff, Mail, Lock, User, ArrowLeft } from 'lucide-react'; 
+import { useNavigate } from 'react-router-dom';
 import './Login.css'; 
-import { Eye, EyeOff, Loader } from 'lucide-react';
-import Footer from '../components/Footer';
 
-const Login = () => {
-  const [formData, setFormData] = useState({
-    email: '',
-    password: ''
-  });
-  const [errors, setErrors] = useState({});
+function Login() {
+  const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [formData, setFormData] = useState({
+    username: '',
+    password: '',
+    email: ''
+  });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
-  const [rememberMe, setRememberMe] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
 
-  const navigate = useNavigate();
-  const { login } = useAuth();
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-    
-    // Clear error when user starts typing
-    if (errors[name]) {
-      setErrors(prev => ({
-        ...prev,
-        [name]: ''
-      }));
-    }
+  const handleInputChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value
+    });
+    // Clear errors when user starts typing
+    if (error) setError('');
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError('');
+  // ==== HIER BEGINNT DIE WICHTIGE ÄNDERUNG ====
+  // Wir ersetzen die Demo-Login-Logik durch einen echten API-Call
+  const handleLogin = async () => {
+    if (!formData.username || !formData.password) {
+      setError('Bitte alle Felder ausfüllen');
+      return;
+    }
+
     setIsLoading(true);
+    setError('');
 
     try {
-      console.log('🔐 Logging in with:', { email: formData.email, rememberMe });
-      
-      // Use AuthContext login function
-      const result = await login(formData.email, formData.password, rememberMe);
-      
-      if (result.success) {
-        console.log('✅ Login successful, navigating to profile');
-        navigate('/profile');
-      } else {
-        // NEU: Spezielle Behandlung für unverifizierte E-Mails
-        if (result.requiresVerification) {
-          setError(
-            <>
-              {result.message}
-              <br />
-              <button 
-                onClick={() => handleResendVerification(result.email)}
-                style={{ 
-                  background: 'none', 
-                  border: 'none', 
-                  color: '#ff6b6b', 
-                  textDecoration: 'underline',
-                  cursor: 'pointer',
-                  marginTop: '10px'
-                }}
-              >
-                Verifizierungs-E-Mail erneut senden
-              </button>
-            </>
-          );
-        } else {        
-          console.error('❌ Login failed:', result.message);
-          setError(result.message || 'Login fehlgeschlagen');
-        }      
+      // Prüfe, ob eine E-Mail oder ein Nickname eingegeben wurde
+      const loginPayload = formData.username.includes('@')
+        ? { email: formData.username, password: formData.password }
+        : { nickname: formData.username, password: formData.password };
+
+      // Sende Login-Request an dein Backend
+      const response = await fetch('http://localhost:4000/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(loginPayload)
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setError(data.message || 'Login fehlgeschlagen');
+        setIsLoading(false);
+        return;
       }
-    } catch (error) {
-      console.error('Login error:', error);
-      setError('Verbindungsfehler. Bitte versuchen Sie es später erneut.');
+
+      // Speichere Token z.B. im localStorage
+      localStorage.setItem('token', data.token);
+
+       // Nach erfolgreichem Login weiterleiten (Pfad ggf. anpassen!)
+      navigate('/profile');
+    } catch (err) {
+      setError('Serverfehler beim Login');
     } finally {
       setIsLoading(false);
     }
+    
+    // Simulation für Demo
+    // setTimeout(() => {
+    //   console.log('Login attempt:', { username: formData.username, password: formData.password });
+    //   setIsLoading(false);
+    //   alert('Login erfolgreich! (Demo)');
+    //   // Nach erfolgreichem Login weiterleiten:
+    //   // navigate('/dashboard');
+    // }, 1500);
   };
 
-  const handleForgotPassword = async (e) => {
-    e.preventDefault();
-    if (!formData.resetEmail) {
+  // ==== HIER ENDET DIE WICHTIGE ÄNDERUNG ====
+
+  const handleForgotPassword = async () => {
+    if (!formData.email) {
       setError('Bitte E-Mail-Adresse eingeben');
       return;
     }
+
+    // E-Mail-Format validieren
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+      setError('Bitte geben Sie eine gültige E-Mail-Adresse ein');
+      return;
+    }
+
     setIsLoading(true);
     setError('');
     
     try {
-      const response = await api.post('/auth/forgot-password', { 
-        email: formData.resetEmail 
-      });
+      // Hier würdest du deine Passwort-Reset-Logik implementieren
+      // Simulation für Demo
+      await new Promise(resolve => setTimeout(resolve, 1500));
       
-      if (response.data.success) {
-        alert('✅ Reset-E-Mail gesendet! Schaue in die Backend-Console für den Link.');
-        setShowForgotPassword(false);
-      }
+      console.log('Password reset for:', formData.email);
+      setSuccessMessage('📧 E-Mail wurde gesendet! Sie werden zur Bestätigungsseite weitergeleitet...');
+      
+      // Nach 2 Sekunden zur ausführlichen ForgotPassword-Seite weiterleiten
+      setTimeout(() => {
+        navigate('/forgot-password', { 
+          state: { email: formData.email } // E-Mail-Adresse mitgeben
+        });
+      }, 2000);
+      
     } catch (error) {
-      setError(error.response?.data?.message || 'Fehler beim Senden');
+      setError('Fehler beim Senden der E-Mail. Bitte versuchen Sie es erneut.');
     } finally {
       setIsLoading(false);
     }
@@ -113,141 +121,235 @@ const Login = () => {
   const handleKeyPress = (e) => {
     if (e.key === 'Enter') {
       if (showForgotPassword) {
-        handleForgotPassword(e);
+        handleForgotPassword();
       } else {
-        handleLogin(e);
+        handleLogin();
       }
     }
   };
 
   const goBack = () => {
-    if (window.history.length > 1) {
-      navigate(-1);
-    } else {
-      navigate('/');
-    }
-  };
-
-  const handleResendVerification = async (email) => {
-    try {
-      const response = await api.post('/auth/resend-verification', { email });
-      alert('Neue Verifizierungs-E-Mail wurde gesendet!');
-    } catch (error) {
-      alert('Fehler beim Senden der E-Mail.');
-    }
+    window.history.back();
   };
 
   return (
     <div className="login-page-wrapper">
+      {/* Background Pattern */}
       <div className="background-pattern-container">
         <div className="background-pattern"></div>
       </div>
-      
-      <div className="login-card">
-        <div className="login-card-header">
-          <h2>Anmelden</h2>
-          <p>Willkommen zurück in der Nachbarschaft!</p>
+
+      {/* Login Container */}
+      <div className="login-main-container">
+        {/* Back Button */}
+        <button
+          onClick={goBack}
+          className="back-button"
+        >
+          <ArrowLeft size={20} className="back-button-icon" />
+          Zurück
+        </button>
+
+        {/* Main Card */}
+        <div className="login-card">
+          {/* Header with Gradient */}
+          <div className="login-card-header">
+            <div className="header-icon-wrapper">
+              <User size={32} className="header-icon" />
+            </div>
+            <h1 className="header-title">
+              {showForgotPassword ? 'Passwort zurücksetzen' : 'Willkommen zurück'}
+            </h1>
+            <p className="header-subtitle">
+              {showForgotPassword 
+                ? 'Gib deine E-Mail-Adresse ein um fortzufahren'
+                : 'Logge dich ein, um fortzufahren und der Nachbartschaft zu helfen.'
+              }
+            </p>
+          </div>
+
+          {/* Form Content */}
+          <div className="login-card-content">
+            {/* Login Form */}
+            {!showForgotPassword ? (
+              <div className="form-section login-form">
+                {/* Username Field */}
+                <div className="input-group">
+                  <User size={20} className="input-icon" />
+                  <input
+                    type="text"
+                    name="username"
+                    placeholder="Benutzername"
+                    value={formData.username}
+                    onChange={handleInputChange}
+                    onKeyPress={handleKeyPress}
+                    required
+                  />
+                </div>
+
+                {/* Password Field */}
+                <div className="input-group">
+                  <Lock size={20} className="input-icon" />
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    name="password"
+                    placeholder="Passwort"
+                    value={formData.password}
+                    onChange={handleInputChange}
+                    onKeyPress={handleKeyPress}
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="password-toggle"
+                  >
+                    {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                  </button>
+                </div>
+
+                {/* Error Message */}
+                {error && (
+                  <div className="error-message">
+                    ❌ {error}
+                  </div>
+                )}
+
+                {/* Remember Me & Forgot Password */}
+                <div className="form-options">
+                  <label className="remember-me-checkbox">
+                    <input type="checkbox" />
+                    <span>Angemeldet bleiben</span>
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => setShowForgotPassword(true)}
+                    className="forgot-password-link"
+                  >
+                    Passwort vergessen?
+                  </button>
+                </div>
+
+                {/* Login Button */}
+                <button
+                  onClick={handleLogin}
+                  disabled={isLoading}
+                  className="submit-button primary-button"
+                >
+                  {isLoading ? (
+                    <div className="spinner-container">
+                      <div className="spinner"></div>
+                      Anmelden...
+                    </div>
+                  ) : (
+                    'Anmelden'
+                  )}
+                </button>
+              </div>
+            ) : (
+              /* Forgot Password Form */
+              <div className="form-section forgot-password-form">
+                {/* Email Field */}
+                <div className="input-group">
+                  <Mail size={20} className="input-icon" />
+                  <input
+                    type="email"
+                    name="email"
+                    placeholder="E-Mail-Adresse"
+                    value={formData.email}
+                    onChange={handleInputChange}
+                    onKeyPress={handleKeyPress}
+                    required
+                  />
+                </div>
+
+                {/* Error/Success Messages */}
+                {error && (
+                  <div className="error-message">
+                    ❌ {error}
+                  </div>
+                )}
+                
+                {successMessage && (
+                  <div className="success-message">
+                    {successMessage}
+                  </div>
+                )}
+
+                {/* Info Text */}
+                <div className="info-box">
+                  <p>
+                    📧 Du erhältst eine E-Mail mit einem Link zum Zurücksetzen deines Passworts.
+                  </p>
+                </div>
+
+                {/* Buttons */}
+                <div className="button-group">
+                  <button
+                    onClick={handleForgotPassword}
+                    disabled={isLoading || successMessage}
+                    className="submit-button primary-button"
+                  >
+                    {isLoading ? (
+                      <div className="spinner-container">
+                        <div className="spinner"></div>
+                        Senden...
+                      </div>
+                    ) : successMessage ? (
+                      'Weiterleitung...'
+                    ) : (
+                      'E-Mail senden'
+                    )}
+                  </button>
+                  
+                  <button
+                    onClick={() => {
+                      setShowForgotPassword(false);
+                      setError('');
+                      setSuccessMessage('');
+                    }}
+                    className="submit-button secondary-button"
+                    disabled={isLoading || successMessage}
+                  >
+                    Zurück zum Login
+                  </button>
+
+                  {/* Link zur ausführlichen Seite */}
+                  <button
+                    onClick={() => navigate('/forgot-password')}
+                    className="link-button"
+                    disabled={isLoading || successMessage}
+                  >
+                    Zur ausführlichen Passwort-Zurücksetzen-Seite →
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Footer */}
+            <div className="card-footer">
+              <div className="separator">
+                <span>oder</span>
+              </div>
+              <p className="register-prompt">
+                Noch kein Konto? 
+                <a href="/register" className="register-link">
+                  Jetzt registrieren
+                </a>
+              </p>
+            </div>
+          </div>
         </div>
 
-        <div className="login-card-content">
-          <form onSubmit={handleSubmit} className="login-form" autoComplete="off">
-          {error && (
-            <div className="error-message">
-              {error}
-            </div>
-          )}
-
-          <div className="form-group">
-            <label htmlFor="email">E-Mail-Adresse</label>
-            <input
-              type="email"
-              id="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              required
-              placeholder="ihre.email@beispiel.de"
-              className={errors.email ? 'error' : ''}
-              autoComplete="off"
-            />
-            {errors.email && <span className="error-text">{errors.email}</span>}
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="password">Passwort</label>
-            <div className="password-input-container">
-              <input
-                type={showPassword ? 'text' : 'password'}
-                id="password"
-                name="password"
-                value={formData.password}
-                onChange={handleChange}
-                required
-                placeholder="Ihr Passwort"
-                className={errors.password ? 'error' : ''}
-                autoComplete="off"
-              />
-              <button
-                type="button"
-                className="password-toggle"
-                onClick={() => setShowPassword(!showPassword)}
-              >
-                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-              </button>
-            </div>
-            {errors.password && <span className="error-text">{errors.password}</span>}
-          </div>
-
-          <div className="form-actions">
-            <div className="remember-me-container">
-              <input
-                type="checkbox"
-                id="rememberMe"
-                checked={rememberMe}
-                onChange={(e) => setRememberMe(e.target.checked)}
-                className="remember-me-checkbox"
-              />
-              <label htmlFor="rememberMe" className="remember-me-label">
-                Angemeldet bleiben
-              </label>
-            </div>
-            
-            <Link to="/forgot-password" className="forgot-password-link">
-              Passwort vergessen?
-            </Link>
-          </div>
-
-          <button
-            type="submit"
-            className={`login-button ${isLoading ? 'loading' : ''}`}
-            disabled={isLoading}
-          >
-            {isLoading ? (
-              <>
-                <Loader className="spinner" size={20} />
-                Wird angemeldet...
-              </>
-            ) : (
-              'Anmelden'
-            )}
-          </button>
-        </form>
-
-        <div className="login-footer">
+        {/* Additional Info */}
+        <div className="additional-info">
           <p>
-            Noch kein Konto?{' '}
-            <Link to="/register" className="register-link">
-              Jetzt registrieren
-            </Link>
+            🔒 Deine Daten sind sicher und werden verschlüsselt übertragen
           </p>
         </div>
-        </div>
       </div>
-
-      {/* Footer */}
-      <Footer />
     </div>
   );
-};
+}
 
 export default Login;
