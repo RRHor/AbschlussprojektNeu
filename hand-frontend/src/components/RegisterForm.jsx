@@ -1,22 +1,22 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import './RegisterForm.css';
-import logo from '../assets/logo.png';
-import register from '../assets/animation/Animation - register.json';
-import Lottie from 'lottie-react';
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import "./RegisterForm.css";
+import logo from "../assets/logo.png";
+import register from "../assets/animation/Animation - register.json";
+import Lottie from "lottie-react";
 const RegisterForm = ({ onSuccess }) => {
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
-    nickname: '',
-    email: '',
-    password: '',
-    firstName: '',
-    lastName: '',
-    street: '',
-    city: '',
-    district: '',
-    zip: '',
+    nickname: "",
+    email: "",
+    password: "",
+    firstName: "",
+    lastName: "",
+    street: "",
+    city: "",
+    district: "",
+    zip: "",
   });
 
   // Speichert, ob Feld verlassen wurde UND Inhalt hat
@@ -32,7 +32,7 @@ const RegisterForm = ({ onSuccess }) => {
     zip: false,
   });
 
-  const [message, setMessage] = useState('');
+  const [message, setMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formErrors, setFormErrors] = useState({});
 
@@ -43,7 +43,7 @@ const RegisterForm = ({ onSuccess }) => {
 
   const handleBlur = (e) => {
     const { name, value } = e.target;
-    const isFilled = value.trim() !== '';
+    const isFilled = value.trim() !== "";
     setTouchedFields((prev) => ({
       ...prev,
       [name]: isFilled,
@@ -54,7 +54,7 @@ const RegisterForm = ({ onSuccess }) => {
     const errors = {};
     Object.keys(formData).forEach((key) => {
       if (!formData[key].trim()) {
-        errors[key] = 'Dieses Feld darf nicht leer sein.';
+        errors[key] = "Dieses Feld darf nicht leer sein.";
       }
     });
     return errors;
@@ -63,7 +63,7 @@ const RegisterForm = ({ onSuccess }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
-    setMessage('');
+    setMessage("");
     setFormErrors({});
 
     const errors = validateForm();
@@ -74,50 +74,52 @@ const RegisterForm = ({ onSuccess }) => {
     }
 
     try {
-      const response = await fetch('http://localhost:3000/api/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch("http://localhost:4000/api/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           nickname: formData.nickname,
           email: formData.email,
           password: formData.password,
-          adress: {
-            firstName: formData.firstName,
-            lastName: formData.lastName,
-            street: formData.street,
-            city: formData.city,
-            district: formData.district,
-            zip: parseInt(formData.zip, 10),
-          },
+          addresses: [
+            {
+              firstName: formData.firstName,
+              lastName: formData.lastName,
+              street: formData.street,
+              city: formData.city,
+              district: formData.district,
+              zip: parseInt(formData.zip, 10),
+            }
+          ],
         }),
       });
 
       const data = await response.json();
       if (response.ok) {
-        localStorage.setItem('token', data.token);
+        localStorage.setItem("token", data.token);
         onSuccess(data);
-        navigate('/login');
+        navigate("/login");
       } else {
-        setMessage(`❌ Fehler: ${data.message || 'Unbekannter Fehler'}`);
+        setMessage(`❌ Fehler: ${data.message || "Unbekannter Fehler"}`);
       }
     } catch (error) {
       console.error(error);
-      setMessage('❌ Serverfehler.');
+      setMessage("❌ Serverfehler.");
     } finally {
       setIsSubmitting(false);
     }
   };
 
   const fieldLabels = {
-    nickname: 'Spitzname',
-    email: 'E-Mail',
-    password: 'Passwort',
-    firstName: 'Vorname',
-    lastName: 'Nachname',
-    street: 'Straße',
-    city: 'Stadt',
-    district: 'Landkreis oder Stadtteil',
-    zip: 'PLZ',
+    nickname: "Spitzname",
+    email: "E-Mail",
+    password: "Passwort",
+    firstName: "Vorname",
+    lastName: "Nachname",
+    street: "Straße",
+    city: "Stadt",
+    district: "Landkreis oder Stadtteil",
+    zip: "PLZ",
   };
 
   return (
@@ -125,14 +127,21 @@ const RegisterForm = ({ onSuccess }) => {
       <div className="register-form-container">
         {/* Animation on the left */}
         <div className="animation-container">
-          <Lottie animationData={register} loop={true} className="register-animation" />
+          <Lottie
+            animationData={register}
+            loop={true}
+            className="register-animation"
+          />
         </div>
         {/* Form on the right */}
         <div className="form-card">
-
           {/* Header with logo and title - moved above the form */}
           <h2 className="register-title">Hand in Hand Registrieren</h2>
-          <form onSubmit={handleSubmit} className="register-form-grid" noValidate>
+          <form
+            onSubmit={handleSubmit}
+            className="register-form-grid"
+            noValidate
+          >
             {/* Row 1 */}
             <div className="register-form-row">
               <label className="register-label">
@@ -144,9 +153,13 @@ const RegisterForm = ({ onSuccess }) => {
                   onChange={handleChange}
                   onBlur={handleBlur}
                   required
-                  className={`register-input ${touchedFields.nickname ? 'filled' : ''}`}
+                  className={`register-input ${
+                    touchedFields.nickname ? "filled" : ""
+                  }`}
                 />
-                {formErrors.nickname && <p className="register-warning">{formErrors.nickname}</p>}
+                {formErrors.nickname && (
+                  <p className="register-warning">{formErrors.nickname}</p>
+                )}
               </label>
 
               <label className="register-label">
@@ -158,9 +171,13 @@ const RegisterForm = ({ onSuccess }) => {
                   onChange={handleChange}
                   onBlur={handleBlur}
                   required
-                  className={`register-input ${touchedFields.email ? 'filled' : ''}`}
+                  className={`register-input ${
+                    touchedFields.email ? "filled" : ""
+                  }`}
                 />
-                {formErrors.email && <p className="register-warning">{formErrors.email}</p>}
+                {formErrors.email && (
+                  <p className="register-warning">{formErrors.email}</p>
+                )}
               </label>
 
               <label className="register-label">
@@ -172,9 +189,13 @@ const RegisterForm = ({ onSuccess }) => {
                   onChange={handleChange}
                   onBlur={handleBlur}
                   required
-                  className={`register-input ${touchedFields.password ? 'filled' : ''}`}
+                  className={`register-input ${
+                    touchedFields.password ? "filled" : ""
+                  }`}
                 />
-                {formErrors.password && <p className="register-warning">{formErrors.password}</p>}
+                {formErrors.password && (
+                  <p className="register-warning">{formErrors.password}</p>
+                )}
               </label>
             </div>
             {/* Row 2 */}
@@ -188,9 +209,13 @@ const RegisterForm = ({ onSuccess }) => {
                   onChange={handleChange}
                   onBlur={handleBlur}
                   required
-                  className={`register-input ${touchedFields.firstName ? 'filled' : ''}`}
+                  className={`register-input ${
+                    touchedFields.firstName ? "filled" : ""
+                  }`}
                 />
-                {formErrors.firstName && <p className="register-warning">{formErrors.firstName}</p>}
+                {formErrors.firstName && (
+                  <p className="register-warning">{formErrors.firstName}</p>
+                )}
               </label>
 
               <label className="register-label">
@@ -202,9 +227,13 @@ const RegisterForm = ({ onSuccess }) => {
                   onChange={handleChange}
                   onBlur={handleBlur}
                   required
-                  className={`register-input ${touchedFields.lastName ? 'filled' : ''}`}
+                  className={`register-input ${
+                    touchedFields.lastName ? "filled" : ""
+                  }`}
                 />
-                {formErrors.lastName && <p className="register-warning">{formErrors.lastName}</p>}
+                {formErrors.lastName && (
+                  <p className="register-warning">{formErrors.lastName}</p>
+                )}
               </label>
 
               <label className="register-label">
@@ -216,9 +245,13 @@ const RegisterForm = ({ onSuccess }) => {
                   onChange={handleChange}
                   onBlur={handleBlur}
                   required
-                  className={`register-input ${touchedFields.street ? 'filled' : ''}`}
+                  className={`register-input ${
+                    touchedFields.street ? "filled" : ""
+                  }`}
                 />
-                {formErrors.street && <p className="register-warning">{formErrors.street}</p>}
+                {formErrors.street && (
+                  <p className="register-warning">{formErrors.street}</p>
+                )}
               </label>
             </div>
             {/* Row 3 */}
@@ -232,9 +265,13 @@ const RegisterForm = ({ onSuccess }) => {
                   onChange={handleChange}
                   onBlur={handleBlur}
                   required
-                  className={`register-input ${touchedFields.city ? 'filled' : ''}`}
+                  className={`register-input ${
+                    touchedFields.city ? "filled" : ""
+                  }`}
                 />
-                {formErrors.city && <p className="register-warning">{formErrors.city}</p>}
+                {formErrors.city && (
+                  <p className="register-warning">{formErrors.city}</p>
+                )}
               </label>
 
               <label className="register-label">
@@ -246,9 +283,13 @@ const RegisterForm = ({ onSuccess }) => {
                   onChange={handleChange}
                   onBlur={handleBlur}
                   required
-                  className={`register-input ${touchedFields.district ? 'filled' : ''}`}
+                  className={`register-input ${
+                    touchedFields.district ? "filled" : ""
+                  }`}
                 />
-                {formErrors.district && <p className="register-warning">{formErrors.district}</p>}
+                {formErrors.district && (
+                  <p className="register-warning">{formErrors.district}</p>
+                )}
               </label>
 
               <label className="register-label">
@@ -260,9 +301,13 @@ const RegisterForm = ({ onSuccess }) => {
                   onChange={handleChange}
                   onBlur={handleBlur}
                   required
-                  className={`register-input ${touchedFields.zip ? 'filled' : ''}`}
+                  className={`register-input ${
+                    touchedFields.zip ? "filled" : ""
+                  }`}
                 />
-                {formErrors.zip && <p className="register-warning">{formErrors.zip}</p>}
+                {formErrors.zip && (
+                  <p className="register-warning">{formErrors.zip}</p>
+                )}
               </label>
             </div>
             {/* Submit Button */}
@@ -270,9 +315,9 @@ const RegisterForm = ({ onSuccess }) => {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className={`register-button ${isSubmitting ? 'disabled' : ''}`}
+                className={`register-button ${isSubmitting ? "disabled" : ""}`}
               >
-                {isSubmitting ? 'Wird gesendet…' : 'Registrieren'}
+                {isSubmitting ? "Wird gesendet…" : "Registrieren"}
               </button>
             </div>
 

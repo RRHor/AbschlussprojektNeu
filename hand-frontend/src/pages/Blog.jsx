@@ -1,27 +1,28 @@
 import { useEffect, useState } from 'react';
-import { Calendar, User, Search, Tag, PlusCircle, XCircle } from 'lucide-react'; // XCircle für Schließen-Button im Popup
+import { Calendar, User, Search, Tag, PlusCircle, XCircle } from 'lucide-react';
 import './Blog.css';
-import api from '../api'; // ggf. Pfad anpassen
-import { useNavigate } from "react-router-dom";
+import api from '../api';
 
-// HIER EINFÜGEN:
 console.log("Blog.jsx aus pages ist aktiv!");
 
 const Blog = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('alle');
   const [blogPosts, setBlogPosts] = useState([]);
-  const [showWritePostPopup, setShowWritePostPopup] = useState(false); // Neuer Zustand für das Popup
-  const [newPost, setNewPost] = useState({ // Zustand für das neue Formular
+  const [showWritePostPopup, setShowWritePostPopup] = useState(false);
+  const [newPost, setNewPost] = useState({
     title: '',
     excerpt: '',
     content: '',
-    category: 'umwelt', // Standardkategorie
+    category: 'umwelt',
     image: '',
     readTime: ''
   });
 
-  const navigate = useNavigate();
+  // Kommentar-States
+  const [expandedPost, setExpandedPost] = useState(null); // ID des aufgeklappten Blogposts
+  const [comments, setComments] = useState({}); // { [blogId]: [ ... ] }
+  const [commentText, setCommentText] = useState({}); // { [blogId]: "..." }
 
   useEffect(() => {
     api.get("/blogs")
@@ -63,19 +64,52 @@ const Blog = () => {
     return categories.find(cat => cat.value === categoryValue)?.label || categoryValue;
   };
 
-  const handleReadMore = (postId) => {
-    navigate(`/blogs/${postId}`);
+  // Kommentare für einen Blogpost laden
+  const loadComments = async (blogId) => {
+    try {
+      const res = await api.get(`/blog-comments/${blogId}`);
+      setComments(prev => ({ ...prev, [blogId]: res.data }));
+    } catch {
+      setComments(prev => ({ ...prev, [blogId]: [] }));
+    }
   };
 
-  const handleWritePost = () => {
-    console.log('Popup öffnen');
-    
-    setShowWritePostPopup(true); // Popup öffnen
+  // Auf- und Zuklappen der Kommentare
+  const handleToggleComments = (blogId) => {
+    if (expandedPost === blogId) {
+      setExpandedPost(null);
+    } else {
+      setExpandedPost(blogId);
+      loadComments(blogId);
+    }
   };
 
+  // Kommentar-Text ändern
+  const handleCommentChange = (blogId, value) => {
+    setCommentText(prev => ({ ...prev, [blogId]: value }));
+  };
+
+  // Kommentar absenden
+  const handleCommentSubmit = async (e, blogId) => {
+    e.preventDefault();
+    if (!commentText[blogId]) return;
+    try {
+      await api.post("/blog-comments", {
+        blog: blogId,
+        text: commentText[blogId]
+      });
+      setCommentText(prev => ({ ...prev, [blogId]: "" }));
+      loadComments(blogId);
+    } catch (error) {
+      alert(error.response?.data?.message || "Fehler beim Absenden");
+    }
+  };
+
+  // Blogpost-Formular
+  const handleWritePost = () => setShowWritePostPopup(true);
   const handleClosePopup = () => {
-    setShowWritePostPopup(false); // Popup schließen
-    setNewPost({ // Formular zurücksetzen
+    setShowWritePostPopup(false);
+    setNewPost({
       title: '',
       excerpt: '',
       content: '',
@@ -84,7 +118,6 @@ const Blog = () => {
       readTime: ''
     });
   };
-
   const handleNewPostChange = (e) => {
     const { name, value } = e.target;
     setNewPost(prevPost => ({
@@ -92,67 +125,41 @@ const Blog = () => {
       [name]: value
     }));
   };
-
   const handleNewPostSubmit = async (e) => {
-  e.preventDefault();
-  if (!newPost.title || !newPost.content || !newPost.category) {
-    alert("Bitte füllen Sie alle erforderlichen Felder aus (Titel, Inhalt, Kategorie).");
-    return;
-  }
-
-  try {
-    const token = localStorage.getItem('token');
-    const blogData = {
-      title: newPost.title,
-      excerpt: newPost.excerpt,
-      content: newPost.content,
-      category: newPost.category,
-      readTime: newPost.readTime,
-      image: newPost.image
-      // author wird im Backend gesetzt!
-    };
-    const response = await fetch('http://localhost:4000/api/blogs', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
-      body: JSON.stringify(blogData)
-    });
-
-    if (!response.ok) throw new Error('Fehler beim Speichern des Blogposts');
-    const savedPost = await response.json();
-
-    setBlogPosts(prevPosts => [savedPost, ...prevPosts]);
-    handleClosePopup();
-    alert("Ihr Beitrag wurde erfolgreich hinzugefügt!");
-  } catch (error) {
-    alert("Fehler beim Speichern: " + error.message);
-  }
-};
-
-  // const handleNewPostSubmit = (e) => {
-  //   e.preventDefault();
-  //   if (!newPost.title || !newPost.content || !newPost.author || !newPost.category) {
-  //     alert("Bitte füllen Sie alle erforderlichen Felder aus (Titel, Inhalt, Autor, Kategorie).");
-  //     return;
-  //   }
-
-  //   const today = new Date();
-  //   const formattedDate = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
-
-  //   const newBlogEntry = {
-  //     id: blogPosts.length > 0 ? Math.max(...blogPosts.map(post => post.id)) + 1 : 1,
-  //     ...newPost,
-  //     date: formattedDate,
-  //     image: newPost.image || 'https://images.unsplash.com/photo-1507525428034-b723cf961c3e?w=600&h=300&fit=crop' // Standardbild, wenn keines eingegeben wird
-  //   };
-
-  //   setBlogPosts(prevPosts => [newBlogEntry, ...prevPosts]); // Neuen Beitrag oben hinzufügen
-  //   handleClosePopup(); // Popup schließen und Formular zurücksetzen
-  //   alert("Ihr Beitrag wurde erfolgreich hinzugefügt!");
-  // };
-
+    e.preventDefault();
+    if (!newPost.title || !newPost.content || !newPost.category) {
+      alert("Bitte füllen Sie alle erforderlichen Felder aus (Titel, Inhalt, Kategorie).");
+      return;
+    }
+    try {
+      const token = localStorage.getItem('token');
+      const blogData = {
+        title: newPost.title,
+        excerpt: newPost.excerpt,
+        content: newPost.content,
+        category: newPost.category,
+        readTime: newPost.readTime,
+        image: newPost.image
+      };
+      const response = await fetch('http://localhost:4000/api/blogs', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(blogData)
+      });
+      if (!response.ok) throw new Error('Fehler beim Speichern des Blogposts');
+      // Nach dem Hinzufügen: Blogposts neu laden!
+      await api.get("/blogs")
+        .then(res => setBlogPosts(res.data))
+        .catch(() => setBlogPosts([]));
+      handleClosePopup();
+      alert("Ihr Beitrag wurde erfolgreich hinzugefügt!");
+    } catch (error) {
+      alert("Fehler beim Speichern: " + error.message);
+    }
+  };
 
   return (
     <div className="blog-container">
@@ -172,7 +179,6 @@ const Blog = () => {
             aria-label="Blog durchsuchen"
           />
         </div>
-
         <div className="category-filter">
           <Tag className="filter-icon" aria-hidden="true" />
           <select
@@ -202,11 +208,17 @@ const Blog = () => {
                     {getCategoryLabel(post.category || (post.tags && post.tags[0]))}
                   </div>
                 </div>
-
                 <div className="blog-content-area">
                   <h2 className="blog-title">{post.title}</h2>
                   <p className="blog-excerpt">{post.excerpt || post.description}</p>
-
+                  {/* Hier den vollständigen Inhalt einblenden, wenn aufgeklappt */}
+                  {expandedPost === post._id && post.content && (
+                    <div className="blog-full-content">
+                      {post.content.split('\n').map((line, idx) =>
+                        <p key={idx}>{line}</p>
+                      )}
+                    </div>
+                  )}
                   <div className="blog-meta">
                     <div className="meta-left">
                       <div className="meta-item">
@@ -221,15 +233,44 @@ const Blog = () => {
                       </div>
                     </div>
                   </div>
-
                   <div className="blog-actions">
                     <button
                       className="read-more-btn"
-                      onClick={() => handleReadMore(post._id)}
+                      onClick={() => handleToggleComments(post._id)}
                     >
-                      Weiterlesen
+                      {expandedPost === post._id ? "Weniger anzeigen" : "Mehr lesen & Kommentare"}
                     </button>
                   </div>
+                  {/* Kommentarsektion */}
+                  {expandedPost === post._id && (
+                    <div className="comments-section">
+                      <h3 className="comments-title">Kommentare</h3>
+                      <div className="comments-list">
+                        {(comments[post._id] || []).length === 0 && (
+                          <div className="comment">Noch keine Kommentare.</div>
+                        )}
+                        {(comments[post._id] || []).map(c => (
+                          <div key={c._id} className="comment">
+                            <div className="comment-header">
+                              <span className="comment-author">{c.user?.nickname || "Unbekannt"}</span>
+                              <span className="comment-date">{c.createdAt ? formatDate(c.createdAt) : ""}</span>
+                            </div>
+                            <div className="comment-content">{c.text}</div>
+                          </div>
+                        ))}
+                      </div>
+                      <form className="new-comment-form" onSubmit={e => handleCommentSubmit(e, post._id)}>
+                        <textarea
+                          className="comment-content-input"
+                          value={commentText[post._id] || ""}
+                          onChange={e => handleCommentChange(post._id, e.target.value)}
+                          placeholder="Kommentar schreiben..."
+                          required
+                        />
+                        <button type="submit" className="comment-submit-btn">Absenden</button>
+                      </form>
+                    </div>
+                  )}
                 </div>
               </article>
             ))
@@ -239,7 +280,6 @@ const Blog = () => {
             </div>
           )}
         </div>
-
         <aside className="blog-sidebar">
           <div className="sidebar-widget">
             <h3>Beliebte Kategorien</h3>
@@ -256,22 +296,20 @@ const Blog = () => {
               ))}
             </div>
           </div>
-
           <div className="sidebar-widget">
             <h3>Neueste Beiträge</h3>
             <div className="recent-posts">
               {blogPosts.slice(0, 3).map(post => (
-                <div key={post.id} className="recent-post">
+                <div key={post._id} className="recent-post">
                   <img src={post.image} alt={`Vorschaubild für den Beitrag: ${post.title}`} />
                   <div className="recent-post-content">
                     <h4>{post.title}</h4>
-                    <span className="recent-date">{formatDate(post.date)}</span>
+                    <span className="recent-date">{formatDate(post.createdAt || post.date)}</span>
                   </div>
                 </div>
               ))}
             </div>
           </div>
-
           <div className="sidebar-widget">
             <h3>Schreib einen Beitrag</h3>
             <p>Teile deine Geschichte mit der Nachbarschaft!</p>
@@ -286,15 +324,10 @@ const Blog = () => {
           </div>
         </aside>
       </div>
-
       {/* Das Popup-Fenster */}
       {showWritePostPopup && (
         <div className="popup-overlay">
           <div className="popup-content">
-            {console.log('Popup Test')}
-            Test Popup
-            <h1>Test Popup Sichtbar</h1>
-            
             <button className="close-popup-btn" onClick={handleClosePopup} aria-label="Popup schließen">
               <XCircle size={24} />
             </button>
@@ -340,7 +373,7 @@ const Blog = () => {
                   value={newPost.category}
                   onChange={handleNewPostChange}
                 >
-                  {categories.slice(1).map(category => ( // Alle außer "Alle Beiträge"
+                  {categories.slice(1).map(category => (
                     <option key={category.value} value={category.value}>
                       {category.label}
                     </option>

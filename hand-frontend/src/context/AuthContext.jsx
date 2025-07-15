@@ -3,7 +3,7 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import api from '../api';
 
-const AuthContext = createContext();
+export const AuthContext = createContext();
 
 // useAuth Hook als Named Export (für bessere HMR-Kompatibilität)
 export const useAuth = () => {
@@ -15,12 +15,13 @@ export const useAuth = () => {
 };
 
 // AuthProvider Komponente
-const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
+export function AuthProvider({ children }) {
+  const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
   // Check if user is logged in on app start + Listen for token changes across tabs
   useEffect(() => {
+    let cancelled = false;
     const token = localStorage.getItem('token');
     if (token) {
       console.log('🔍 Found token, verifying user...');
@@ -33,8 +34,6 @@ const AuthProvider = ({ children }) => {
     // Listen for storage changes (token updates from other tabs)
     const handleStorageChange = (e) => {
       if (e.key === 'token') {
-        console.log('🔄 Token changed in another tab, syncing...');
-        
         if (e.newValue) {
           // New token was set in another tab
           console.log('✅ New token detected, fetching user data...');
@@ -42,7 +41,7 @@ const AuthProvider = ({ children }) => {
         } else {
           // Token was removed in another tab
           console.log('🚪 Token removed in another tab, logging out...');
-          setUser(null);
+          setCurrentUser(null);
           setLoading(false);
         }
       }
@@ -53,6 +52,7 @@ const AuthProvider = ({ children }) => {
 
     // Cleanup listener on unmount
     return () => {
+      cancelled = true;
       window.removeEventListener('storage', handleStorageChange);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -63,43 +63,38 @@ const AuthProvider = ({ children }) => {
       console.log('🔍 Fetching user data...');
       const response = await api.get('/auth/users/me');
       console.log('✅ User data fetched:', response.data?.nickname);
-      setUser(response.data);
+      setCurrentUser(response.data);
     } catch (error) {
       console.error('❌ Token verification failed:', error.response?.status);
-      
-      // Bei 401 (Unauthorized) Token automatisch löschen
       if (error.response?.status === 401) {
-        console.log('🗑️ Token abgelaufen - lösche automatisch');
         localStorage.removeItem('token');
         localStorage.removeItem('user');
       }
-      
-      logout();
+      setCurrentUser(null); // <- explizit setzen!
+      setLoading(false);    // <- explizit setzen!
     } finally {
       setLoading(false);
     }
   };
 
   const login = async (email, password, rememberMe = false) => {
+    setLoading(true);
     try {
       console.log('🔐 AuthContext login called with:', { email, rememberMe });
-      
       const response = await api.post('/auth/login', { 
         email, 
         password,
         rememberMe 
       });
-      
       const { token, user } = response.data;
-      
       console.log('✅ Login response received:', { token: token ? 'present' : 'missing', user: user ? 'present' : 'missing' });
-      
       localStorage.setItem('token', token);
-      setUser(user);
-      
+      setCurrentUser(user);
+      setLoading(false);
       return { success: true };
     } catch (error) {
       console.error('❌ Login error:', error.response?.data || error);
+      setLoading(false);
       return {
         success: false,
         message: error.response?.data?.message || 'Login fehlgeschlagen'
@@ -121,7 +116,7 @@ const AuthProvider = ({ children }) => {
       // Nur speichern, wenn vorhanden (z.B. nach Sofort-Login)
       if (token && user) {
         localStorage.setItem('token', token);
-        setUser(user);
+        setCurrentUser(user);
       }
       
       return { 
@@ -141,7 +136,7 @@ const AuthProvider = ({ children }) => {
     console.log('🚪 Logging out');
     localStorage.removeItem('token');
     localStorage.removeItem('user');
-    setUser(null);
+    setCurrentUser(null);
   };
 
   // Additional helper function for setting token directly if needed
@@ -152,7 +147,7 @@ const AuthProvider = ({ children }) => {
   };
 
   const value = {
-    user,
+    currentUser,
     login,
     register,
     logout,
@@ -165,11 +160,5 @@ const AuthProvider = ({ children }) => {
       {children}
     </AuthContext.Provider>
   );
-};
-
-// Default Export der AuthProvider Komponente
-export default AuthProvider;
-
-// Named Export für bessere Kompatibilität
-export { AuthProvider };
+}
 

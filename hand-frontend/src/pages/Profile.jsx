@@ -17,7 +17,7 @@ const emptyAddress = {
 };
 
 const Profile = () => {
-  const { user, loading: authLoading } = useAuth();
+  const { currentUser, loading: authLoading } = useAuth();
   const navigate = useNavigate();
 
   // STATES - Profil-Daten
@@ -79,8 +79,8 @@ const Profile = () => {
         setIsLoading(false);
       }
     };
-    if (!authLoading && user) fetchUserData();
-  }, [user, authLoading]);
+    if (!authLoading && currentUser) fetchUserData();
+  }, [currentUser, authLoading]);
 
 
 
@@ -102,9 +102,9 @@ const Profile = () => {
 
   // Events laden wenn Events-Tab aktiv
   useEffect(() => {
-    if (activeTab === 'events' && user) loadUserEvents();
+    if (activeTab === 'events' && currentUser) loadUserEvents();
     // eslint-disable-next-line
-  }, [activeTab, user]);
+  }, [activeTab, currentUser]);
 
   // User-Events von Backend laden
   const loadUserEvents = async () => {
