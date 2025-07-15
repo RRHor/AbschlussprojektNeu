@@ -1,10 +1,15 @@
-import React, { useState } from 'react';
-import { Calendar, User, Search, Tag, PlusCircle, XCircle, MessageCircle, Send, ChevronDown, ChevronUp } from 'lucide-react';
+
+import { useEffect, useState } from 'react';
+import { Calendar, User, Search, Tag, PlusCircle, XCircle } from 'lucide-react'; // XCircle für Schließen-Button im Popup
+
 import './Blog.css';
+import api from '../api'; // ggf. Pfad anpassen
+import { useNavigate } from "react-router-dom";
 
 const Blog = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('alle');
+
   const [expandedComments, setExpandedComments] = useState({});
   const [newComment, setNewComment] = useState({});
   
@@ -119,9 +124,29 @@ const Blog = () => {
     content: '',
     author: '',
     category: 'umwelt',
+
+  const [blogPosts, setBlogPosts] = useState([]);
+  const [showWritePostPopup, setShowWritePostPopup] = useState(false); // Neuer Zustand für das Popup
+  const [newPost, setNewPost] = useState({ // Zustand für das neue Formular
+    title: '',
+    excerpt: '',
+    content: '',
+    category: 'umwelt', // Standardkategorie
+
     image: '',
     readTime: ''
   });
+
+
+
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    api.get("/blogs")
+      .then(res => setBlogPosts(res.data))
+      .catch(() => setBlogPosts([]));
+  }, []);
+
 
   const categories = [
     { value: 'alle', label: 'Alle Beiträge' },
@@ -134,9 +159,12 @@ const Blog = () => {
   ];
 
   const filteredPosts = blogPosts.filter(post => {
-    const matchesSearch = post.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         post.excerpt.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         post.author.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch =
+      (post.title && post.title.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (post.excerpt && post.excerpt.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (typeof post.author === "object" &&
+        ((post.author.nickname && post.author.nickname.toLowerCase().includes(searchTerm.toLowerCase())) ||
+         (post.author.username && post.author.username.toLowerCase().includes(searchTerm.toLowerCase()))));
     const matchesCategory = selectedCategory === 'alle' || post.category === selectedCategory;
     return matchesSearch && matchesCategory;
   });
@@ -155,8 +183,7 @@ const Blog = () => {
   };
 
   const handleReadMore = (postId) => {
-    console.log(`"Weiterlesen" für Beitrag ID: ${postId} geklickt.`);
-    alert(`Artikel "${blogPosts.find(p => p.id === postId)?.title}" wird geladen.`);
+    navigate(`/blogs/${postId}`);
   };
 
   const handleWritePost = () => {
@@ -169,7 +196,6 @@ const Blog = () => {
       title: '',
       excerpt: '',
       content: '',
-      author: '',
       category: 'umwelt',
       image: '',
       readTime: ''
@@ -184,12 +210,41 @@ const Blog = () => {
     }));
   };
 
+
   const handleNewPostSubmit = (e) => {
     e.preventDefault();
     if (!newPost.title || !newPost.content || !newPost.author || !newPost.category) {
       alert("Bitte füllen Sie alle erforderlichen Felder aus (Titel, Inhalt, Autor, Kategorie).");
       return;
     }
+
+  const handleNewPostSubmit = async (e) => {
+  e.preventDefault();
+  if (!newPost.title || !newPost.content || !newPost.category) {
+    alert("Bitte füllen Sie alle erforderlichen Felder aus (Titel, Inhalt, Kategorie).");
+    return;
+  }
+
+  try {
+    const token = localStorage.getItem('token');
+    const blogData = {
+      title: newPost.title,
+      excerpt: newPost.excerpt,
+      content: newPost.content,
+      category: newPost.category,
+      readTime: newPost.readTime,
+      image: newPost.image
+      // author wird im Backend gesetzt!
+    };
+    const response = await fetch('http://localhost:4000/api/blogs', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify(blogData)
+    });
+
 
     const today = new Date();
     const formattedDate = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
@@ -309,7 +364,9 @@ const Blog = () => {
             filteredPosts.map(post => (
               <article key={post.id} className="blog-card">
                 <div className="blog-image">
-                  <img src={post.image} alt={`Bild für den Beitrag: ${post.title}`} />
+                  {post.image && (
+                    <img src={post.image} alt={`Bild für den Beitrag: ${post.title}`} />
+                  )}
                   <div className="blog-category">
                     {getCategoryLabel(post.category)}
                   </div>
@@ -323,7 +380,9 @@ const Blog = () => {
                     <div className="meta-left">
                       <div className="meta-item">
                         <User className="meta-icon" aria-hidden="true" />
-                        <span>{post.author}</span>
+                        <span>
+                          {post.author?.nickname || post.author?.username || "Unbekannt"}
+                        </span>
                       </div>
                       <div className="meta-item">
                         <Calendar className="meta-icon" aria-hidden="true" />
@@ -335,8 +394,7 @@ const Blog = () => {
                   <div className="blog-actions">
                     <button
                       className="read-more-btn"
-                      onClick={() => handleReadMore(post.id)}
-                      aria-label={`Weiterlesen: ${post.title}`}
+                      onClick={() => handleReadMore(post._id)}
                     >
                       Weiterlesen
                     </button>
@@ -514,17 +572,6 @@ const Blog = () => {
                 ></textarea>
               </div>
               <div className="form-group">
-                <label htmlFor="post-author">Autor:</label>
-                <input
-                  type="text"
-                  id="post-author"
-                  name="author"
-                  value={newPost.author}
-                  onChange={handleNewPostChange}
-                  required
-                />
-              </div>
-              <div className="form-group">
                 <label htmlFor="post-category">Kategorie:</label>
                 <select
                   id="post-category"
@@ -569,3 +616,4 @@ const Blog = () => {
 };
 
 export default Blog;
+

@@ -1,36 +1,78 @@
-import { useState, useContext,useEffect } from 'react';
-import { useLocation,useParams } from 'react-router-dom';
-import { ArrowLeft } from 'lucide-react';
-import {AuthContext}  from '../context/AuthContext.jsx';
-import axios from 'axios';
+
+import { useState, useContext, useEffect } from 'react';
+import { useParams, useLocation } from 'react-router-dom';
+import { ArrowLeft, Users, Loader } from 'lucide-react';
+import { useAuth } from '../context/AuthContext.jsx';
+import api from '../api.js';
+
 import logo from '../assets/logo.png'; 
 import './EventDetail.css';
 
 import { useNavigate } from 'react-router-dom';
 
 const EventDetail = () => {
-  const navigate = useNavigate();
+
+  const { id } = useParams();
   const { state } = useLocation();
-  const { id } = useParams(); // Get event ID from URL parameters
-  const eventFromState = state?.event || null; // Get event data from state or null if not available
-  const { user, loading } = useContext(AuthContext); // logged-in user from AuthContext
+  const [event, setEvent] = useState(state?.event || null);
+  const { user } = useAuth();
+
+  // 🔍 DEBUG: Event-Objekt komplett ausgeben
+  console.log('🔍 LOCATION STATE:', state);
+  console.log('🔍 EVENT OBJECT:', event);
+  console.log('🔍 EVENT._id:', event?._id);
+  console.log('🔍 EVENT.id:', event?.id);
+  console.log('🔍 EVENT keys:', event ? Object.keys(event) : 'No event');
+
 
   const [text, setText] = useState('');
   const [comments, setComments] = useState([]);
-  const [event, setEvent] = useState(eventFromState); // State to hold event data
-  const emojis = ['😊', '😂', '😍', '😢', '😡', '👍', '👏', '🙌', '🎉', '❤️'];
-  const [activeEmojiPicker, setActiveEmojiPicker] = useState(null);
+
+  
+  // NEUE States für Teilnahme
+  const [isParticipating, setIsParticipating] = useState(false);
+  const [isOrganizer, setIsOrganizer] = useState(false);
+  const [participantCount, setParticipantCount] = useState(0);
+  const [participants, setParticipants] = useState([]);
+  const [showParticipants, setShowParticipants] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  // Teilnahme-Status beim Laden prüfen
+  useEffect(() => {
+    if (event && event._id && user) {
+      checkParticipationStatus();
+    }
+  }, [event, user]);
+
 
   useEffect(() => {
-    if (!event) {
-      // Fetch the event by ID if not passed via state
-      axios.get(`/events/${id}`)
-        .then((res) => {
-          setEvent(res.data.data); // Adjust to your API response
-        })
-        .catch((err) => {
-          console.error('Fehler beim Laden des Events:', err);
-        });
+
+    if (event?._id) {
+      api.get(`/event-comments/event/${event._id}`)
+        .then(res => setComments(res.data))
+        .catch(err => console.error('Fehler beim Laden der Kommentare:', err));
+    }
+  }, [event]);
+
+  // Event aus Backend laden, falls nicht im State
+  useEffect(() => {
+    if (!event && id) {
+      api.get(`/events/${id}`)
+        .then(res => setEvent(res.data))
+        .catch(() => setEvent(null));
+    }
+  }, [id, event]);
+
+  // Teilnahme-Status prüfen
+  const checkParticipationStatus = async () => {
+    try {
+      const response = await api.get(`/events/${event._id}/my-participation`);
+      setIsParticipating(response.data.isParticipating);
+      setIsOrganizer(response.data.isOrganizer);
+      setParticipantCount(response.data.participantCount);
+    } catch (error) {
+      console.error('Fehler beim Prüfen der Teilnahme:', error);
+
     }
 }, [event, id]);
 
@@ -73,6 +115,7 @@ const handleEmoji = (id, emoji) => {
   setActiveEmojiPicker(null); // Hide emoji picker after selecting an emoji
 };
 
+
 const handleReply = (name) => {
   setText(prev => `@${name} ` + prev);
 };
@@ -90,6 +133,33 @@ function handleEdit(id) {
   }
 }
 
+  // Bestehende Funktionen bleiben gleich...
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!text.trim()) return;
+    if (!event || !event._id) {
+      alert("Event nicht geladen!");
+      return;
+    }
+
+    // Debug-Ausgabe:
+    console.log("event:", event);
+    console.log("event._id:", event?._id);
+
+    try {
+      const res = await api.post('/event-comments', {
+        text,
+        event: event._id   // <-- Das muss mitgesendet werden!
+      });
+      setComments([res.data, ...comments]);
+      setText('');
+    } catch (err) {
+      alert('Fehler beim Absenden des Kommentars');
+      console.error(err);
+    }
+  };
+
+
   function handleDelete(id) {
     setComments(comments.filter((c) => c.id !== id));
   }
@@ -98,13 +168,24 @@ const goBack = () => {
   window.history.back();
 };
 
+
 if (!event) return <p>Event nicht gefunden.</p>;
 if (loading) return <p>Benutzerdaten werden geladen...</p>;
+
 
 return (
   <div className="event-detail-wrapper">
 
+
       {/* Zurück Button */}
+
+  if (!event) {
+    return <div>Lade Event...</div>;
+  }
+
+  return (
+    <div className="event-detail-wrapper">
+
       <button onClick={goBack} className="back-button">
         <ArrowLeft size={20} className="back-button-icon" />
         Zurück
@@ -129,7 +210,41 @@ return (
         </div>
       </div>
 
+
       {/* Kommentare */}
+
+      {/* Teilnehmer-Liste Modal */}
+      {showParticipants && (
+        <div className="participants-modal">
+          <div className="participants-modal-content">
+            <div className="participants-header">
+              <h3>Teilnehmer ({participants.length})</h3>
+              <button 
+                className="close-button"
+                onClick={() => setShowParticipants(false)}
+              >
+                ✕
+              </button>
+            </div>
+            <div className="participants-list">
+              {participants.map(participant => (
+                <div key={participant._id} className="participant-item">
+                  <div className="participant-avatar">
+                    {participant.nickname?.charAt(0).toUpperCase() || '?'}
+                  </div>
+                  <div className="participant-info">
+                    <div className="participant-name">
+                      {participant.nickname || participant.username}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+
       <div className="comment-section">
         <h2>Kommentare</h2>
 

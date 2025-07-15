@@ -7,6 +7,12 @@ import LandingPage from './pages/LandingPage';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Profile from './pages/Profile';
+
+
+import Help from './pages/Help'; 
+import Blog from './pages/Blog';
+import BlogDetail from './pages/BlogDetail';
+
 import Events from './pages/Events';
 import EventDetail from './pages/EventDetail.jsx';
 import EventRegister from './pages/EventRegister.jsx';
@@ -30,10 +36,26 @@ function App() {
           <Route path="/" element={<LandingPage/>} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+
           <Route path="/verify" element={<VerifyEmail />} />
           <Route path="/home" element={<Home />} />
  
           <Route path="/help" element={<Help />} />
+
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
+          
+          {/* E-Mail Verifizierung */}
+         
+          
+          {/* User-Bereich */}
+          <Route path="/profile" element={<Profile />} />
+          
+          {/* Features */}
+          <Route path="/exchange/*" element={<Exchange />} />
+          <Route path="/blogs" element={<Blog />} />
+          
+
           <Route path="/events" element={<Events />} />
           <Route path="/events/:id" element={<EventDetail />} />
           <Route path="/events/:id/register" element={<EventRegister />} />
