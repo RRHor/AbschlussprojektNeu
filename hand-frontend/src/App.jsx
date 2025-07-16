@@ -42,8 +42,6 @@ function App() {
           <Route path="/register" element={<Register />} />
           <Route path="/verify" element={<VerifyEmail />} />
           <Route path="/help" element={<Help />} />
-          <Route path="/verify" element={<VerifyEmail />} />
-          <Route path="/help" element={<Help />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/profile" element={<Profile />} />
@@ -54,16 +52,12 @@ function App() {
           <Route path="/events/:id/register" element={<EventRegister />} />
           <Route path="/uberuns" element={<Uberuns />} /> {/* Route für die "Über uns" Seite */}
           <Route path="*" element={<PageNotFound />} /> {/* Fallback für nicht gefundene Seiten */}
-          <Route path="/events/:id/register" element={<EventRegister />} />
-          <Route path="/uberuns" element={<Uberuns />} /> {/* Route für die "Über uns" Seite */}
-          <Route path="*" element={<PageNotFound />} /> {/* Fallback für nicht gefundene Seiten */}
         </Routes>
       </div>
       <Footer />
    </>
 
-      <Footer />
-   </>
+
   );
 }
 export default App;
