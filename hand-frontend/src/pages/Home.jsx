@@ -1,13 +1,11 @@
 import Footer from '../components/Footer'
 
+import LandingPage from './LandingPage';
+
 const Home = () => {
   return (
-    <div>
-      Home
-      {/* Footer */}
-      <Footer />
-    </div>
-  )
-}
+    <LandingPage />
+  );
+};
 
-export default Home
+export default Home;

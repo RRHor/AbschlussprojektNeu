@@ -1,36 +1,37 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./RegisterForm.css";
 import logo from "../assets/logo.png";
 import register from "../assets/animation/Animation - register.json";
 import Lottie from "lottie-react";
+
 const RegisterForm = ({ onSuccess }) => {
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
-    nickname: "",
-    email: "",
-    password: "",
-    firstName: "",
-    lastName: "",
-    street: "",
-    city: "",
-    district: "",
-    zip: "",
+    nickname: '',
+    email: '',
+    password: '',
+    firstName: '',
+    lastName: '',
+    street: '',
+    city: '',
+    district: '',
+    zip: '',
   });
 
-  // Speichert, ob Feld verlassen wurde UND Inhalt hat
-  const [touchedFields, setTouchedFields] = useState({
-    nickname: false,
-    email: false,
-    password: false,
-    firstName: false,
-    lastName: false,
-    street: false,
-    city: false,
-    district: false,
-    zip: false,
-  });
+  // // Speichert, ob Feld verlassen wurde UND Inhalt hat
+  // const [touchedFields, setTouchedFields] = useState({
+  //   nickname: false,
+  //   email: false,
+  //   password: false,
+  //   firstName: false,
+  //   lastName: false,
+  //   street: false,
+  //   city: false,
+  //   district: false,
+  //   zip: false,
+  // });
 
   const [message, setMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -74,9 +75,15 @@ const RegisterForm = ({ onSuccess }) => {
     }
 
     try {
-      const response = await fetch("http://localhost:4000/api/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+      // Sende die Daten an das Backend (API)
+      // Die URL kommt aus der .env-Datei!
+      // Beim Absenden werden die Adressdaten als Array gesendet,
+      // damit ein User mehrere Adressen haben kann.
+      // firstName und lastName sind in der Adresse gespeichert (DSGVO: optional, nur für Nachbarschaftskontakt)
+      const response = await fetch(`${API_URL}/auth/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+
         body: JSON.stringify({
           nickname: formData.nickname,
           email: formData.email,
