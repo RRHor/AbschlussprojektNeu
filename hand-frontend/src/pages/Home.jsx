@@ -1,4 +1,4 @@
-import Footer from '../components/Footer'
+import LandingPage from './LandingPage';
 
 import LandingPage from './LandingPage';
 

@@ -1,11 +1,9 @@
 import express from 'express';
-import mongoose from 'mongoose';
-import { userSchema } from '../models/userSchema.js';
+import User from '../models/UserModel.js';
 import { sendPasswordResetEmail } from '../utils/emailService.js';
 
 console.log("passwordResetRequestRoute.js wurde geladen");
 
-const User = mongoose.models.User || mongoose.model("User", userSchema);
 const router = express.Router();
 
 // Route für Password-Reset-Anfrage (6-stelliger Code)

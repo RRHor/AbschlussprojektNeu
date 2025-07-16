@@ -1,5 +1,5 @@
 import express from 'express';
-import User from '../models/UserModel.js';  // ← KORRIGIERT
+import User from '../models/UserModel.js';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 

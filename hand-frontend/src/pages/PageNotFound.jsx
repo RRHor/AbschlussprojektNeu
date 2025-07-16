@@ -1,7 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-//import spinnerImage from "../../public/images/spinner.jpeg";
 import "./PageNotFound.css"; 
+import Lottie from "lottie-react";
+import errorAnimation from "../assets/animation/Animation - error.json";
+
+
+
 function ErrorPage() {
   const [loading, setLoading] = useState(true);
   const [imageLoaded, setImageLoaded] = useState(false);
@@ -28,24 +32,29 @@ function ErrorPage() {
     );
   }
 
-return (
-    <div id="notfound">
-        <div className="notfound">
-            <div className="notfound-404">
-                <h3>Ups!</h3>
-                <h1>
-                    <span>#</span>
-                    <span>4</span>
-                    <span>0</span>
-                    <span>4</span>
-                </h1>
-            </div>
+  
 
-            <h2>Entschuldigung! Die gewünschte Seite wurde nicht gefunden</h2>
-            <Link to="/" className="notfound-button">Zurück zur Startseite</Link>
-        </div>
+return (
+  <div className="notfound-content">
+    <div className="notfound-404">
+      <h3>Ups!</h3>
+      <h1>
+        <span>#</span>
+        <span>4</span>
+        <span>0</span>
+        <span>4</span>
+      </h1>
+      <h2>Entschuldigung! Die gewünschte Seite wurde nicht gefunden</h2>
     </div>
+    <Link to="/" className="notfound-button">Zurück zur Startseite</Link>
+    <div className="error-page">
+      <Lottie
+        animationData={errorAnimation}
+        loop={true}
+        className="error-animation"
+      />
+    </div>
+  </div>
 );
 }
-
 export default ErrorPage;

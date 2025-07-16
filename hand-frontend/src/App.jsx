@@ -9,10 +9,20 @@ import Profile from './pages/Profile';
 import Help from './pages/Help'; 
 import Blog from './pages/Blog';
 import Events from './pages/Events';
+import EventDetail from './pages/EventDetail.jsx';
+import EventRegister from './pages/EventRegister.jsx';
+import Help from './pages/Help';
+import Exchange from './pages/Exchange/Exchange';
 import EventDetail from './pages/EventDetail';
 import EventRegister from './pages/EventRegister.jsx';
 import ResetPassword from './pages/ResetPassword';
 import ForgotPassword from './components/ForgotPassword';
+import ResetPassword from './components/ResetPassword.jsx';
+import Blog from './pages/Blog'; 
+import Uberuns from './pages/Uberuns.jsx'; // Importiere die "Über uns" Seite
+import Footer from './components/Footer.jsx'; // Importiere den Footer
+import PageNotFound from './pages/PageNotFound.jsx'; // Importiere die 404-Seite
+import VerifyEmail from './components/VerifyEmail.jsx';
 import VerifyEmail from './pages/VerifyEmail';
 import Exchange from './pages/Exchange/Exchange';
 import Uberuns from './pages/Uberuns.jsx'; // Importiere die "Über uns" Seite
@@ -32,6 +42,8 @@ function App() {
           <Route path="/register" element={<Register />} />
           <Route path="/verify" element={<VerifyEmail />} />
           <Route path="/help" element={<Help />} />
+          <Route path="/verify" element={<VerifyEmail />} />
+          <Route path="/help" element={<Help />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/profile" element={<Profile />} />
@@ -42,12 +54,16 @@ function App() {
           <Route path="/events/:id/register" element={<EventRegister />} />
           <Route path="/uberuns" element={<Uberuns />} /> {/* Route für die "Über uns" Seite */}
           <Route path="*" element={<PageNotFound />} /> {/* Fallback für nicht gefundene Seiten */}
+          <Route path="/events/:id/register" element={<EventRegister />} />
+          <Route path="/uberuns" element={<Uberuns />} /> {/* Route für die "Über uns" Seite */}
+          <Route path="*" element={<PageNotFound />} /> {/* Fallback für nicht gefundene Seiten */}
         </Routes>
       </div>
       <Footer />
    </>
+
+      <Footer />
+   </>
   );
 }
-
 export default App;
-

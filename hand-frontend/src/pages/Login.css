@@ -19,8 +19,10 @@ body {
   position: relative;
   overflow: hidden;
   display: flex;
-  flex-direction: column;
-  /* Footer soll immer unten sein */
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
 }
 
 /* Animated Background Pattern */
@@ -55,8 +57,6 @@ body {
   66% {
     transform: translate(-5%, -15%) rotate(-1deg);
   }
-
-
 }
 
 /* Haupt-Container für die Login-Box und zusätzliche Info */
@@ -89,9 +89,7 @@ body {
     align-items: center;
     color: rgba(255, 255, 255, 0.9);
     text-decoration: none;
-
     background: rgba(0, 0, 0, 0.35);
-
     backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 255, 255, 0.2); 
     border-radius: 50px;
@@ -104,13 +102,11 @@ body {
 }
 
 .back-button:hover {
-
     font-weight: 600;
     color: #DE887B;
     background: #f8e8c3;
     transform: translateX(-50%) translateY(-3px);
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
-
 }
 
 .back-button-icon {
@@ -133,7 +129,6 @@ body {
     border: 1px solid rgba(255, 255, 255, 0.18); 
     overflow: hidden;
     transition: all 0.3s ease;
-    margin: 40px auto 60px auto; /* Abstand nach unten für Footer erhöht */
 }
 
 .login-card:hover {
@@ -513,12 +508,10 @@ body {
 }
 
 .register-link {
-
     color:  #f8e8c3; 
     background-color: rgba(5, 0, 78, 0.6);
     border-radius: 24px;
     padding: 6px 10px;
-
     text-decoration: underline;
     font-weight: 600; 
     margin-left: 4px;
@@ -526,9 +519,7 @@ body {
 }
 
 .register-link:hover {
-
     color:  #DE887B;  
-
 }
 
 /* Zusätzliche Informationen unter der Karte */
@@ -743,10 +734,4 @@ body {
     .remember-me-checkbox, .forgot-password-link {
         font-size: 0.8em;
     }
-}
-
-/* Footer immer am unteren Rand */
-.app-footer {
-  margin-top: auto;
-  padding-bottom: 0.5rem; /* Extra Abstand zum unteren Rand */
 }
