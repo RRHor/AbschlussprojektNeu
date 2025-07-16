@@ -1,13 +1,17 @@
+
 import { useState, useContext, useEffect } from 'react';
 import { useParams, useLocation } from 'react-router-dom';
 import { ArrowLeft, Users, Loader } from 'lucide-react';
 import { useAuth } from '../context/AuthContext.jsx';
 import api from '../api.js';
+
 import logo from '../assets/logo.png'; 
 import './EventDetail.css';
-import Footer from '../components/Footer';
+
+import { useNavigate } from 'react-router-dom';
 
 const EventDetail = () => {
+
   const { id } = useParams();
   const { state } = useLocation();
   const [event, setEvent] = useState(state?.event || null);
@@ -20,9 +24,10 @@ const EventDetail = () => {
   console.log('🔍 EVENT.id:', event?.id);
   console.log('🔍 EVENT keys:', event ? Object.keys(event) : 'No event');
 
-  // Bestehende States
+
   const [text, setText] = useState('');
   const [comments, setComments] = useState([]);
+
   
   // NEUE States für Teilnahme
   const [isParticipating, setIsParticipating] = useState(false);
@@ -39,8 +44,9 @@ const EventDetail = () => {
     }
   }, [event, user]);
 
-  // Kommentare vom Backend laden
+
   useEffect(() => {
+
     if (event?._id) {
       api.get(`/event-comments/event/${event._id}`)
         .then(res => setComments(res.data))
@@ -66,71 +72,66 @@ const EventDetail = () => {
       setParticipantCount(response.data.participantCount);
     } catch (error) {
       console.error('Fehler beim Prüfen der Teilnahme:', error);
+
     }
+}, [event, id]);
+
+// Handlers
+const handleSubmit = (e) => {
+  e.preventDefault();
+  if (!text.trim()) return;
+
+  const newComment = {
+    id: Date.now(),
+    user: {
+      name: user?.name || 'Unbekannt',
+      avatar: user?.avatar || logo,
+    },
+    text,
+    time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
   };
 
-  // Teilnahme anmelden/abmelden
-  const handleParticipation = async () => {
-    if (!user) {
-      alert('Bitte melde dich an, um teilzunehmen!');
-      return;
-    }
+ setComments(prev => [newComment, ...prev]);
+  setText('');
+};
 
-    setLoading(true);
-    try {
-      if (isParticipating) {
-        // Abmelden
-        await api.delete(`/events/${event._id}/leave`);
-        setIsParticipating(false);
-        setParticipantCount(prev => prev - 1);
-        alert('Teilnahme abgemeldet!');
-      } else {
-        // Anmelden
-        await api.post(`/events/${event._id}/join`);
-        setIsParticipating(true);
-        setParticipantCount(prev => prev + 1);
-        alert('Teilnahme erfolgreich angemeldet!');
-      }
-    } catch (error) {
-      console.error('Fehler bei der Teilnahme:', error);
-      alert('Fehler bei der Teilnahme. Versuche es nochmal.');
-    } finally {
-      setLoading(false);
-    }
-  };
+function handleLike(id) {
+  setComments(prev =>
+    prev.map(comment =>
+      comment.id === id
+        ? { ...comment, liked: !comment.liked }
+        : comment
+    )
+  );
+}
+const handleEmoji = (id, emoji) => {
+  setComments(prev =>
+    prev.map(comment =>
+      comment.id === id
+        ? { ...comment, text: comment.text + ' ' + emoji }
+        : comment
+    )
+  );
+  setActiveEmojiPicker(null); // Hide emoji picker after selecting an emoji
+};
 
-  // Teilnehmer-Liste laden
-  const loadParticipants = async () => {
-    if (!user) {
-      alert('Bitte melde dich an, um die Teilnehmer zu sehen!');
-      return;
-    }
 
-    try {
-      const response = await api.get(`/events/${event._id}/participants`);
-      setParticipants(response.data.participants);
-      setShowParticipants(true);
-    } catch (error) {
-      console.error('Fehler beim Laden der Teilnehmer:', error);
-      alert('Fehler beim Laden der Teilnehmer.');
-    }
-  };
+const handleReply = (name) => {
+  setText(prev => `@${name} ` + prev);
+};
 
-  // Button-Text bestimmen
-  const getButtonText = () => {
-    if (!user) return 'Anmelden um teilzunehmen';
-    if (isOrganizer) return 'Du bist der Organisator';
-    if (isParticipating) return 'Teilnahme abmelden';
-    return 'Ich möchte teilnehmen!';
-  };
-
-  // Button-Klasse bestimmen
-  const getButtonClass = () => {
-    if (!user) return 'register-button disabled';
-    if (isOrganizer) return 'register-button organizer';
-    if (isParticipating) return 'register-button participating';
-    return 'register-button';
-  };
+function handleEdit(id) {
+  const newText = prompt('Bearbeite deinen Kommentar:');
+  if (newText && newText.trim()) {
+    setComments(prev =>
+      prev.map(comment =>
+        comment.id === id
+          ? { ...comment, text: newText }
+          : comment
+      )
+    );
+  }
+}
 
   // Bestehende Funktionen bleiben gleich...
   const handleSubmit = async (e) => {
@@ -158,23 +159,25 @@ const EventDetail = () => {
     }
   };
 
-  const handleDelete = (id) => {
+
+  function handleDelete(id) {
     setComments(comments.filter((c) => c.id !== id));
-  };
+  }
 
-  const goBack = () => {
-    window.history.back();
-  };
+const goBack = () => {
+  window.history.back();
+};
 
 
+if (!event) return <p>Event nicht gefunden.</p>;
+if (loading) return <p>Benutzerdaten werden geladen...</p>;
 
-  const handleLike = (id) => {
-    setComments(prevComments =>
-      prevComments.map(c =>
-        c.id === id ? { ...c, liked: !c.liked } : c
-      )
-    );
-  };
+
+return (
+  <div className="event-detail-wrapper">
+
+
+      {/* Zurück Button */}
 
   if (!event) {
     return <div>Lade Event...</div>;
@@ -182,11 +185,13 @@ const EventDetail = () => {
 
   return (
     <div className="event-detail-wrapper">
+
       <button onClick={goBack} className="back-button">
         <ArrowLeft size={20} className="back-button-icon" />
         Zurück
       </button>
 
+      {/* Event Info */}
       <div className="event-detail-container">
         <div className="events-image">
           <img src={event.image} alt={event.title} />
@@ -196,40 +201,17 @@ const EventDetail = () => {
           <p><strong>📅 Datum:</strong> {event.date}</p>
           <p><strong>📍 Ort:</strong> {event.location}</p>
           <p className="event-description">{event.description}</p>
-          
-          {/* ERWEITERTE Button-Sektion */}
-          <div className="participation-section">
-            <button 
-              className={getButtonClass()}
-              onClick={handleParticipation}
-              disabled={loading || isOrganizer || !user}
-            >
-              {loading ? (
-                <>
-                  <Loader size={16} className="spinner" />
-                  Lädt...
-                </>
-              ) : (
-                getButtonText()
-              )}
-            </button>
-            
-            {/* Teilnehmer-Anzeige */}
-            {participantCount > 0 && (
-              <div className="participants-info">
-                <button 
-                  className="participants-button"
-                  onClick={loadParticipants}
-                  disabled={!user}
-                >
-                  <Users size={16} />
-                  {participantCount} Teilnehmer anzeigen
-                </button>
-              </div>
-            )}
-          </div>
+          <button
+  className="register-button"
+  onClick={() => navigate(`/events/${event.id}/register`, { state: { event } })}
+>
+  Ich will teilnehmen!
+</button>
         </div>
       </div>
+
+
+      {/* Kommentare */}
 
       {/* Teilnehmer-Liste Modal */}
       {showParticipants && (
@@ -262,17 +244,26 @@ const EventDetail = () => {
         </div>
       )}
 
+
       <div className="comment-section">
         <h2>Kommentare</h2>
+
         <form className="comment-form" onSubmit={handleSubmit}>
           <div className="comment-input-wrapper">
-            <img
-              src={user?.avatar || logo}
-              alt="avatar"
-              className="comment-avatar-img"
-            />
+            {/* Show first letter of user's name or logo if not available */}
+            {user?.name ? (
+              <div className="comment-avatar-circle">
+                {user.name.charAt(0).toUpperCase()}
+              </div>
+            ) : (
+              <img
+                src={logo}
+                alt="avatar"
+                className="comment-avatar-img"
+              />
+            )}
             <div className="comment-form-fields">
-              <div className="comment-user-name">{user?.nickname || user?.username || 'Unbekannt'}</div>
+              <div className="comment-user-name">{user?.name}</div>
               <textarea
                 className="comment-textarea"
                 placeholder="Schreibe einen Kommentar..."
@@ -291,9 +282,18 @@ const EventDetail = () => {
             comments.map((c) => (
               <div key={c.id} className="comment-item">
                 <div className="comment-left">
-                  <div className="comment-avatar-circle">
-                    {c.user.name ? c.user.name.charAt(0).toUpperCase() : "?"}
-                  </div>
+                  {/* Show first letter of commenter's name or logo if not available */}
+                  {c.user.name ? (
+                    <div className="comment-avatar-circle">
+                      {c.user.name.charAt(0).toUpperCase()}
+                    </div>
+                  ) : (
+                    <img
+                      src={logo}
+                      alt="avatar"
+                      className="comment-avatar-img"
+                    />
+                  )}
                 </div>
                 <div className="comment-right">
                   <div className="comment-header">
@@ -305,9 +305,27 @@ const EventDetail = () => {
                     <button onClick={() => handleLike(c.id)} title="Gefällt mir">
                       {c.liked ? '💙' : '👍'}
                     </button>
-                    <button title="Emoji">😊</button>
-                    <button title="Antworten">Antworten</button>
-                    {c.user.name === (user?.nickname || user?.username) && (
+                    <div style={{ position: 'relative' }}>
+  <button onClick={() => setActiveEmojiPicker(c.id)} title="Emoji">😊</button>
+
+  {activeEmojiPicker === c.id && (
+    <div className="emoji-picker">
+      {emojis.map((emoji) => (
+        <button
+          key={emoji}
+          className="emoji-btn"
+          onClick={() => handleEmoji(c.id, emoji)}
+        >
+          {emoji}
+        </button>
+      ))}
+    </div>
+  )}
+</div>
+
+                    <button onClick={() => handleReply(c.user.name)} title="Antworten">Antworten</button>
+                    <button onClick={() => handleEdit(c.id)} title="Bearbeiten">Bearbeiten</button>
+                    {c.user.name === user?.name && (
                       <button onClick={() => handleDelete(c.id)} title="Kommentar löschen">🗑</button>
                     )}
                   </div>
@@ -318,16 +336,14 @@ const EventDetail = () => {
         </div>
       </div>
 
+      {/* Footer */}
       <div className="event-bottom-inspire">
-        <p className="inspire-quote">„Gemeinsam gestalten wir unsere Nachbarschaft – sei dabei!"</p>
+        <p className="inspire-quote">„Gemeinsam gestalten wir unsere Nachbarschaft – sei dabei!“</p>
         <a href="/" className="logo-link">
           <img src={logo} alt="Logo" className="logo-image" />
         </a>
-        <p className="inspire-text">„Alle Rechte vorbehalten bei Hand in Hand e.V."</p>
+        <p className="inspire-text">„all Rechte vorbehalten bei Hand in Hand e.V.“</p>
       </div>
-
-      {/* Footer */}
-      <Footer />
     </div>
   );
 };

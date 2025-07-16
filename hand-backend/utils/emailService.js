@@ -6,15 +6,27 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 // E-Mail-Transporter konfigurieren
-const transporter = nodemailer.createTransport({
-  // service: 'gmail',
-  service: process.env.EMAIL_SERVICE,
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
-  },
-  debug: process.env.NODE_ENV !== 'production', // Debug nur in Entwicklungsumgebung
-});
+// ODER-Logik: Wenn EMAIL_SERVICE gesetzt ist (z.B. "gmail"), wird der Service genutzt.
+// Andernfalls wird klassischer SMTP-Transport verwendet.
+const transporter = process.env.EMAIL_SERVICE
+  ? nodemailer.createTransport({
+      service: process.env.EMAIL_SERVICE, // z.B. "gmail"
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      },
+      debug: process.env.NODE_ENV !== 'production',
+    })
+  : nodemailer.createTransport({
+      host: process.env.EMAIL_HOST,
+      port: parseInt(process.env.EMAIL_PORT) || 587,
+      secure: process.env.EMAIL_SECURE === 'true',
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      },
+      debug: process.env.NODE_ENV !== 'production',
+    });
 /**
  * Funktion zum Versenden einer Verifizierungs-E-Mail
  * @param {string} to - E-Mail-Adresse des Empfängers
@@ -22,35 +34,48 @@ const transporter = nodemailer.createTransport({
  * @param {string} userId - Die User-ID (für Link)
  * @returns {Promise<Object>} - Erfolgs- oder Fehlerstatus Das gib die Funktion zurück
  */
+/**
+ * sendVerificationEmail akzeptiert sowohl einen Verifizierungscode (userSchema) als auch einen Token (UserModel).
+ * Durch die ODER-Logik (verificationCodeOrToken) ist die Funktion kompatibel mit beiden User-Modellen.
+ * So kann die gleiche Funktion für beide Varianten genutzt werden – unabhängig davon, wie das Backend implementiert ist.
+ */
+// In dieser Funktion wird überall nur noch verificationCodeOrToken verwendet,
+// damit keine alten Variablennamen mehr zu Fehlern führen können.
 export const sendVerificationEmail = async (to, verificationCode, userId) => {
   try {
 
     if (process.env.NODE_ENV === 'development') {
-      console.log('📧 DEVELOPMENT MODE - E-Mail würde gesendet werden:');
-      console.log('🎯 An:', email);
-      console.log('🔗 Verifizierungslink:', `http://localhost:5173/verify/${verificationToken}`);
+      // ODER-Logik: Der Link enthält entweder den Code (userSchema) oder den Token (UserModel)
+      console.log('📧 DEVELOPMENT MODE - E-Mail wurde gesendet werden:');
+      console.log('🎯 An:', to);
+      console.log('🔗 Verifizierungslink:', verificationLink);
+      const verificationLink = `http://localhost:5173/verify?code=${verificationCode}&email=${encodeURIComponent(to)}`;
       return {
         success: true,
         message: 'Development mode - E-Mail simuliert',
-        verificationLink: `http://localhost:5173/verify/${verificationToken}`
+        // verificationLink: `http://localhost:5173/verify/${verificationCode}`
+        verificationLink //`http://localhost:5173/verify?code=${verificationCode}&email=${encodeURIComponent(to)}`
       };
     }
 
-    const transporter = createTransporter();
-    const verificationLink = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/verify/${verificationToken}`;
+    // ODER-Logik: Der Link enthält entweder den Code (userSchema) oder den Token (UserModel)
+    // const verificationLink = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/verify/${verificationCodeOrToken}`;
+    // NEU (Code+E-Mail-Variante, wie du willst):
+const verificationLink = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/verify?code=${verificationCode}&email=${encodeURIComponent(to)}`;
 
 
     console.log('📧 Versuche E-Mail zu senden an:', to);
-    console.log('🔢 Verifizierungscode:', verificationCode);
+    console.log('🔢 Verifizierungscode oder Token:', verificationCode);
     
 
+    // ODER-Logik: Der Code oder Token wird für die E-Mail verwendet
+    // Wir nutzen überall verificationCodeOrToken, damit beide Modelle unterstützt werden
     const mailOptions = {
       from: process.env.EMAIL_FROM,
       to,
       subject: 'Bestätige deine E-Mail-Adresse für Hand-Hand',
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #E1E1E1; border-radius: 5px;">
-
 
           <h2 style="color: #333;">Willkommen bei Hand-Hand!</h2>
           <p>Danke für deine Registrierung in unserer Nachbarschafts-App.</p>
@@ -59,7 +84,7 @@ export const sendVerificationEmail = async (to, verificationCode, userId) => {
             <strong>${verificationCode}</strong>
           </div>
           <p>Oder klicke auf diesen Link, um deine E-Mail direkt zu bestätigen:</p>
-          <p><a href="http://localhost:4000/api/auth/verify-link?userId=${userId}&code=${verificationCode}" style="background-color: #4CAF50; 
+          <p><a href="${verificationLink}" style="background-color: #4CAF50; 
           color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px; display: inline-block;">
           E-Mail bestätigen</a></p>
           <p>Dieser Code ist 24 Stunden gültig.</p>
@@ -134,7 +159,7 @@ export const sendPasswordResetEmail = async (email, resetToken) => {
             <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0; text-align: center;">
               <p style="font-size: 16px; color: #333; margin-bottom: 8px;">Ihr persönlicher Sicherheits-Code:</p>
               <span style="display: inline-block; font-size: 28px; letter-spacing: 4px; background: #e3e3e3; padding: 12px 32px; border-radius: 8px; font-weight: bold; color: #222; margin-bottom: 8px;">${resetToken}</span>
-              <p style="font-size: 13px; color: #888; margin-top: 8px;">Kopieren Sie diesen Code und geben Sie ihn im Browser ein, wenn Sie dem Link nicht trauen.</p>
+              <p style="font-size: 13px; color: #888; margin-top: 8px;">Kopieren Sie diesen Code und geben Sie ihn auf der Hand-in-Hand-Seite ein.</p>
             </div>
             <div style="text-align: center; margin: 30px 0;">
               <a href="${forgotPasswordLink}" 
@@ -222,8 +247,7 @@ export const sendPasswordResetEmail = async (email, resetToken) => {
     //         </div>
     //       </div>
     //     </div>
-    //   `
-    // };
+    //   `;
 
     const info = await usedTransporter.sendMail(mailOptions);
     console.log('E-Mail gesendet:', info.messageId);

@@ -109,9 +109,16 @@ h1{
 .notfound {
   max-width: 600px;
 }
+.notfound-404 {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
 
 .notfound-404 h1 {
-  font-size: 5rem;
+  font-size: 85px;
+  font-weight: bold;
   color: var(--coral);
   letter-spacing: 0.3rem;
 }
@@ -122,24 +129,56 @@ h1{
   margin-bottom: 1rem;
 }
 
+.notfound {
+  max-width: 600px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
 .notfound h2 {
   font-size: 1.5rem;
   margin: 1rem 0;
   color: var(--skyBlue);
+  font-weight: bold;
+  text-align: center;
 }
 
+
+
 .notfound-button {
-  padding: 0.75rem 1.5rem;
-  background-color: var(--mint);
-  color: var(--deepBlue);
-  border: none;
-  border-radius: 8px;
-  font-weight: bold;
+  margin: 20px auto 0 auto;
+  padding: 12px 32px;
+  min-width: 120px;
+  max-width: 200px;
+  width: fit-content;
+  background-color: var(--bg-tertiary);
+  color: var(--text-color);
   text-decoration: none;
-  transition: all 0.3s ease;
+  border-radius: 8px;
+  font-size: 1.2rem;
+  transition: background-color 0.3s ease, color 0.3s ease;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  font-family: "Nunito", sans-serif;
+  font-weight: bold;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  border: none;
+  cursor: pointer;
+  margin: 10px auto 0 auto;
 }
 
 .notfound-button:hover {
   background-color: var(--bg-secondary);
   color: white;
+}
+
+.error-animation {
+  width: 100%;
+  height: 600px;
+  margin-bottom: 20px;
+  margin-top: 0px;
 }

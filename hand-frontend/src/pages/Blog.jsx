@@ -1,34 +1,153 @@
+
 import { useEffect, useState } from 'react';
-import { Calendar, User, Search, Tag, PlusCircle, XCircle } from 'lucide-react';
+import { Calendar, User, Search, Tag, PlusCircle, XCircle } from 'lucide-react'; // XCircle für Schließen-Button im Popup
 import './Blog.css';
 import api from '../api';
+import { useNavigate } from "react-router-dom";
+
 
 console.log("Blog.jsx aus pages ist aktiv!");
 
 const Blog = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('alle');
-  const [blogPosts, setBlogPosts] = useState([]);
+
+  const [expandedComments, setExpandedComments] = useState({});
+  const [newComment, setNewComment] = useState({});
+  
+  const [comments, setComments] = useState({
+    1: [
+      {
+        id: 1,
+        author: "Klaus Müller",
+        content: "Tolle Idee! Wir sollten das auch in unserer Straße umsetzen.",
+        date: "2025-06-21",
+        replies: [
+          {
+            id: 2,
+            author: "Maria Grün",
+            content: "Gerne helfe ich euch dabei! Meldet euch einfach bei mir.",
+            date: "2025-06-21"
+          }
+        ]
+      },
+      {
+        id: 3,
+        author: "Susanne Berg",
+        content: "Wie habt ihr das mit den Genehmigungen gemacht?",
+        date: "2025-06-20",
+        replies: []
+      }
+    ],
+    2: [
+      {
+        id: 4,
+        author: "Peter Schmidt",
+        content: "Nachbarschaftshilfe ist wirklich wichtig. Danke für den Artikel!",
+        date: "2025-06-19",
+        replies: []
+      }
+    ]
+  });
+
+  const [blogPosts, setBlogPosts] = useState([
+    {
+      id: 1,
+      title: "Wie wir unseren Kiez grüner gemacht haben",
+      excerpt: "Ein Jahr lang haben wir gemeinsam daran gearbeitet, mehr Grün in unsere Straßen zu bringen. Hier ist unsere Geschichte...",
+      content: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+      author: "Maria Grün",
+      date: "2025-06-20",
+      category: "umwelt",
+      readTime: "5 min",
+      image: "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=600&h=300&fit=crop"
+    },
+    {
+      id: 2,
+      title: "Nachbarschaftshilfe in Zeiten des Wandels",
+      excerpt: "Warum gegenseitige Unterstützung wichtiger denn je ist und wie wir alle davon profitieren können.",
+      content: "In unserer schnelllebigen Zeit ist es wichtig, dass wir als Nachbarn zusammenhalten...",
+      author: "Thomas Hilfreich",
+      date: "2025-06-18",
+      category: "gemeinschaft",
+      readTime: "7 min",
+      image: "https://images.unsplash.com/photo-1559027615-cd4628902d4a?w=600&h=300&fit=crop"
+    },
+    {
+      id: 3,
+      title: "DIY-Tipps: Reparieren statt wegwerfen",
+      excerpt: "Einfache Anleitungen für alltägliche Reparaturen, die jeder zu Hause durchführen kann.",
+      content: "Nachhaltigkeit beginnt bei uns zu Hause. Mit diesen einfachen Tipps könnt ihr...",
+      author: "Anna Reparatur",
+      date: "2025-06-15",
+      category: "tipps",
+      readTime: "10 min",
+      image: "https://images.unsplash.com/photo-1581833971358-2c8b550f87b3?w=600&h=300&fit=crop"
+    },
+    {
+      id: 4,
+      title: "Erfolgsgeschichte: Unser Gemeinschaftsgarten",
+      excerpt: "Von der leeren Brachfläche zum blühenden Treffpunkt - wie aus einer Idee Realität wurde.",
+      content: "Es begann mit einer einfachen Idee: Was wäre, wenn wir die ungenutzte Fläche...",
+      author: "Familie Weber",
+      date: "2025-06-12",
+      category: "projekte",
+      readTime: "6 min",
+      image: "https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=600&h=300&fit=crop"
+    },
+    {
+      id: 5,
+      title: "Seniorenbetreuung: Ein Herzensprojekt",
+      excerpt: "Wie junge Familien und Senioren voneinander lernen und sich gegenseitig unterstützen können.",
+      content: "Generationenübergreifende Hilfe ist das Herzstück unserer Nachbarschaft...",
+      author: "Lisa Jung",
+      date: "2025-06-10",
+      category: "soziales",
+      readTime: "8 min",
+      image: "https://images.unsplash.com/photo-1581579438747-1dc8d17bbce4?w=600&h=300&fit=crop"
+    },
+    {
+      id: 6,
+      title: "Lokale Geschäfte unterstützen",
+      excerpt: "Warum der Einkauf um die Ecke nicht nur praktisch ist, sondern auch unsere Gemeinschaft stärkt.",
+      content: "Jeder Euro, den wir in lokalen Geschäften ausgeben, kommt unserer Nachbarschaft zugute...",
+      author: "Peter Lokal",
+      date: "2025-06-08",
+      category: "wirtschaft",
+      readTime: "4 min",
+      image: "https://images.unsplash.com/photo-1556740758-90de374c12ad?w=600&h=300&fit=crop"
+    }
+  ]);
+
   const [showWritePostPopup, setShowWritePostPopup] = useState(false);
+  const [blogPosts, setBlogPosts] = useState([]);
   const [newPost, setNewPost] = useState({
     title: '',
     excerpt: '',
     content: '',
-    category: 'umwelt',
+
+    category: 'umwelt', // Standardkategorie
+
+
     image: '',
     readTime: ''
   });
+
 
   // Kommentar-States
   const [expandedPost, setExpandedPost] = useState(null); // ID des aufgeklappten Blogposts
   const [comments, setComments] = useState({}); // { [blogId]: [ ... ] }
   const [commentText, setCommentText] = useState({}); // { [blogId]: "..." }
 
+  const navigate = useNavigate();
+
+
   useEffect(() => {
     api.get("/blogs")
       .then(res => setBlogPosts(res.data))
       .catch(() => setBlogPosts([]));
   }, []);
+
 
   const categories = [
     { value: 'alle', label: 'Alle Beiträge' },
@@ -125,6 +244,7 @@ const Blog = () => {
       [name]: value
     }));
   };
+
   const handleNewPostSubmit = async (e) => {
     e.preventDefault();
     if (!newPost.title || !newPost.content || !newPost.category) {
@@ -159,6 +279,7 @@ const Blog = () => {
     } catch (error) {
       alert("Fehler beim Speichern: " + error.message);
     }
+
   };
 
   return (
@@ -199,17 +320,18 @@ const Blog = () => {
         <div className="blog-posts">
           {filteredPosts.length > 0 ? (
             filteredPosts.map(post => (
-              <article key={post._id} className="blog-card">
+              <article key={post.id} className="blog-card">
                 <div className="blog-image">
                   {post.image && (
                     <img src={post.image} alt={`Bild für den Beitrag: ${post.title}`} />
                   )}
                   <div className="blog-category">
-                    {getCategoryLabel(post.category || (post.tags && post.tags[0]))}
+                    {getCategoryLabel(post.category)}
                   </div>
                 </div>
                 <div className="blog-content-area">
                   <h2 className="blog-title">{post.title}</h2>
+
                   <p className="blog-excerpt">{post.excerpt || post.description}</p>
                   {/* Hier den vollständigen Inhalt einblenden, wenn aufgeklappt */}
                   {expandedPost === post._id && post.content && (
@@ -219,6 +341,7 @@ const Blog = () => {
                       )}
                     </div>
                   )}
+
                   <div className="blog-meta">
                     <div className="meta-left">
                       <div className="meta-item">
@@ -229,7 +352,7 @@ const Blog = () => {
                       </div>
                       <div className="meta-item">
                         <Calendar className="meta-icon" aria-hidden="true" />
-                        <span>{formatDate(post.createdAt || post.date)}</span>
+                        <span>{formatDate(post.date)}</span>
                       </div>
                     </div>
                   </div>
@@ -240,7 +363,21 @@ const Blog = () => {
                     >
                       {expandedPost === post._id ? "Weniger anzeigen" : "Mehr lesen & Kommentare"}
                     </button>
+                    
+                    <button
+                      className="comment-toggle-btn"
+                      onClick={() => toggleComments(post.id)}
+                      aria-label={`Kommentare anzeigen: ${post.title}`}
+                    >
+                      <MessageCircle className="comment-icon" aria-hidden="true" />
+                      <span>{getCommentCount(post.id)} Kommentare</span>
+                      {expandedComments[post.id] ? 
+                        <ChevronUp className="chevron-icon" aria-hidden="true" /> :
+                        <ChevronDown className="chevron-icon" aria-hidden="true" />
+                      }
+                    </button>
                   </div>
+
                   {/* Kommentarsektion */}
                   {expandedPost === post._id && (
                     <div className="comments-section">
@@ -269,6 +406,7 @@ const Blog = () => {
                         />
                         <button type="submit" className="comment-submit-btn">Absenden</button>
                       </form>
+
                     </div>
                   )}
                 </div>
@@ -318,13 +456,16 @@ const Blog = () => {
               onClick={handleWritePost}
               aria-label="Neuen Blogbeitrag schreiben"
             >
-              <PlusCircle className="action-icon" aria-hidden="true" style={{ marginRight: '6px' }} />
-              <span className='action-icon-text'>Beitrag schreiben</span>
+              <PlusCircle className="action-icon" aria-hidden="true" />
+              <span className="action-icon-text">Beitrag schreiben</span>
             </button>
           </div>
         </aside>
       </div>
-      {/* Das Popup-Fenster */}
+
+
+      {/* Popup für neuen Beitrag */}
+
       {showWritePostPopup && (
         <div className="popup-overlay">
           <div className="popup-content">

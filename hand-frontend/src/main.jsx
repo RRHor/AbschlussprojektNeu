@@ -1,18 +1,19 @@
-import React from "react";
-import ReactDOM from "react-dom/client";
-import { BrowserRouter } from "react-router-dom";
-import { AuthProvider } from "./context/AuthContext";
-import App from "./App.jsx";
-import "./index.css";
 
-ReactDOM.createRoot(document.getElementById("root")).render(
-  // <React.StrictMode>
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import { BrowserRouter } from 'react-router-dom';
+import App from './App.jsx'; // Wir gehen davon aus, dass App.jsx existiert
 
-  <AuthProvider>
-    <BrowserRouter>
-      <App />
-    </BrowserRouter>
-  </AuthProvider>
+import { AuthProvider } from './context/AuthContext.jsx';
 
-  // </React.StrictMode>
+
+ReactDOM.createRoot(document.getElementById('root')).render(
+  <React.StrictMode>
+    <AuthProvider>
+      <BrowserRouter>
+          <App />
+      </BrowserRouter>
+    </AuthProvider>
+  </React.StrictMode>
 );
+

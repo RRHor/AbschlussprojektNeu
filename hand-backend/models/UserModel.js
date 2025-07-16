@@ -8,7 +8,7 @@ const userSchema = new mongoose.Schema(
     // Nickname (Pflichtfeld, maximal 30 Zeichen)
     nickname: {
       type: String,
-      required: [true, "Nickname ist erforderlich"],
+      required: [false, "Nickname ist erforderlich"],
       trim: true,
       maxlength: [30, "Nickname darf maximal 30 Zeichen haben"],
     },
@@ -16,8 +16,9 @@ const userSchema = new mongoose.Schema(
     // Username (Pflichtfeld, eindeutig)
     username: {
       type: String,
-      required: [true, "Benutzername ist erforderlich"],
+      required: [false, "Benutzername ist erforderlich"],
       unique: true,
+       sparse: true, // <--- Diese Zeile hinzufügen!
       trim: true,
       maxlength: [30, "Benutzername darf maximal 30 Zeichen haben"],
     },
@@ -41,19 +42,6 @@ const userSchema = new mongoose.Schema(
       minlength: [6, "Passwort muss mindestens 6 Zeichen haben"],
     },
 
-    // Verifizierungsstatus (Standard: false)
-    isVerified: { type: Boolean, default: false },
-
-    // Verifizierungstoken und Ablaufdatum
-    verificationToken: String,
-    verificationTokenExpires: Date,
-
-    // NEU: Tracking für erste Verifizierung
-    firstVerifiedAt: { type: Date, default: null },
-
-    // NEU: Tracking wann User erstellt wurde
-    registeredAt: { type: Date, default: Date.now },
-
     // Reset-Code für Passwort-Reset
     resetPasswordToken: {
       type: String,
@@ -65,8 +53,8 @@ const userSchema = new mongoose.Schema(
     },
 
     // Profil-Felder
-    firstName: { type: String },
-    lastName: { type: String },
+    // firstName: { type: String }, Datenschutz beachten
+    // lastName: { type: String }, Datenschutz beachten
     addresses: [
       {
         street: String,
@@ -74,8 +62,18 @@ const userSchema = new mongoose.Schema(
         zip: String,
         district: String,
         state: String,
+        firstName: { type: String },
+        lastName: { type: String },
       },
     ],
+    // --- Wichtige User-Status-Felder direkt unter addresses ---
+    isAdmin: {
+      type: Boolean,
+      default: false,
+    },
+    isVerified: { type: Boolean, default: false },
+    verificationCode: { type: Number },
+    verificationCodeExpires: { type: Date, default: null },
   },
   { timestamps: true } // Erstellt automatisch createdAt und updatedAt Felder
 );
@@ -98,6 +96,18 @@ userSchema.pre("save", async function (next) {
 userSchema.methods.matchPassword = async function (enteredPassword) {
   return await bcrypt.compare(enteredPassword, this.password);
 };
+
+// ODER-Logik: Entweder username ODER nickname muss gesetzt sein, nie beide Pflicht
+// (Validierung siehe unten)
+
+// ODER-Validierung: Mindestens username ODER nickname muss gesetzt sein
+userSchema.pre("validate", function (next) {
+  if (!this.username && !this.nickname) {
+    this.invalidate("username", "Entweder Benutzername ODER Nickname ist erforderlich.");
+    this.invalidate("nickname", "Entweder Benutzername ODER Nickname ist erforderlich.");
+  }
+  next();
+});
 
 
 

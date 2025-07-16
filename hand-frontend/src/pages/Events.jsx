@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from "react";
 import "./Events.css";
 import { ArrowLeft } from "lucide-react";
@@ -29,8 +30,8 @@ const Events = () => {
       </div>
 
       <div className="event-cards">
-        {events.map((event) => (
-          <div className="event-card" key={event._id}>
+        {events.map((event, index) => (
+          <div className="event-card" key={index}>
             <img src={event.image} alt={event.title} />
             <div className="event-content">
               <h2>{event.title}</h2>
@@ -41,7 +42,10 @@ const Events = () => {
               <button
                 className="event-button"
                 onClick={() =>
+
+
                   navigate(`/events/${event._id}`, { state: { event } })
+
                 }
               >
                 Ich mache mit!
