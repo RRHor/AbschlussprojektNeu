@@ -14,8 +14,8 @@ router.get('/', async (req, res) => {
     filter = {
       $or: [
         { title: { $regex: q, $options: 'i' } },         // Suche im Titel
-        { description: { $regex: q, $options: 'i' } },   // Suche in der Beschreibung
-        { tags: { $regex: q, $options: 'i' } }           // Suche in Tags
+        { excerpt: { $regex: q, $options: 'i' } },       // Suche im Auszug
+        { content: { $regex: q, $options: 'i' } }         // Suche im Inhalt
       ]
     };
   }
@@ -35,12 +35,15 @@ router.get('/:id', async (req, res) => {
   res.json(blog);
 });
 
-// Blogpost erstellen
+// Blogpost erstellen (nur diese Route!)
+// Der Author wird automatisch aus dem eingeloggten User gesetzt
 router.post('/', protect, async (req, res) => {
   try {
-    const blog = new Blog({ ...req.body, author: req.user._id }); // author = eingeloggter User
+    const blog = new Blog({ ...req.body, author: req.user._id });
     await blog.save();
-    res.status(201).json(blog);
+    // Jetzt mit populate zurückgeben:
+    const populatedBlog = await Blog.findById(blog._id).populate('author', 'nickname username email');
+    res.status(201).json(populatedBlog);
   } catch (error) {
     res.status(400).json({ message: 'Fehler beim Erstellen', error });
   }

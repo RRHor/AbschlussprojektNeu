@@ -1,10 +1,12 @@
 
 import { useEffect, useState } from 'react';
 import { Calendar, User, Search, Tag, PlusCircle, XCircle } from 'lucide-react'; // XCircle für Schließen-Button im Popup
-
 import './Blog.css';
-import api from '../api'; // ggf. Pfad anpassen
+import api from '../api';
 import { useNavigate } from "react-router-dom";
+
+
+console.log("Blog.jsx aus pages ist aktiv!");
 
 const Blog = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -118,28 +120,27 @@ const Blog = () => {
   ]);
 
   const [showWritePostPopup, setShowWritePostPopup] = useState(false);
+  const [blogPosts, setBlogPosts] = useState([]);
   const [newPost, setNewPost] = useState({
     title: '',
     excerpt: '',
     content: '',
-    author: '',
-    category: 'umwelt',
 
-  const [blogPosts, setBlogPosts] = useState([]);
-  const [showWritePostPopup, setShowWritePostPopup] = useState(false); // Neuer Zustand für das Popup
-  const [newPost, setNewPost] = useState({ // Zustand für das neue Formular
-    title: '',
-    excerpt: '',
-    content: '',
     category: 'umwelt', // Standardkategorie
+
 
     image: '',
     readTime: ''
   });
 
 
+  // Kommentar-States
+  const [expandedPost, setExpandedPost] = useState(null); // ID des aufgeklappten Blogposts
+  const [comments, setComments] = useState({}); // { [blogId]: [ ... ] }
+  const [commentText, setCommentText] = useState({}); // { [blogId]: "..." }
 
   const navigate = useNavigate();
+
 
   useEffect(() => {
     api.get("/blogs")
@@ -182,14 +183,49 @@ const Blog = () => {
     return categories.find(cat => cat.value === categoryValue)?.label || categoryValue;
   };
 
-  const handleReadMore = (postId) => {
-    navigate(`/blogs/${postId}`);
+  // Kommentare für einen Blogpost laden
+  const loadComments = async (blogId) => {
+    try {
+      const res = await api.get(`/blog-comments/${blogId}`);
+      setComments(prev => ({ ...prev, [blogId]: res.data }));
+    } catch {
+      setComments(prev => ({ ...prev, [blogId]: [] }));
+    }
   };
 
-  const handleWritePost = () => {
-    setShowWritePostPopup(true);
+  // Auf- und Zuklappen der Kommentare
+  const handleToggleComments = (blogId) => {
+    if (expandedPost === blogId) {
+      setExpandedPost(null);
+    } else {
+      setExpandedPost(blogId);
+      loadComments(blogId);
+    }
   };
 
+  // Kommentar-Text ändern
+  const handleCommentChange = (blogId, value) => {
+    setCommentText(prev => ({ ...prev, [blogId]: value }));
+  };
+
+  // Kommentar absenden
+  const handleCommentSubmit = async (e, blogId) => {
+    e.preventDefault();
+    if (!commentText[blogId]) return;
+    try {
+      await api.post("/blog-comments", {
+        blog: blogId,
+        text: commentText[blogId]
+      });
+      setCommentText(prev => ({ ...prev, [blogId]: "" }));
+      loadComments(blogId);
+    } catch (error) {
+      alert(error.response?.data?.message || "Fehler beim Absenden");
+    }
+  };
+
+  // Blogpost-Formular
+  const handleWritePost = () => setShowWritePostPopup(true);
   const handleClosePopup = () => {
     setShowWritePostPopup(false);
     setNewPost({
@@ -201,7 +237,6 @@ const Blog = () => {
       readTime: ''
     });
   };
-
   const handleNewPostChange = (e) => {
     const { name, value } = e.target;
     setNewPost(prevPost => ({
@@ -210,117 +245,41 @@ const Blog = () => {
     }));
   };
 
-
-  const handleNewPostSubmit = (e) => {
-    e.preventDefault();
-    if (!newPost.title || !newPost.content || !newPost.author || !newPost.category) {
-      alert("Bitte füllen Sie alle erforderlichen Felder aus (Titel, Inhalt, Autor, Kategorie).");
-      return;
-    }
-
   const handleNewPostSubmit = async (e) => {
-  e.preventDefault();
-  if (!newPost.title || !newPost.content || !newPost.category) {
-    alert("Bitte füllen Sie alle erforderlichen Felder aus (Titel, Inhalt, Kategorie).");
-    return;
-  }
-
-  try {
-    const token = localStorage.getItem('token');
-    const blogData = {
-      title: newPost.title,
-      excerpt: newPost.excerpt,
-      content: newPost.content,
-      category: newPost.category,
-      readTime: newPost.readTime,
-      image: newPost.image
-      // author wird im Backend gesetzt!
-    };
-    const response = await fetch('http://localhost:4000/api/blogs', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
-      body: JSON.stringify(blogData)
-    });
-
-
-    const today = new Date();
-    const formattedDate = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
-
-    const newBlogEntry = {
-      id: blogPosts.length > 0 ? Math.max(...blogPosts.map(post => post.id)) + 1 : 1,
-      ...newPost,
-      date: formattedDate,
-      image: newPost.image || 'https://images.unsplash.com/photo-1507525428034-b723cf961c3e?w=600&h=300&fit=crop'
-    };
-
-    setBlogPosts(prevPosts => [newBlogEntry, ...prevPosts]);
-    handleClosePopup();
-    alert("Ihr Beitrag wurde erfolgreich hinzugefügt!");
-  };
-
-  // Kommentar-Funktionen
-  const toggleComments = (postId) => {
-    setExpandedComments(prev => ({
-      ...prev,
-      [postId]: !prev[postId]
-    }));
-  };
-
-  const handleCommentChange = (postId, value) => {
-    setNewComment(prev => ({
-      ...prev,
-      [postId]: {
-        ...prev[postId],
-        content: value
-      }
-    }));
-  };
-
-  const handleCommentAuthorChange = (postId, value) => {
-    setNewComment(prev => ({
-      ...prev,
-      [postId]: {
-        ...prev[postId],
-        author: value
-      }
-    }));
-  };
-
-  const submitComment = (postId) => {
-    const comment = newComment[postId];
-    if (!comment?.content?.trim() || !comment?.author?.trim()) {
-      alert("Bitte Name und Kommentar eingeben.");
+    e.preventDefault();
+    if (!newPost.title || !newPost.content || !newPost.category) {
+      alert("Bitte füllen Sie alle erforderlichen Felder aus (Titel, Inhalt, Kategorie).");
       return;
     }
+    try {
+      const token = localStorage.getItem('token');
+      const blogData = {
+        title: newPost.title,
+        excerpt: newPost.excerpt,
+        content: newPost.content,
+        category: newPost.category,
+        readTime: newPost.readTime,
+        image: newPost.image
+      };
+      const response = await fetch('http://localhost:4000/api/blogs', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(blogData)
+      });
+      if (!response.ok) throw new Error('Fehler beim Speichern des Blogposts');
+      // Nach dem Hinzufügen: Blogposts neu laden!
+      await api.get("/blogs")
+        .then(res => setBlogPosts(res.data))
+        .catch(() => setBlogPosts([]));
+      handleClosePopup();
+      alert("Ihr Beitrag wurde erfolgreich hinzugefügt!");
+    } catch (error) {
+      alert("Fehler beim Speichern: " + error.message);
+    }
 
-    const today = new Date();
-    const formattedDate = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
-
-    const newCommentEntry = {
-      id: Date.now(),
-      author: comment.author,
-      content: comment.content,
-      date: formattedDate,
-      replies: []
-    };
-
-    setComments(prev => ({
-      ...prev,
-      [postId]: [...(prev[postId] || []), newCommentEntry]
-    }));
-
-    setNewComment(prev => ({
-      ...prev,
-      [postId]: { author: '', content: '' }
-    }));
-  };
-
-  const getCommentCount = (postId) => {
-    const postComments = comments[postId] || [];
-    return postComments.reduce((count, comment) => count + 1 + comment.replies.length, 0);
   };
 
   return (
@@ -341,7 +300,6 @@ const Blog = () => {
             aria-label="Blog durchsuchen"
           />
         </div>
-
         <div className="category-filter">
           <Tag className="filter-icon" aria-hidden="true" />
           <select
@@ -371,10 +329,18 @@ const Blog = () => {
                     {getCategoryLabel(post.category)}
                   </div>
                 </div>
-
                 <div className="blog-content-area">
                   <h2 className="blog-title">{post.title}</h2>
-                  <p className="blog-excerpt">{post.excerpt}</p>
+
+                  <p className="blog-excerpt">{post.excerpt || post.description}</p>
+                  {/* Hier den vollständigen Inhalt einblenden, wenn aufgeklappt */}
+                  {expandedPost === post._id && post.content && (
+                    <div className="blog-full-content">
+                      {post.content.split('\n').map((line, idx) =>
+                        <p key={idx}>{line}</p>
+                      )}
+                    </div>
+                  )}
 
                   <div className="blog-meta">
                     <div className="meta-left">
@@ -390,13 +356,12 @@ const Blog = () => {
                       </div>
                     </div>
                   </div>
-
                   <div className="blog-actions">
                     <button
                       className="read-more-btn"
-                      onClick={() => handleReadMore(post._id)}
+                      onClick={() => handleToggleComments(post._id)}
                     >
-                      Weiterlesen
+                      {expandedPost === post._id ? "Weniger anzeigen" : "Mehr lesen & Kommentare"}
                     </button>
                     
                     <button
@@ -414,63 +379,34 @@ const Blog = () => {
                   </div>
 
                   {/* Kommentarsektion */}
-                  {expandedComments[post.id] && (
+                  {expandedPost === post._id && (
                     <div className="comments-section">
                       <h3 className="comments-title">Kommentare</h3>
-                      
-                      {/* Bestehende Kommentare */}
                       <div className="comments-list">
-                        {comments[post.id] && comments[post.id].map(comment => (
-                          <div key={comment.id} className="comment">
+                        {(comments[post._id] || []).length === 0 && (
+                          <div className="comment">Noch keine Kommentare.</div>
+                        )}
+                        {(comments[post._id] || []).map(c => (
+                          <div key={c._id} className="comment">
                             <div className="comment-header">
-                              <span className="comment-author">{comment.author}</span>
-                              <span className="comment-date">{formatDate(comment.date)}</span>
+                              <span className="comment-author">{c.user?.nickname || "Unbekannt"}</span>
+                              <span className="comment-date">{c.createdAt ? formatDate(c.createdAt) : ""}</span>
                             </div>
-                            <p className="comment-content">{comment.content}</p>
-                            
-                            {/* Antworten */}
-                            {comment.replies.length > 0 && (
-                              <div className="comment-replies">
-                                {comment.replies.map(reply => (
-                                  <div key={reply.id} className="comment-reply">
-                                    <div className="reply-header">
-                                      <span className="reply-author">{reply.author}</span>
-                                      <span className="reply-date">{formatDate(reply.date)}</span>
-                                    </div>
-                                    <p className="reply-content">{reply.content}</p>
-                                  </div>
-                                ))}
-                              </div>
-                            )}
+                            <div className="comment-content">{c.text}</div>
                           </div>
                         ))}
                       </div>
-                      
-                      {/* Neuer Kommentar */}
-                      <div className="new-comment-form">
-                        <h4 className="new-comment-title">Kommentar hinzufügen</h4>
-                        <input
-                          type="text"
-                          className="comment-author-input"
-                          placeholder="Dein Name"
-                          value={newComment[post.id]?.author || ''}
-                          onChange={(e) => handleCommentAuthorChange(post.id, e.target.value)}
-                        />
+                      <form className="new-comment-form" onSubmit={e => handleCommentSubmit(e, post._id)}>
                         <textarea
                           className="comment-content-input"
-                          placeholder="Dein Kommentar..."
-                          value={newComment[post.id]?.content || ''}
-                          onChange={(e) => handleCommentChange(post.id, e.target.value)}
-                          rows="3"
+                          value={commentText[post._id] || ""}
+                          onChange={e => handleCommentChange(post._id, e.target.value)}
+                          placeholder="Kommentar schreiben..."
+                          required
                         />
-                        <button
-                          className="comment-submit-btn"
-                          onClick={() => submitComment(post.id)}
-                        >
-                          <Send className="send-icon" aria-hidden="true" />
-                          Kommentar senden
-                        </button>
-                      </div>
+                        <button type="submit" className="comment-submit-btn">Absenden</button>
+                      </form>
+
                     </div>
                   )}
                 </div>
@@ -482,7 +418,6 @@ const Blog = () => {
             </div>
           )}
         </div>
-
         <aside className="blog-sidebar">
           <div className="sidebar-widget">
             <h3>Beliebte Kategorien</h3>
@@ -499,22 +434,20 @@ const Blog = () => {
               ))}
             </div>
           </div>
-
           <div className="sidebar-widget">
             <h3>Neueste Beiträge</h3>
             <div className="recent-posts">
               {blogPosts.slice(0, 3).map(post => (
-                <div key={post.id} className="recent-post">
+                <div key={post._id} className="recent-post">
                   <img src={post.image} alt={`Vorschaubild für den Beitrag: ${post.title}`} />
                   <div className="recent-post-content">
                     <h4>{post.title}</h4>
-                    <span className="recent-date">{formatDate(post.date)}</span>
+                    <span className="recent-date">{formatDate(post.createdAt || post.date)}</span>
                   </div>
                 </div>
               ))}
             </div>
           </div>
-
           <div className="sidebar-widget">
             <h3>Schreib einen Beitrag</h3>
             <p>Teile deine Geschichte mit der Nachbarschaft!</p>
@@ -530,7 +463,9 @@ const Blog = () => {
         </aside>
       </div>
 
+
       {/* Popup für neuen Beitrag */}
+
       {showWritePostPopup && (
         <div className="popup-overlay">
           <div className="popup-content">

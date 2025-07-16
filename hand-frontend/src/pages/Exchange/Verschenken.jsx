@@ -2,7 +2,7 @@ import React, { useContext } from "react";
 import "./Exchange.css";
 import buecherkisteImg from "../../assets/fotos/bücherkiste.jpeg";
 import kinderspielzeugImg from "../../assets/fotos/kinderspielzeug.jpeg";
-import { AuthContext } from "./AuthContext"; // Zugriff auf login info
+import { AuthContext } from "../../context/AuthContext"; // Zugriff auf login info
 
 const verschenkenItems = [
   {
@@ -50,13 +50,13 @@ export default function Verschenken() {
               <h3>{item.title}</h3>
               <p>{item.description}</p>
               {currentUser && (
-      <button
-        className="contact-button"
-        onClick={() => handleContact(item.id)}
-      >
-        Kontakt aufnehmen
-      </button>
-    )}
+                <button
+                  className="contact-button"
+                  onClick={() => handleContact(item.id)}
+                >
+                  Kontakt aufnehmen
+                </button>
+              )}
             </div>
           </div>
         ))}

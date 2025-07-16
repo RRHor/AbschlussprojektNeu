@@ -1,14 +1,26 @@
-import React, { useState } from 'react';
+import { useState, useEffect } from 'react';
 // NEU: AuthContext importieren
 import { useAuth } from '../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
+import { User, MapPin, Edit3, Save, X, Camera, Loader, Calendar, Users } from 'lucide-react';
+import api from '../api';
+import exchangeService from '../services/exchangeService';
 import './Profile.css';
+import Footer from '../components/Footer';
+
 
 const Profile = () => {
 
   // User und Ladezustand aus dem Context holen
   const { user, loading } = useAuth();
 
+
+const Profile = () => {
+  const { currentUser, loading: authLoading } = useAuth();
+  const navigate = useNavigate();
+
   console.log('User im Profil:', user);
+
 
   // === NEU: Ladeanzeige und Fallback ===
   if (loading) {
@@ -62,6 +74,102 @@ const Profile = () => {
     profileImage: null,
     addresses: []
   });
+
+  
+  const [editData, setEditData] = useState({ ...profileData });
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [error, setError] = useState(null);
+
+  // STATES - Exchange Posts
+  const [myExchangePosts, setMyExchangePosts] = useState([]);
+  const [loadingPosts, setLoadingPosts] = useState(false);
+
+  // STATES - Events & Navigation
+  const [activeTab, setActiveTab] = useState('profile');
+  const [userEvents, setUserEvents] = useState([]);
+  const [eventsLoading, setEventsLoading] = useState(false);
+
+  // User-Daten laden
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        setIsLoading(true);
+        const response = await api.get('/auth/users/me');
+        const data = response.data;
+        setProfileData({
+          nickname: data.nickname || '',
+          email: data.email || '',
+          firstName: data.firstName || '',
+          lastName: data.lastName || '',
+          addresses: Array.isArray(data.addresses) && data.addresses.length > 0
+            ? data.addresses
+            : [ { ...emptyAddress } ],
+          profileImage: data.profileImage || null
+        });
+        setEditData({
+          nickname: data.nickname || '',
+          email: data.email || '',
+          firstName: data.firstName || '',
+          lastName: data.lastName || '',
+          addresses: Array.isArray(data.addresses) && data.addresses.length > 0
+            ? data.addresses
+            : [ { ...emptyAddress } ],
+          profileImage: data.profileImage || null
+        });
+        setError(null);
+      } catch (error) {
+        setError('Fehler beim Laden der Profildaten');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    if (!authLoading && currentUser) fetchUserData();
+  }, [currentUser, authLoading]);
+
+
+
+  // Exchange Posts laden
+  useEffect(() => {
+    const fetchMyExchangePosts = async () => {
+      setLoadingPosts(true);
+      try {
+        const result = await exchangeService.getMyPosts();
+        if (result.success) setMyExchangePosts(result.data);
+      } catch (error) {
+        // Fehler ignorieren
+      } finally {
+        setLoadingPosts(false);
+      }
+    };
+    if (profileData.nickname) fetchMyExchangePosts();
+  }, [profileData.nickname]);
+
+  // Events laden wenn Events-Tab aktiv
+  useEffect(() => {
+    if (activeTab === 'events' && currentUser) loadUserEvents();
+    // eslint-disable-next-line
+  }, [activeTab, currentUser]);
+
+  // User-Events von Backend laden
+  const loadUserEvents = async () => {
+    try {
+      setEventsLoading(true);
+      const response = await api.get('/auth/users/me/events');
+      setUserEvents(response.data.events || []);
+    } catch (error) {
+      setUserEvents([]);
+    } finally {
+      setEventsLoading(false);
+    }
+  };
+
+  // Event-Detail-Seite öffnen
+  const handleEventClick = (event) => {
+    navigate(`/events/${event._id}`, { state: { event } });
+  };
+
+  // Bearbeiten/Speichern
 
   const handleEdit = () => {
     setIsEditing(true);

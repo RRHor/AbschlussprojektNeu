@@ -10,41 +10,54 @@ export const useAuth = () => {
   }
   return context;
 };
+
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+
   // API Base URL
   const API_URL = import.meta.env.VITE_API_URL;
-  // Set axios default base URL
   axios.defaults.baseURL = API_URL;
-  // Check if user is logged in on app start
+
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (token) {
-      // Set token in axios headers
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-      // Verify token and get user info
       fetchUser();
     } else {
       setLoading(false);
     }
+
+    const handleStorageChange = (e) => {
+      if (e.key === 'token') {
+        if (e.newValue) {
+          axios.defaults.headers.common['Authorization'] = `Bearer ${e.newValue}`;
+          fetchUser();
+        } else {
+          setUser(null);
+          setLoading(false);
+        }
+      }
+    };
+    window.addEventListener('storage', handleStorageChange);
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
   }, []);
+
   const fetchUser = async () => {
     try {
-      // ALT: const response = await axios.get('/users/profile');
-      // NEU: Korrekte Route für eingeloggten User!
-      const response = await axios.get('/users/me');
-      // setUser(response.data.data);
-      setUser(response.data); // ggf. response.data.data, je nach Backend
+      const response = await axios.get('/auth/users/me');
+      setUser(response.data);
     } catch (error) {
-      console.error('Token verification failed:', error);
       logout();
     } finally {
       setLoading(false);
     }
   };
-  // === Ende der Änderung ===
+
   const login = async (email, password) => {
+    setLoading(true);
     try {
       const response = await axios.post('/auth/login', { email, password });
       const { token, user } = response.data;
@@ -57,9 +70,13 @@ export const AuthProvider = ({ children }) => {
         success: false,
         message: error.response?.data?.message || 'Login fehlgeschlagen'
       };
+    } finally {
+      setLoading(false);
     }
   };
+
   const register = async (userData) => {
+    setLoading(true);
     try {
       const response = await axios.post('/auth/register', userData);
       const { token, user } = response.data;
@@ -72,13 +89,17 @@ export const AuthProvider = ({ children }) => {
         success: false,
         message: error.response?.data?.message || 'Registrierung fehlgeschlagen'
       };
+    } finally {
+      setLoading(false);
     }
   };
+
   const logout = () => {
     localStorage.removeItem('token');
     delete axios.defaults.headers.common['Authorization'];
     setUser(null);
   };
+
   const value = {
     user,
     login,
@@ -86,6 +107,7 @@ export const AuthProvider = ({ children }) => {
     logout,
     loading
   };
+
   return (
     <AuthContext.Provider value={value}>
       {children}

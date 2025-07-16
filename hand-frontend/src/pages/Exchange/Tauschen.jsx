@@ -81,7 +81,7 @@
 
 import React, { useContext, useState, useEffect } from "react";
 import "./Exchange.css";
-import { AuthContext } from "./AuthContext";
+import { AuthContext } from "../../context/AuthContext"; // Zugriff auf login info
 
 export default function Tauschen() {
   const { currentUser } = useContext(AuthContext);
@@ -91,7 +91,7 @@ export default function Tauschen() {
   useEffect(() => {
     const fetchItems = async () => {
       try {
-        const res = await fetch("http://localhost:5000/api/exchange?category=tauschen");
+        const res = await fetch("http://localhost:4000/api/exchange?category=tauschen");
         const data = await res.json();
         if (data.success) {
           setTauschenItems(data.data);
@@ -134,7 +134,7 @@ export default function Tauschen() {
     };
 
     try {
-      const res = await fetch("http://localhost:5000/api/exchange", {
+      const res = await fetch("http://localhost:4000/api/exchange", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
