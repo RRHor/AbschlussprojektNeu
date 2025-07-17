@@ -1,4 +1,3 @@
-/* Basis-Styling für HTML-Elemente */
 * {
     margin: 0;
     padding: 0;
@@ -83,8 +82,8 @@ body {
 .back-button {
     position: absolute;
     top: -64px; 
-    left: 50%; /* Center the button */
-    transform: translateX(-50%); /* Adjust for centering */
+    left: 50%; 
+    transform: translateX(-50%); 
     display: flex;
     align-items: center;
     color: rgba(255, 255, 255, 0.9);
@@ -98,7 +97,7 @@ body {
     font-size: 1em;
     font-weight: 500;
     transition: all 0.3s ease;
-    white-space: nowrap; /* Prevent text wrapping */
+    white-space: nowrap; 
 }
 
 .back-button:hover {
@@ -143,7 +142,7 @@ body {
     background: linear-gradient(135deg, #05004E 0%, #4FE3C1 100%); 
     padding: 32px; 
     text-align: center;
-    color: white;
+    color: rgb(255, 255, 255);
     position: relative;
     overflow: hidden;
 }
@@ -293,7 +292,7 @@ body {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    flex-wrap: wrap; /* Allow wrapping on smaller screens */
+    flex-wrap: wrap; 
     gap: 10px;
 }
 
@@ -530,32 +529,32 @@ body {
     color: rgba(255, 255, 255, 0.75); 
     background-color: rgba(5, 0, 78, 0.25);
     border-radius: 24px;
-    padding: 10px 20px; /* Added padding for better appearance */
+    padding: 10px 20px; 
 }
 
 /* Responsive Anpassungen */
 @media (max-width: 768px) {
     .login-page-wrapper {
-        padding: 15px; /* Slightly more padding for tablets */
+        padding: 15px; 
     }
 
     .login-main-container {
-        max-width: 90%; /* Allow wider card on smaller screens */
+        max-width: 90%;
     }
 
     .login-card {
-        border-radius: 20px; /* Slightly smaller radius */
+        border-radius: 20px;
         box-shadow: 
             0 6px 20px rgba(0, 0, 0, 0.1),
             inset 0 1px 0 rgba(255, 255, 255, 0.15); 
     }
 
     .login-card-header {
-        padding: 28px 20px; /* Adjust padding */
+        padding: 28px 20px;
     }
 
     .header-title {
-        font-size: 26px; /* Slightly smaller title */
+        font-size: 26px;
     }
 
     .header-subtitle {
@@ -563,23 +562,23 @@ body {
     }
 
     .login-card-content {
-        padding: 25px; /* Adjust padding */
+        padding: 25px; 
     }
 
     .back-button {
-        top: 20px; /* Adjust position */
-        left: 20px; /* Align to the left */
-        transform: none; /* Remove transform for centering */
-        padding: 10px 20px; /* Smaller button */
+        top: 20px; 
+        left: 20px; 
+        transform: none; 
+        padding: 10px 20px;
         font-size: 0.9em;
     }
 
     .back-button:hover {
-        transform: translateY(-3px); /* Only vertical hover effect */
+        transform: translateY(-3px);
     }
 
     .back-button:hover .back-button-icon {
-        transform: translateX(-4px); /* Smaller icon movement */
+        transform: translateX(-4px); 
     }
 
     .input-group input {
@@ -595,7 +594,7 @@ body {
     }
 
     .form-options {
-        flex-direction: column; /* Stack on smaller screens */
+        flex-direction: column;
         align-items: flex-start;
         gap: 12px; 
     }
@@ -606,7 +605,7 @@ body {
     }
 
     .additional-info {
-        padding: 8px 15px; /* Smaller padding */
+        padding: 8px 15px; 
         font-size: 0.8em;
     }
 }
@@ -617,7 +616,7 @@ body {
     }
 
     .login-main-container {
-        max-width: 100%; /* Allow full width */
+        max-width: 100%; 
     }
 
     .login-card {
@@ -647,7 +646,7 @@ body {
     }
 
     .input-group input {
-        padding: 12px 12px 12px 40px; /* Adjust for smaller screens */
+        padding: 12px 12px 12px 40px; 
         font-size: 0.95em;
     }
 
@@ -688,7 +687,6 @@ body {
     }
 }
 
-/* Optional: Even smaller screens like iPhone SE */
 @media (max-width: 375px) {
     .login-page-wrapper {
         padding: 5px;

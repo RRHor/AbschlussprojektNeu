@@ -1,4 +1,3 @@
-/* Color Variables (from profile.css) */
 :root {
   --deepBlue: #05004E;
   --skyBlue: #2E7EB3;
@@ -94,7 +93,6 @@
   font-family: "Nunito", sans-serif;
 }
 
-/* Header (similar to profile-header) - Original Header als Alternative */
 .help-header {
   background-color: var(--deepBlue);
   color: white;
@@ -129,11 +127,10 @@
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
-/* Section Block Styling (similar to profile-form-section) */
 .section-block {
   margin-bottom: 2rem;
   padding-bottom: 1.5rem;
-  border-bottom: 1px solid var(--cream); /* subtle separator */
+  border-bottom: 1px solid var(--cream); 
 }
 
 .section-block:last-child {
@@ -150,7 +147,6 @@
   margin-bottom: 1.5rem;
 }
 
-/* Input Group Styling (similar to profile.css) */
 .input-group {
   display: flex;
   flex-direction: column;
@@ -177,7 +173,7 @@
   background-color: var(--cream);
   color: var(--deepBlue);
   font-size: 1rem;
-  resize: vertical; /* Allow vertical resizing */
+  resize: vertical; 
   min-height: 50px;
 }
 
@@ -188,9 +184,9 @@
   box-shadow: 0 0 0 3px rgba(46, 126, 179, 0.1);
 }
 
-/* Button Styling (from profile.css) */
+
 .btn {
-  display: inline-flex; /* Use inline-flex for better button sizing */
+  display: inline-flex; 
   align-items: center;
   gap: 0.5rem;
   padding: 0.75rem 1.5rem;
@@ -199,12 +195,12 @@
   font-weight: 500;
   cursor: pointer;
   transition: transform 0.2s ease, background-color 0.2s ease;
-  text-decoration: none; /* In case it's an <a> tag */
-  justify-content: center; /* Center content horizontally */
+  text-decoration: none; 
+  justify-content: center; 
 }
 
 .btn:hover {
-  transform: scale(1.03); /* Slightly less aggressive hover for non-edit/save */
+  transform: scale(1.03);
 }
 
 .btn.primary {
@@ -213,7 +209,7 @@
 }
 
 .btn.primary:hover {
-  background-color: #37d0b1; /* Slightly darker mint on hover */
+  background-color: #37d0b1; 
 }
 
 .btn.secondary {
@@ -222,13 +218,13 @@
 }
 
 .btn.secondary:hover {
-  background-color: #266b96; /* Slightly darker sky blue on hover */
+  background-color: #266b96; 
 }
 
 .ask-btn {
   margin-top: 1rem;
-  width: auto; /* Allow button to size based on content */
-  align-self: flex-end; /* Align button to the right if form is flex column */
+  width: auto; 
+  align-self: flex-end; 
 }
 
 /* Questions List */

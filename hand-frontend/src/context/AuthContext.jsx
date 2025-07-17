@@ -7,7 +7,8 @@ export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
     throw new Error('useAuth must be used within an AuthProvider');
-  }
+  }const API_URL = import.meta.env.VITE_API_URL;
+axios.defaults.baseURL = API_URL;
   return context;
 };
 export const AuthProvider = ({ children }) => {
@@ -31,34 +32,53 @@ export const AuthProvider = ({ children }) => {
   }, []);
   const fetchUser = async () => {
     try {
-      // ALT: const response = await axios.get('/users/profile');
-      // NEU: Korrekte Route für eingeloggten User!
-      const response = await axios.get('/users/me');
+      const response = await axios.get('/auth/users/me');
       // setUser(response.data.data);
-      setUser(response.data); // ggf. response.data.data, je nach Backend
+      setUser(response.data); // nicht data.data
     } catch (error) {
       console.error('Token verification failed:', error);
       logout();
     } finally {
       setLoading(false);
     }
+    
   };
-  // === Ende der Änderung ===
-  const login = async (email, password) => {
-    try {
-      const response = await axios.post('/auth/login', { email, password });
-      const { token, user } = response.data;
-      localStorage.setItem('token', token);
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-      setUser(user);
-      return { success: true };
-    } catch (error) {
-      return {
-        success: false,
-        message: error.response?.data?.message || 'Login fehlgeschlagen'
-      };
-    }
-  };
+
+  const login = async (identifier, password) => {
+  try {
+    // Prüfe, ob es eine E-Mail ist (ganz einfach mit @)
+    const payload = identifier.includes('@')
+      ? { email: identifier, password }
+      : { nickname: identifier, password };
+
+    const response = await axios.post('/auth/login', payload);
+    const { token, user } = response.data;
+    localStorage.setItem('token', token);
+    axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+    setUser(user);
+    return { success: true };
+  } catch (error) {
+    return {
+      success: false,
+      message: error.response?.data?.message || 'Login fehlgeschlagen'
+    };
+  }
+};
+  // const login = async (email, password) => {
+  //   try {
+  //     const response = await axios.post('/auth/login', { email, password });
+  //     const { token, user } = response.data;
+  //     localStorage.setItem('token', token);
+  //     axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+  //     setUser(user);
+  //     return { success: true };
+  //   } catch (error) {
+  //     return {
+  //       success: false,
+  //       message: error.response?.data?.message || 'Login fehlgeschlagen'
+  //     };
+  //   }
+  // };
   const register = async (userData) => {
     try {
       const response = await axios.post('/auth/register', userData);

@@ -1,5 +1,5 @@
 
-import React from 'react';
+
 import { Routes, Route } from 'react-router-dom';
 import Home from './pages/Home'; 
 import Navbar from './components/Navbar';
@@ -21,18 +21,20 @@ import PageNotFound from './pages/PageNotFound.jsx'; // Importiere die 404-Seite
 import VerifyEmail from './components/VerifyEmail.jsx';
 
 function App() {
+
   return (
-    <>
-      <Navbar /> {/* Die Navbar wird immer angezeigt, unabhängig von der Route */}
+<>
+    <Navbar /> {/* Die Navbar wird immer angezeigt, unabhängig von der Route */}
+ 
+      
       
       <div className="container"> {/* Optional: Ein Container für deinen Seiteninhalt */}
         <Routes>
           <Route path="/" element={<LandingPage/>} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
-          <Route path="/verify" element={<VerifyEmail />} />
           <Route path="/home" element={<Home />} />
- 
+          <Route path="/verify" element={<VerifyEmail />} />
           <Route path="/help" element={<Help />} />
           <Route path="/events" element={<Events />} />
           <Route path="/events/:id" element={<EventDetail />} />
@@ -48,7 +50,7 @@ function App() {
         </Routes>
       </div>
       <Footer />
-   </>
+     </>
   );
 }
 export default App;

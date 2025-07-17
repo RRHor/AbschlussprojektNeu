@@ -1,10 +1,9 @@
 import RegisterForm from '../components/RegisterForm.jsx';
 
-// Wegen Fehlermeldung in Browserkonsole geändert
-const Register = () => {
+const Register = ({ onSuccess }) => {
   return (
     <div>
-      <RegisterForm onSuccess={() => {}} />
+      <RegisterForm onSuccess={onSuccess} />
     </div>
   );
 };

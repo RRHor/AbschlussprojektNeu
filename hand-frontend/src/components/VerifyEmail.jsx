@@ -1,9 +1,5 @@
 import { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-
-// Hole die API-URL aus der .env Best Practice!
-const apiUrl = import.meta.env.VITE_API_URL;
-
 function VerifyEmail() {
   const [status, setStatus] = useState('Verifiziere...');
   const [error, setError] = useState(null);
@@ -14,27 +10,30 @@ function VerifyEmail() {
     const verifyEmail = async () => {
       // Verifizierungscode aus der URL lesen
       const params = new URLSearchParams(location.search);
+      const email = params.get('email'); // <--- NEU
       const code = params.get('code');
-      const email = params.get('email');
       if (!code || !email) {
+      
+      // if (!code) {
         setError('Kein Verifizierungscode gefunden');
         return;
       }
       try {
         // Anfrage an das Backend senden
-        // const response = await fetch('http://localhost:4000/api/auth/verify', {
-        const response = await fetch(`${apiUrl}/auth/verify`, {
+        // const response = await fetch('http://localhost:5000/api/auth/verify', {
+         const response = await fetch(`${import.meta.env.VITE_API_URL}/auth/verify`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ code, email }),
+          // body: JSON.stringify({ code }),
+           body: JSON.stringify({ code, email }), // <--- NEU
         });
         const data = await response.json();
         if (response.ok) {
           setStatus('E-Mail erfolgreich verifiziert!');
           // Nach 3 Sekunden zur Startseite weiterleiten
-          setTimeout(() => navigate('/login'), 3000);
+          setTimeout(() => navigate('/'), 3000);
         } else {
           setError(data.message || 'Verifizierung fehlgeschlagen');
         }
@@ -43,7 +42,7 @@ function VerifyEmail() {
         console.error('Verifizierungsfehler:', err);
       }
     };
-    
+
     verifyEmail();
   }, [location.search, navigate]);
   return (

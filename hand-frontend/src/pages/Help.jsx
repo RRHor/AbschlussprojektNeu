@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import "./Help.css"; // Import the CSS file
+import "./Help.css";
 
 function Help() {
   const [questions, setQuestions] = useState([]);

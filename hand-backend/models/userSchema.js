@@ -35,7 +35,7 @@ const userSchema = new mongoose.Schema({
       default: false,
     },
     // Rückbau: Nur noch isVerify, kein isVerified mehr in diesem Schema
-    isVerifid: {
+    isVerified: {
       type: Boolean,
       default: false,
     },

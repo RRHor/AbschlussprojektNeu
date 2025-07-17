@@ -1,5 +1,8 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
+import axios from 'axios';
 import './ForgotPassword.css';
+
+const API_URL = import.meta.env.VITE_API_URL;
 
 const ForgotPassword = () => {
   const [step, setStep] = useState('email'); // 'email', 'verification', 'reset', 'success'
@@ -44,12 +47,23 @@ const ForgotPassword = () => {
       return;
     }
 
-    setIsLoading(true);
-    // Simulate API call
-    setTimeout(() => {
-      setIsLoading(false);
-      setStep('verification');
-    }, 2000);
+
+  try {
+    // Passe die URL ggf. an dein Backend an!
+    // await axios.post('http://localhost:4000/api/auth/forgot-password', { email: formData.email });
+    await axios.post(`${API_URL}/auth/forgot-password`, { email: formData.email });
+    setStep('verification');
+  } catch (error) {
+    setErrors({ email: 'E-Mail konnte nicht gesendet werden.' });
+  } finally {
+    setIsLoading(false);
+  }
+    // setIsLoading(true);
+    // // Simulate API call
+    // setTimeout(() => {
+    //   setIsLoading(false);
+    //   setStep('verification');
+    // }, 2000);
   };
 
   const handleVerificationSubmit = async (e) => {
@@ -97,12 +111,28 @@ const ForgotPassword = () => {
     }
 
     setIsLoading(true);
-    // Simulate API call
-    setTimeout(() => {
-      setIsLoading(false);
-      setStep('success');
-    }, 2000);
-  };
+  try {
+    // Sende die Daten ans Backend!
+    await axios.post(`${API_URL}/auth/reset-password`, {
+      email: formData.email,
+      code: formData.verificationCode,
+      newPassword: formData.newPassword
+    });
+    setStep('success');
+  } catch (error) {
+    setErrors({ newPassword: 'Passwort konnte nicht geändert werden.' });
+  } finally {
+    setIsLoading(false);
+  }
+};
+
+  //   setIsLoading(true);
+  //   // Simulate API call
+  //   setTimeout(() => {
+  //     setIsLoading(false);
+  //     setStep('success');
+  //   }, 2000);
+  // };
 
   const resendCode = () => {
     setIsLoading(true);

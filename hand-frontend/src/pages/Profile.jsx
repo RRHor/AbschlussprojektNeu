@@ -1,25 +1,23 @@
-import React, { useState } from 'react';
-// NEU: AuthContext importieren
-import { useAuth } from '../context/AuthContext';
+import { useState, useContext } from 'react';
+import { AuthContext } from '../context/AuthContext';
 import './Profile.css';
 
 const Profile = () => {
+  const { user } = useContext(AuthContext);
+  const [isEditing, setIsEditing] = useState(false);
+  // editData erst initialisieren, wenn Bearbeiten gestartet wird!
+  const [editData, setEditData] = useState(null);
 
-  // User und Ladezustand aus dem Context holen
-  const { user, loading } = useAuth();
-
-  console.log('User im Profil:', user);
-
-  // === NEU: Ladeanzeige und Fallback ===
-  if (loading) {
-    return <div>Profil wird geladen...</div>;
+  // Erst prüfen, ob user und addresses existieren, bevor darauf zugegriffen wird!
+  if (!user || !user.addresses) {
+    return <div>Lade Profil...</div>;
   }
-  if (!user) {
-    return <div>Kein Benutzer gefunden. Bitte einloggen!</div>;
-  }
-  // === ENDE NEU ===
+  const profileData = user;
+  const hauptAdresse = profileData.addresses && profileData.addresses[0];
 
-  // const [isEditing, setIsEditing] = useState(false);
+  // if (!profileData)
+  //   return 
+  //     <div> Lade Profil...</div>
   // const [profileData, setProfileData] = useState({
   //   username: 'max_mustermann',
   //   email: 'max.mustermann@email.com',
@@ -28,40 +26,19 @@ const Profile = () => {
   //   lastName: 'Mustermann',
   //   profileImage: null,
   //   addresses: [
-    //   {
-    //     id: 1,
-    //     type: 'Hauptadresse',
-    //     district: 'München Nord',
-    //     city: 'München',
-    //     zip: '80331',
-    //     street: 'Musterstraße 123',
-    //     isPrimary: true
-    //   }
-    // ]
+  //     {
+  //       id: 1,
+  //       type: 'Hauptadresse',
+  //       district: 'München Nord',
+  //       city: 'München',
+  //       zip: '80331',
+  //       street: 'Musterstraße 123',
+  //       isPrimary: true
+  //     }
+  //   ]
   // });
 
-  // Hauptadresse auslesen
-  const hauptAdresse = user?.addresses?.find(addr => addr.isPrimary) || user?.addresses?.[0] || {};
-
-  // NEU: Initialisiere mit echten Userdaten (wenn vorhanden)
-  const [isEditing, setIsEditing] = useState(false);
-  const [profileData, setProfileData] = useState(user ? {
-    username: user.nickname || user.username || '',
-    email: user.email || '',
-    password: '••••••••••',
-    firstName: hauptAdresse.firstName || '',
-    lastName: hauptAdresse.lastName || '',
-    profileImage: null,
-    addresses: user.addresses || []
-  } : {
-    username: '',
-    email: '',
-    password: '',
-    firstName: '',
-    lastName: '',
-    profileImage: null,
-    addresses: []
-  });
+  // const [editData, setEditData] = useState({ ...profileData, addresses: [...profileData.addresses] });
 
   const handleEdit = () => {
     setIsEditing(true);
@@ -72,12 +49,18 @@ const Profile = () => {
   };
 
   const handleSave = () => {
-    setProfileData({ 
-      ...editData, 
-      addresses: editData.addresses.map(addr => ({ ...addr }))
-    });
+    // Hier würdest du speichern, z.B. API-Call
     setIsEditing(false);
+    setEditData(null);
   };
+
+  // const handleSave = () => {
+  //   setProfileData({ 
+  //     ...editData, 
+  //     addresses: editData.addresses.map(addr => ({ ...addr }))
+  //   });
+  //   setIsEditing(false);
+  // };
 
   const handleCancel = () => {
     setEditData({ 
@@ -153,7 +136,6 @@ const Profile = () => {
   return (
     <div className="profile-container">
       <div className="profile-wrapper">
-        {/* Header */}
         <div className="profile-header">
           <div className="header-content">
             <div className="header-text">
@@ -213,7 +195,10 @@ const Profile = () => {
                   {isEditing ? editData.firstName : profileData.firstName} {isEditing ? editData.lastName : profileData.lastName}
                 </h2>
                 <p className="profile-username">
-                  @{isEditing ? editData.username : profileData.username}
+                  @{isEditing 
+                  ? (editData.username || editData.nickname)
+                  : (profileData.nickname || profileData.username)
+                }
                 </p>
               </div>
             </div>
@@ -230,11 +215,11 @@ const Profile = () => {
                       {isEditing ? (
                         <input
                           type="text"
-                          value={editData.username}
+                          value={editData.username || editData.nickname}
                           onChange={(e) => handleInputChange('username', e.target.value)}
                         />
                       ) : (
-                        <div className="input-display">{profileData.username}</div>
+                        <div className="input-display">{profileData.username || profileData.nickname}</div>
                       )}
                     </div>
                   </div>
@@ -270,35 +255,24 @@ const Profile = () => {
               </div>
 
               {/* Personal Information */}
+              {/*
+                Anzeige von Vorname und Nachname aus der Hauptadresse (addresses[0])
+                Diese Felder werden im Adress-Objekt gespeichert und nicht auf oberster Ebene des Users.
+                Das sorgt für Datenschutz und Flexibilität bei mehreren Adressen.
+              */}
               <div className="form-group">
                 <h3 className="section-title">Persönliche Daten</h3>
                 <div className="form-row">
                   <div className="input-group">
                     <label>Vorname</label>
                     <div className="input-container">
-                      {isEditing ? (
-                        <input
-                          type="text"
-                          value={editData.firstName}
-                          onChange={(e) => handleInputChange('firstName', e.target.value)}
-                        />
-                      ) : (
-                        <div className="input-display">{profileData.firstName}</div>
-                      )}
+                      <div className="input-display">{hauptAdresse?.firstName || '—'}</div>
                     </div>
                   </div>
                   <div className="input-group">
                     <label>Nachname</label>
                     <div className="input-container">
-                      {isEditing ? (
-                        <input
-                          type="text"
-                          value={editData.lastName}
-                          onChange={(e) => handleInputChange('lastName', e.target.value)}
-                        />
-                      ) : (
-                        <div className="input-display">{profileData.lastName}</div>
-                      )}
+                      <div className="input-display">{hauptAdresse?.lastName || '—'}</div>
                     </div>
                   </div>
                 </div>
@@ -350,7 +324,7 @@ const Profile = () => {
                               disabled={address.isPrimary}
                               title={address.isPrimary ? "Hauptadresse kann nicht gelöscht werden" : "Adresse löschen"}
                             >
-                              🗑️
+                              Adresse entfernen
                             </button>
                           </div>
                         )}
