@@ -1,5 +1,8 @@
 import React, { useState } from 'react';
+import axios from 'axios';
 import './ForgotPassword.css';
+
+const API_URL = import.meta.env.VITE_API_URL;
 
 const ForgotPassword = () => {
   const [step, setStep] = useState('email'); // 'email', 'verification', 'reset', 'success'
@@ -29,6 +32,7 @@ const ForgotPassword = () => {
     return password.length >= 8;
   };
 
+  // Step 1: Request password reset code
   const handleEmailSubmit = async (e) => {
     e.preventDefault();
     const newErrors = {};
@@ -45,13 +49,18 @@ const ForgotPassword = () => {
     }
 
     setIsLoading(true);
-    // Simulate API call
-    setTimeout(() => {
-      setIsLoading(false);
+    try {
+      await axios.post(`${API_URL}/auth/password-reset-request`, { email: formData.email });
       setStep('verification');
-    }, 2000);
+      setErrors({});
+    } catch (err) {
+      setErrors({ email: 'Fehler beim Senden des Codes. Bitte versuchen Sie es erneut.' });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
+  // Step 2: Verify code
   const handleVerificationSubmit = async (e) => {
     e.preventDefault();
     const newErrors = {};
@@ -68,13 +77,21 @@ const ForgotPassword = () => {
     }
 
     setIsLoading(true);
-    // Simulate API call
-    setTimeout(() => {
-      setIsLoading(false);
+    try {
+      await axios.post(`${API_URL}/auth/verify-reset-code`, {
+        email: formData.email,
+        code: formData.verificationCode
+      });
       setStep('reset');
-    }, 1500);
+      setErrors({});
+    } catch (err) {
+      setErrors({ verificationCode: 'Ungültiger oder abgelaufener Code.' });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
+  // Step 3: Reset password
   const handlePasswordReset = async (e) => {
     e.preventDefault();
     const newErrors = {};
@@ -97,19 +114,31 @@ const ForgotPassword = () => {
     }
 
     setIsLoading(true);
-    // Simulate API call
-    setTimeout(() => {
-      setIsLoading(false);
+    try {
+      await axios.post(`${API_URL}/auth/reset-password`, {
+        email: formData.email,
+        code: formData.verificationCode,
+        newPassword: formData.newPassword
+      });
       setStep('success');
-    }, 2000);
+      setErrors({});
+    } catch (err) {
+      setErrors({ newPassword: 'Fehler beim Zurücksetzen des Passworts.' });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const resendCode = () => {
+  // Resend code
+  const resendCode = async () => {
     setIsLoading(true);
-    // Simulate resend API call
-    setTimeout(() => {
+    try {
+      await axios.post(`${API_URL}/auth/password-reset-request`, { email: formData.email });
+    } catch (err) {
+      // Fehler ignorieren, UI zeigt nur Spinner
+    } finally {
       setIsLoading(false);
-    }, 1000);
+    }
   };
 
   const goBackToLogin = () => {

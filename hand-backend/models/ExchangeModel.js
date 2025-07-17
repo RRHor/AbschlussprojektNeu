@@ -20,7 +20,7 @@ const exchangeSchema = new mongoose.Schema({
     enum: ['verschenken', 'tauschen', 'suchen'],
     lowercase: true
   },
-  // picture-Feld entfernt (Rückbau Base64)
+ 
   tauschGegen: {
     type: String,
     trim: true,

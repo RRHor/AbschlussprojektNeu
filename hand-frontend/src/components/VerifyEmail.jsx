@@ -12,7 +12,7 @@ function VerifyEmail() {
 
   useEffect(() => {
     const verifyEmail = async () => {
-      // Verifizierungscode aus der URL lesen
+      // Verifizierungscode und Email aus der URL lesen
       const params = new URLSearchParams(location.search);
       const code = params.get('code');
       const email = params.get('email');
@@ -21,8 +21,6 @@ function VerifyEmail() {
         return;
       }
       try {
-        // Anfrage an das Backend senden
-        // const response = await fetch('http://localhost:4000/api/auth/verify', {
         const response = await fetch(`${apiUrl}/auth/verify`, {
           method: 'POST',
           headers: {
@@ -33,7 +31,7 @@ function VerifyEmail() {
         const data = await response.json();
         if (response.ok) {
           setStatus('E-Mail erfolgreich verifiziert!');
-          // Nach 3 Sekunden zur Startseite weiterleiten
+          // Nach 3 Sekunden zur Login-Seite weiterleiten
           setTimeout(() => navigate('/login'), 3000);
         } else {
           setError(data.message || 'Verifizierung fehlgeschlagen');
@@ -43,7 +41,6 @@ function VerifyEmail() {
         console.error('Verifizierungsfehler:', err);
       }
     };
-    
     verifyEmail();
   }, [location.search, navigate]);
   return (

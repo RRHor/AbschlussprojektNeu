@@ -35,6 +35,9 @@ section {
   min-height: 100vh;
     width: 80%;
   margin: 0;
+  margin-top: 0;
+  margin-bottom: 0;
+  padding: 1rem;
   box-sizing: border-box;
   padding: 1rem;
   background-color: var(--bg-primary);
@@ -48,11 +51,22 @@ section {
 
   }
 
-.landing-content h1 {
+.video-section h1 {
   font-size: 3rem;
   font-weight: 700;
   margin-bottom: 1rem;
-  transition: color 0.4s ease;
+  background: linear-gradient(90deg, var(--deepBlue), var(--skyBlue), var(--mint), var(--coral));
+  background-size: 400% 400%;
+  color: transparent;
+  -webkit-background-clip: text;
+  background-clip: text;
+  animation: gradientMove 6s ease-in-out infinite;
+}
+
+@keyframes gradientMove {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
 }
 
 .landing-content p {
@@ -167,17 +181,6 @@ section {
   font-family: "Nunito", sans-serif;
   width: 100%;
   box-sizing: border-box;
-}
-
-/* ====== Root Variables ====== */
-:root {
-  --deepBlue: #05004E;
-  --skyBlue: #2E7EB3;
-  --mint: #4FE3C1;
-  --cream: #F8E8C3;
-  --coral: #DE887B;
-  --text-color: var(--deepBlue);
-  --bg-primary: var(--cream);
 }
 
 /* ====== Layout ====== */
@@ -338,4 +341,15 @@ img {
   .btn.secondary {
     min-width: 100%;
   }
+}
+/* Video section */
+
+
+.nachbarschaft-video {
+  width: 100%;
+ height: auto;
+  display: block; 
+    margin: 0 auto;
+    border-radius: 12px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
 }

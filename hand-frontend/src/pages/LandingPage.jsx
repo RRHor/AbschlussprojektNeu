@@ -12,6 +12,7 @@ import landingphoto3 from '../assets/landingphoto/landingphoto3.png';
 import landingphoto4 from '../assets/landingphoto/landingphoto4.png';
 import landingphoto5 from '../assets/landingphoto/landingphoto5.avif'
 import Lottie from 'lottie-react';
+import city from '../assets/video/city.mp4';
 
 const landingphoto = [
   landingphoto1,
@@ -23,10 +24,26 @@ const landingphoto = [
 
 function LandingPage() {
   return (
+    
     <div className="landing-container">
+      {/* VIDEO SECTION */}
+          <section className="video-section">
+              <h1>Wilkommen in Hand in Hand Nachbarschaftshilfe</h1>
+              <video
+                  src={city}
+                  type="video/mp4"
+                  controls
+                  muted
+                  autoPlay
+                  loop
+                  className="nachbarschaft-video"
+              />
+          </section> 
+
+      {/* Image Carousel */}
       <ImageCarousel images={landingphoto} />
       <section className="landing-content">
-        <h1>Willkommen in Hand in Hand</h1>
+        <h2>Erlebe Nachbarschaft</h2>
         <p>Gemeinsam in der Nachbarschaft helfen und verbunden bleiben.</p>
         <div className="cta-buttons">
           <a href="./Register" className="btn primary">Jetzt Registieren</a>

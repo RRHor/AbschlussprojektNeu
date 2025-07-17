@@ -1,19 +1,11 @@
-import { useState, useEffect } from 'react';
-import { useAuth } from '../context/AuthContext';
-import { useNavigate } from 'react-router-dom';
-import { User, MapPin, Edit3, Save, X, Camera, Loader, Calendar, Users } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { useAuth } from '../context/AuthContext';
+import './Profile.css';
 
 const API_URL = import.meta.env.VITE_API_URL;
-import './Profile.css';
-import Footer from '../components/Footer';
 
-
-const Profile = () => {
-  const { user, loading: authLoading } = useAuth();
-  const navigate = useNavigate();
-
-  const emptyAddress = {
+const emptyAddress = {
   id: Date.now(),
   type: 'Hauptadresse',
   district: '',
@@ -23,21 +15,11 @@ const Profile = () => {
   isPrimary: true
 };
 
-  // Hauptadresse auslesen
-  const hauptAdresse = user?.addresses?.find(addr => addr.isPrimary) || user?.addresses?.[0] || {};
-
-  // Initialisiere mit echten Userdaten (wenn vorhanden)
+const Profile = () => {
+  const { user, loading: authLoading } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
-  const [profileData, setProfileData] = useState(user ? {
-    nickname: user.nickname || user.username || '',
-    email: user.email || '',
-    password: '••••••••••',
-    firstName: hauptAdresse.firstName || '',
-    lastName: hauptAdresse.lastName || '',
-    profileImage: null,
-    addresses: user.addresses || []
-  } : {
-    nickname: '',
+  const [profileData, setProfileData] = useState({
+    username: '',
     email: '',
     password: '',
     firstName: '',
@@ -45,23 +27,10 @@ const Profile = () => {
     profileImage: null,
     addresses: []
   });
-
   const [editData, setEditData] = useState({ ...profileData });
   const [isLoading, setIsLoading] = useState(true);
-  const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState(null);
 
-  // STATES - Exchange Posts
-  const [myExchangePosts, setMyExchangePosts] = useState([]);
-  const [loadingPosts, setLoadingPosts] = useState(false);
-
-  // STATES - Events & Navigation
-  const [activeTab, setActiveTab] = useState('profile');
-  const [userEvents, setUserEvents] = useState([]);
-  const [eventsLoading, setEventsLoading] = useState(false);
-
-
-  // User-Daten laden
   useEffect(() => {
     const fetchUserData = async () => {
       try {
@@ -69,24 +38,26 @@ const Profile = () => {
         const response = await axios.get(`${API_URL}/auth/users/me`);
         const data = response.data;
         setProfileData({
-          nickname: data.nickname || '',
+          username: data.nickname || data.username || '',
           email: data.email || '',
+          password: '••••••••••',
           firstName: data.firstName || '',
           lastName: data.lastName || '',
+          profileImage: data.profileImage || null,
           addresses: Array.isArray(data.addresses) && data.addresses.length > 0
             ? data.addresses
-            : [ { ...emptyAddress } ],
-          profileImage: data.profileImage || null
+            : [ { ...emptyAddress } ]
         });
         setEditData({
-          nickname: data.nickname || '',
+          username: data.nickname || data.username || '',
           email: data.email || '',
+          password: '••••••••••',
           firstName: data.firstName || '',
           lastName: data.lastName || '',
+          profileImage: data.profileImage || null,
           addresses: Array.isArray(data.addresses) && data.addresses.length > 0
             ? data.addresses
-            : [ { ...emptyAddress } ],
-          profileImage: data.profileImage || null
+            : [ { ...emptyAddress } ]
         });
         setError(null);
       } catch (error) {
@@ -97,56 +68,6 @@ const Profile = () => {
     };
     if (!authLoading && user) fetchUserData();
   }, [user, authLoading]);
-
-  // Exchange Posts laden
-  useEffect(() => {
-    const fetchMyExchangePosts = async () => {
-      setLoadingPosts(true);
-      try {
-        const result = await exchangeService.getMyPosts();
-        if (result.success) setMyExchangePosts(result.data);
-      } catch (error) {
-        // Fehler ignorieren
-      } finally {
-        setLoadingPosts(false);
-      }
-    };
-    if (profileData.nickname) fetchMyExchangePosts();
-  }, [profileData.nickname]);
-
-  // Events laden wenn Events-Tab aktiv
-  useEffect(() => {
-    if (activeTab === 'events' && user) loadUserEvents();
-    // eslint-disable-next-line
-  }, [activeTab, user]);
-
-  // Ladeanzeige und Fallback erst nach allen Hooks!
-  if (authLoading) {
-    return <div>Profil wird geladen...</div>;
-  }
-  if (!user) {
-    return <div>Kein Benutzer gefunden. Bitte einloggen!</div>;
-  }
-
-  // User-Events von Backend laden
-  const loadUserEvents = async () => {
-    try {
-      setEventsLoading(true);
-      const response = await axios.get(`${API_URL}/auth/users/me/events`);
-      setUserEvents(response.data.events || []);
-    } catch (error) {
-      setUserEvents([]);
-    } finally {
-      setEventsLoading(false);
-    }
-  };
-
-  // Event-Detail-Seite öffnen
-  const handleEventClick = (event) => {
-    navigate(`/events/${event._id}`, { state: { event } });
-  };
-
-  // Bearbeiten/Speichern
 
   const handleEdit = () => {
     setIsEditing(true);
@@ -235,10 +156,19 @@ const Profile = () => {
 
   const currentAddresses = isEditing ? editData.addresses : profileData.addresses;
 
+  if (isLoading || authLoading) {
+    return <div>Profil wird geladen...</div>;
+  }
+  if (error) {
+    return <div>{error}</div>;
+  }
+  if (!user) {
+    return <div>Kein Benutzer gefunden. Bitte einloggen!</div>;
+  }
+
   return (
     <div className="profile-container">
       <div className="profile-wrapper">
-        {/* Header */}
         <div className="profile-header">
           <div className="header-content">
             <div className="header-text">
@@ -295,10 +225,13 @@ const Profile = () => {
                   )}
                 </div>
                 <h2 className="profile-name">
-                  {isEditing ? editData.firstName : profileData.firstName} {isEditing ? editData.lastName : profileData.lastName}
+                  {isEditing
+                    ? (editData.addresses[0]?.firstName || '') + ' ' + (editData.addresses[0]?.lastName || '')
+                    : (profileData.addresses[0]?.firstName || '') + ' ' + (profileData.addresses[0]?.lastName || '')
+                  }
                 </h2>
                 <p className="profile-username">
-                  @{isEditing ? editData.nickname : profileData.nickname}
+                  @{isEditing ? editData.username : profileData.username}
                 </p>
               </div>
             </div>
@@ -315,11 +248,11 @@ const Profile = () => {
                       {isEditing ? (
                         <input
                           type="text"
-                          value={editData.nickname}
-                          onChange={(e) => handleInputChange('nickname', e.target.value)}
+                          value={editData.username}
+                          onChange={(e) => handleInputChange('username', e.target.value)}
                         />
                       ) : (
-                        <div className="input-display">{profileData.nickname}</div>
+                        <div className="input-display">{profileData.username}</div>
                       )}
                     </div>
                   </div>
@@ -364,8 +297,8 @@ const Profile = () => {
                       {isEditing ? (
                         <input
                           type="text"
-                          value={editData.firstName}
-                          onChange={(e) => handleInputChange('firstName', e.target.value)}
+                          value={isEditing ? editData.addresses[0]?.firstName || '' : profileData.addresses[0]?.firstName || ''}
+                          onChange={e => handleAddressChange(editData.addresses[0].id, 'firstName', e.target.value)}
                         />
                       ) : (
                         <div className="input-display">{profileData.firstName}</div>
@@ -378,8 +311,8 @@ const Profile = () => {
                       {isEditing ? (
                         <input
                           type="text"
-                          value={editData.lastName}
-                          onChange={(e) => handleInputChange('lastName', e.target.value)}
+                          value={isEditing ? editData.addresses[0]?.lastName || '' : profileData.addresses[0]?.lastName || ''}
+                          onChange={e => handleAddressChange(editData.addresses[0].id, 'lastName', e.target.value)}
                         />
                       ) : (
                         <div className="input-display">{profileData.lastName}</div>
@@ -435,7 +368,7 @@ const Profile = () => {
                               disabled={address.isPrimary}
                               title={address.isPrimary ? "Hauptadresse kann nicht gelöscht werden" : "Adresse löschen"}
                             >
-                              🗑️
+                              Adresse entfernen
                             </button>
                           </div>
                         )}
