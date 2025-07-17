@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import axios from 'axios';
 import { Eye, EyeOff, Mail, Lock, User, ArrowLeft } from 'lucide-react'; 
 import { useNavigate } from 'react-router-dom';
 import './Login.css'; 
@@ -27,7 +28,8 @@ function Login() {
 
   // ==== HIER BEGINNT DIE WICHTIGE ÄNDERUNG ====
   // Wir ersetzen die Demo-Login-Logik durch einen echten API-Call
-  const handleLogin = async () => {
+  const handleLogin = async (e) => {
+    e.preventDefault();
     if (!formData.username || !formData.password) {
       setError('Bitte alle Felder ausfüllen');
       return;
@@ -38,44 +40,27 @@ function Login() {
 
     try {
       // Prüfe, ob eine E-Mail oder ein Nickname eingegeben wurde
-      const loginPayload = formData.username.includes('@')
-        ? { email: formData.username, password: formData.password }
-        : { nickname: formData.username, password: formData.password };
-
-      // Sende Login-Request an dein Backend
-      const response = await fetch('http://localhost:4000/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(loginPayload)
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        setError(data.message || 'Login fehlgeschlagen');
-        setIsLoading(false);
-        return;
+      let loginPayload;
+      if (formData.username.includes('@')) {
+        loginPayload = { email: formData.username, password: formData.password };
+      } else if (/^[a-zA-Z0-9_\-.]+$/.test(formData.username)) {
+        loginPayload = { nickname: formData.username, password: formData.password };
+      } else {
+        loginPayload = { username: formData.username, password: formData.password };
       }
-
-      // Speichere Token z.B. im localStorage
-      localStorage.setItem('token', data.token);
-
-       // Nach erfolgreichem Login weiterleiten (Pfad ggf. anpassen!)
+      console.log('Login-Payload:', loginPayload);
+      const API_URL = import.meta.env.VITE_API_URL;
+      const response = await axios.post(`${API_URL}/auth/login`, loginPayload);
+      console.log('Login-Response:', response.data);
+      localStorage.setItem('token', response.data.token);
+      localStorage.setItem('user', JSON.stringify(response.data.user));
       navigate('/profile');
+      window.location.reload(); // damit der Context den neuen User erkennt
     } catch (err) {
-      setError('Serverfehler beim Login');
+      setError(err.response?.data?.message || 'Login fehlgeschlagen');
     } finally {
       setIsLoading(false);
     }
-    
-    // Simulation für Demo
-    // setTimeout(() => {
-    //   console.log('Login attempt:', { username: formData.username, password: formData.password });
-    //   setIsLoading(false);
-    //   alert('Login erfolgreich! (Demo)');
-    //   // Nach erfolgreichem Login weiterleiten:
-    //   // navigate('/dashboard');
-    // }, 1500);
   };
 
   // ==== HIER ENDET DIE WICHTIGE ÄNDERUNG ====
@@ -118,15 +103,7 @@ function Login() {
     }
   };
 
-  const handleKeyPress = (e) => {
-    if (e.key === 'Enter') {
-      if (showForgotPassword) {
-        handleForgotPassword();
-      } else {
-        handleLogin();
-      }
-    }
-  };
+  // handleKeyPress entfällt, da <form> das übernimmt
 
   const goBack = () => {
     window.history.back();
@@ -172,7 +149,7 @@ function Login() {
           <div className="login-card-content">
             {/* Login Form */}
             {!showForgotPassword ? (
-              <div className="form-section login-form">
+              <form className="form-section login-form" onSubmit={handleLogin} autoComplete="on">
                 {/* Username Field */}
                 <div className="input-group">
                   <User size={20} className="input-icon" />
@@ -182,8 +159,8 @@ function Login() {
                     placeholder="Benutzername"
                     value={formData.username}
                     onChange={handleInputChange}
-                    onKeyPress={handleKeyPress}
                     required
+                    autoComplete="username"
                   />
                 </div>
 
@@ -196,8 +173,8 @@ function Login() {
                     placeholder="Passwort"
                     value={formData.password}
                     onChange={handleInputChange}
-                    onKeyPress={handleKeyPress}
                     required
+                    autoComplete="current-password"
                   />
                   <button
                     type="button"
@@ -232,7 +209,7 @@ function Login() {
 
                 {/* Login Button */}
                 <button
-                  onClick={handleLogin}
+                  type="submit"
                   disabled={isLoading}
                   className="submit-button primary-button"
                 >
@@ -245,7 +222,7 @@ function Login() {
                     'Anmelden'
                   )}
                 </button>
-              </div>
+              </form>
             ) : (
               /* Forgot Password Form */
               <div className="form-section forgot-password-form">
@@ -258,8 +235,8 @@ function Login() {
                     placeholder="E-Mail-Adresse"
                     value={formData.email}
                     onChange={handleInputChange}
-                    onKeyPress={handleKeyPress}
                     required
+                    autoComplete="email"
                   />
                 </div>
 

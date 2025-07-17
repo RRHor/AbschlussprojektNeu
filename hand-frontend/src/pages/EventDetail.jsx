@@ -3,7 +3,9 @@ import { useState, useContext, useEffect } from 'react';
 import { useParams, useLocation } from 'react-router-dom';
 import { ArrowLeft, Users, Loader } from 'lucide-react';
 import { useAuth } from '../context/AuthContext.jsx';
-import api from '../api.js';
+import axios from 'axios';
+
+const API_URL = import.meta.env.VITE_API_URL;
 
 import logo from '../assets/logo.png'; 
 import './EventDetail.css';
@@ -14,15 +16,15 @@ const EventDetail = () => {
 
   const { id } = useParams();
   const { state } = useLocation();
-  const [event, setEvent] = useState(state?.event || null);
+  const [eventData, setEventData] = useState(state?.event || null);
   const { user } = useAuth();
 
   // 🔍 DEBUG: Event-Objekt komplett ausgeben
   console.log('🔍 LOCATION STATE:', state);
-  console.log('🔍 EVENT OBJECT:', event);
-  console.log('🔍 EVENT._id:', event?._id);
-  console.log('🔍 EVENT.id:', event?.id);
-  console.log('🔍 EVENT keys:', event ? Object.keys(event) : 'No event');
+  console.log('🔍 EVENT OBJECT:', eventData);
+  console.log('🔍 EVENT._id:', eventData?._id);
+  console.log('🔍 EVENT.id:', eventData?.id);
+  console.log('🔍 EVENT keys:', eventData ? Object.keys(eventData) : 'No event');
 
 
   const [text, setText] = useState('');
@@ -39,61 +41,42 @@ const EventDetail = () => {
 
   // Teilnahme-Status beim Laden prüfen
   useEffect(() => {
-    if (event && event._id && user) {
+    if (eventData && eventData._id && user) {
       checkParticipationStatus();
     }
-  }, [event, user]);
+  }, [eventData, user]);
 
 
   useEffect(() => {
-
-    if (event?._id) {
-      api.get(`/event-comments/event/${event._id}`)
+    if (eventData?._id) {
+      axios.get(`${API_URL}/event-comments/event/${eventData._id}`)
         .then(res => setComments(res.data))
         .catch(err => console.error('Fehler beim Laden der Kommentare:', err));
     }
-  }, [event]);
+  }, [eventData]);
 
   // Event aus Backend laden, falls nicht im State
   useEffect(() => {
-    if (!event && id) {
-      api.get(`/events/${id}`)
-        .then(res => setEvent(res.data))
-        .catch(() => setEvent(null));
+    if (!eventData && id) {
+      axios.get(`${API_URL}/events/${id}`)
+        .then(res => setEventData(res.data))
+        .catch(() => setEventData(null));
     }
-  }, [id, event]);
+  }, [id, eventData]);
 
   // Teilnahme-Status prüfen
   const checkParticipationStatus = async () => {
     try {
-      const response = await api.get(`/events/${event._id}/my-participation`);
+      const response = await axios.get(`${API_URL}/events/${eventData._id}/my-participation`);
       setIsParticipating(response.data.isParticipating);
       setIsOrganizer(response.data.isOrganizer);
       setParticipantCount(response.data.participantCount);
     } catch (error) {
       console.error('Fehler beim Prüfen der Teilnahme:', error);
-
     }
-}, [event, id]);
-
-// Handlers
-const handleSubmit = (e) => {
-  e.preventDefault();
-  if (!text.trim()) return;
-
-  const newComment = {
-    id: Date.now(),
-    user: {
-      name: user?.name || 'Unbekannt',
-      avatar: user?.avatar || logo,
-    },
-    text,
-    time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
   };
 
- setComments(prev => [newComment, ...prev]);
-  setText('');
-};
+
 
 function handleLike(id) {
   setComments(prev =>
@@ -137,19 +120,19 @@ function handleEdit(id) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!text.trim()) return;
-    if (!event || !event._id) {
+    if (!eventData || !eventData._id) {
       alert("Event nicht geladen!");
       return;
     }
 
     // Debug-Ausgabe:
-    console.log("event:", event);
-    console.log("event._id:", event?._id);
+    console.log("eventData:", eventData);
+    console.log("eventData._id:", eventData?._id);
 
     try {
-      const res = await api.post('/event-comments', {
+      const res = await axios.post(`${API_URL}/event-comments`, {
         text,
-        event: event._id   // <-- Das muss mitgesendet werden!
+        event: eventData._id   // <-- Das muss mitgesendet werden!
       });
       setComments([res.data, ...comments]);
       setText('');
@@ -169,46 +152,34 @@ const goBack = () => {
 };
 
 
-if (!event) return <p>Event nicht gefunden.</p>;
+if (!eventData) return <p>Event nicht gefunden.</p>;
 if (loading) return <p>Benutzerdaten werden geladen...</p>;
-
 
 return (
   <div className="event-detail-wrapper">
+    <button onClick={goBack} className="back-button">
+      <ArrowLeft size={20} className="back-button-icon" />
+      Zurück
+    </button>
 
-
-      {/* Zurück Button */}
-
-  if (!event) {
-    return <div>Lade Event...</div>;
-  }
-
-  return (
-    <div className="event-detail-wrapper">
-
-      <button onClick={goBack} className="back-button">
-        <ArrowLeft size={20} className="back-button-icon" />
-        Zurück
-      </button>
-
-      {/* Event Info */}
-      <div className="event-detail-container">
-        <div className="events-image">
-          <img src={event.image} alt={event.title} />
-        </div>
-        <div className="event-info">
-          <h1>{event.title}</h1>
-          <p><strong>📅 Datum:</strong> {event.date}</p>
-          <p><strong>📍 Ort:</strong> {event.location}</p>
-          <p className="event-description">{event.description}</p>
-          <button
-  className="register-button"
-  onClick={() => navigate(`/events/${event.id}/register`, { state: { event } })}
->
-  Ich will teilnehmen!
-</button>
-        </div>
+    {/* Event Info */}
+    <div className="event-detail-container">
+      <div className="events-image">
+        <img src={eventData.image} alt={eventData.title} />
       </div>
+      <div className="event-info">
+        <h1>{eventData.title}</h1>
+        <p><strong>📅 Datum:</strong> {eventData.date}</p>
+        <p><strong>📍 Ort:</strong> {eventData.location}</p>
+        <p className="event-description">{eventData.description}</p>
+        <button
+          className="register-button"
+          onClick={() => navigate(`/events/${eventData.id}/register`, { state: { event: eventData } })}
+        >
+          Ich will teilnehmen!
+        </button>
+      </div>
+    </div>
 
 
       {/* Kommentare */}

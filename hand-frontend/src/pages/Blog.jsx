@@ -1,9 +1,8 @@
-
 import { useEffect, useState } from 'react';
 import { Calendar, User, Search, Tag, PlusCircle, XCircle } from 'lucide-react'; // XCircle für Schließen-Button im Popup
 import './Blog.css';
-import api from '../api';
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 
 console.log("Blog.jsx aus pages ist aktiv!");
@@ -12,138 +11,29 @@ const Blog = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('alle');
 
-  const [expandedComments, setExpandedComments] = useState({});
-  const [newComment, setNewComment] = useState({});
-  
-  const [comments, setComments] = useState({
-    1: [
-      {
-        id: 1,
-        author: "Klaus Müller",
-        content: "Tolle Idee! Wir sollten das auch in unserer Straße umsetzen.",
-        date: "2025-06-21",
-        replies: [
-          {
-            id: 2,
-            author: "Maria Grün",
-            content: "Gerne helfe ich euch dabei! Meldet euch einfach bei mir.",
-            date: "2025-06-21"
-          }
-        ]
-      },
-      {
-        id: 3,
-        author: "Susanne Berg",
-        content: "Wie habt ihr das mit den Genehmigungen gemacht?",
-        date: "2025-06-20",
-        replies: []
-      }
-    ],
-    2: [
-      {
-        id: 4,
-        author: "Peter Schmidt",
-        content: "Nachbarschaftshilfe ist wirklich wichtig. Danke für den Artikel!",
-        date: "2025-06-19",
-        replies: []
-      }
-    ]
-  });
 
-  const [blogPosts, setBlogPosts] = useState([
-    {
-      id: 1,
-      title: "Wie wir unseren Kiez grüner gemacht haben",
-      excerpt: "Ein Jahr lang haben wir gemeinsam daran gearbeitet, mehr Grün in unsere Straßen zu bringen. Hier ist unsere Geschichte...",
-      content: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
-      author: "Maria Grün",
-      date: "2025-06-20",
-      category: "umwelt",
-      readTime: "5 min",
-      image: "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=600&h=300&fit=crop"
-    },
-    {
-      id: 2,
-      title: "Nachbarschaftshilfe in Zeiten des Wandels",
-      excerpt: "Warum gegenseitige Unterstützung wichtiger denn je ist und wie wir alle davon profitieren können.",
-      content: "In unserer schnelllebigen Zeit ist es wichtig, dass wir als Nachbarn zusammenhalten...",
-      author: "Thomas Hilfreich",
-      date: "2025-06-18",
-      category: "gemeinschaft",
-      readTime: "7 min",
-      image: "https://images.unsplash.com/photo-1559027615-cd4628902d4a?w=600&h=300&fit=crop"
-    },
-    {
-      id: 3,
-      title: "DIY-Tipps: Reparieren statt wegwerfen",
-      excerpt: "Einfache Anleitungen für alltägliche Reparaturen, die jeder zu Hause durchführen kann.",
-      content: "Nachhaltigkeit beginnt bei uns zu Hause. Mit diesen einfachen Tipps könnt ihr...",
-      author: "Anna Reparatur",
-      date: "2025-06-15",
-      category: "tipps",
-      readTime: "10 min",
-      image: "https://images.unsplash.com/photo-1581833971358-2c8b550f87b3?w=600&h=300&fit=crop"
-    },
-    {
-      id: 4,
-      title: "Erfolgsgeschichte: Unser Gemeinschaftsgarten",
-      excerpt: "Von der leeren Brachfläche zum blühenden Treffpunkt - wie aus einer Idee Realität wurde.",
-      content: "Es begann mit einer einfachen Idee: Was wäre, wenn wir die ungenutzte Fläche...",
-      author: "Familie Weber",
-      date: "2025-06-12",
-      category: "projekte",
-      readTime: "6 min",
-      image: "https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=600&h=300&fit=crop"
-    },
-    {
-      id: 5,
-      title: "Seniorenbetreuung: Ein Herzensprojekt",
-      excerpt: "Wie junge Familien und Senioren voneinander lernen und sich gegenseitig unterstützen können.",
-      content: "Generationenübergreifende Hilfe ist das Herzstück unserer Nachbarschaft...",
-      author: "Lisa Jung",
-      date: "2025-06-10",
-      category: "soziales",
-      readTime: "8 min",
-      image: "https://images.unsplash.com/photo-1581579438747-1dc8d17bbce4?w=600&h=300&fit=crop"
-    },
-    {
-      id: 6,
-      title: "Lokale Geschäfte unterstützen",
-      excerpt: "Warum der Einkauf um die Ecke nicht nur praktisch ist, sondern auch unsere Gemeinschaft stärkt.",
-      content: "Jeder Euro, den wir in lokalen Geschäften ausgeben, kommt unserer Nachbarschaft zugute...",
-      author: "Peter Lokal",
-      date: "2025-06-08",
-      category: "wirtschaft",
-      readTime: "4 min",
-      image: "https://images.unsplash.com/photo-1556740758-90de374c12ad?w=600&h=300&fit=crop"
-    }
-  ]);
-
-  const [showWritePostPopup, setShowWritePostPopup] = useState(false);
+  const [comments, setComments] = useState({}); // { [blogId]: [ ... ] }
   const [blogPosts, setBlogPosts] = useState([]);
+  const [showWritePostPopup, setShowWritePostPopup] = useState(false);
   const [newPost, setNewPost] = useState({
     title: '',
     excerpt: '',
     content: '',
-
-    category: 'umwelt', // Standardkategorie
-
-
+    category: 'umwelt',
     image: '',
     readTime: ''
   });
 
-
   // Kommentar-States
   const [expandedPost, setExpandedPost] = useState(null); // ID des aufgeklappten Blogposts
-  const [comments, setComments] = useState({}); // { [blogId]: [ ... ] }
   const [commentText, setCommentText] = useState({}); // { [blogId]: "..." }
 
   const navigate = useNavigate();
 
 
+  const API_URL = import.meta.env.VITE_API_URL;
   useEffect(() => {
-    api.get("/blogs")
+    axios.get(`${API_URL}/blogs`)
       .then(res => setBlogPosts(res.data))
       .catch(() => setBlogPosts([]));
   }, []);
@@ -162,14 +52,12 @@ const Blog = () => {
   const filteredPosts = blogPosts.filter(post => {
     const matchesSearch =
       (post.title && post.title.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (post.excerpt && post.excerpt.toLowerCase().includes(searchTerm.toLowerCase())) ||
       (typeof post.author === "object" &&
         ((post.author.nickname && post.author.nickname.toLowerCase().includes(searchTerm.toLowerCase())) ||
          (post.author.username && post.author.username.toLowerCase().includes(searchTerm.toLowerCase()))));
     const matchesCategory = selectedCategory === 'alle' || post.category === selectedCategory;
     return matchesSearch && matchesCategory;
   });
-
   const formatDate = (dateString) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('de-DE', {
@@ -180,13 +68,14 @@ const Blog = () => {
   };
 
   const getCategoryLabel = (categoryValue) => {
-    return categories.find(cat => cat.value === categoryValue)?.label || categoryValue;
+    const category = categories.find(cat => cat.value === categoryValue);
+    return category ? category.label : categoryValue;
   };
 
   // Kommentare für einen Blogpost laden
   const loadComments = async (blogId) => {
     try {
-      const res = await api.get(`/blog-comments/${blogId}`);
+      const res = await axios.get(`${API_URL}/blog-comments/${blogId}`);
       setComments(prev => ({ ...prev, [blogId]: res.data }));
     } catch {
       setComments(prev => ({ ...prev, [blogId]: [] }));
@@ -213,9 +102,14 @@ const Blog = () => {
     e.preventDefault();
     if (!commentText[blogId]) return;
     try {
-      await api.post("/blog-comments", {
+      const token = localStorage.getItem('token');
+      await axios.post(`${API_URL}/blog-comments`, {
         blog: blogId,
         text: commentText[blogId]
+      }, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
       });
       setCommentText(prev => ({ ...prev, [blogId]: "" }));
       loadComments(blogId);
@@ -261,25 +155,20 @@ const Blog = () => {
         readTime: newPost.readTime,
         image: newPost.image
       };
-      const response = await fetch('http://localhost:4000/api/blogs', {
-        method: 'POST',
+      await axios.post(`${API_URL}/blogs`, blogData, {
         headers: {
-          'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(blogData)
+        }
       });
-      if (!response.ok) throw new Error('Fehler beim Speichern des Blogposts');
       // Nach dem Hinzufügen: Blogposts neu laden!
-      await api.get("/blogs")
+      await axios.get(`${API_URL}/blogs`)
         .then(res => setBlogPosts(res.data))
         .catch(() => setBlogPosts([]));
       handleClosePopup();
       alert("Ihr Beitrag wurde erfolgreich hinzugefügt!");
     } catch (error) {
-      alert("Fehler beim Speichern: " + error.message);
+      alert("Fehler beim Speichern: " + (error.response?.data?.message || error.message));
     }
-
   };
 
   return (
@@ -362,19 +251,6 @@ const Blog = () => {
                       onClick={() => handleToggleComments(post._id)}
                     >
                       {expandedPost === post._id ? "Weniger anzeigen" : "Mehr lesen & Kommentare"}
-                    </button>
-                    
-                    <button
-                      className="comment-toggle-btn"
-                      onClick={() => toggleComments(post.id)}
-                      aria-label={`Kommentare anzeigen: ${post.title}`}
-                    >
-                      <MessageCircle className="comment-icon" aria-hidden="true" />
-                      <span>{getCommentCount(post.id)} Kommentare</span>
-                      {expandedComments[post.id] ? 
-                        <ChevronUp className="chevron-icon" aria-hidden="true" /> :
-                        <ChevronDown className="chevron-icon" aria-hidden="true" />
-                      }
                     </button>
                   </div>
 

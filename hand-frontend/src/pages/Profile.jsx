@@ -1,64 +1,35 @@
 import { useState, useEffect } from 'react';
-// NEU: AuthContext importieren
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { User, MapPin, Edit3, Save, X, Camera, Loader, Calendar, Users } from 'lucide-react';
-import api from '../api';
-import exchangeService from '../services/exchangeService';
+import axios from 'axios';
+
+const API_URL = import.meta.env.VITE_API_URL;
 import './Profile.css';
 import Footer from '../components/Footer';
 
 
 const Profile = () => {
-
-  // User und Ladezustand aus dem Context holen
-  const { user, loading } = useAuth();
-
-
-const Profile = () => {
-  const { currentUser, loading: authLoading } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
 
-  console.log('User im Profil:', user);
-
-
-  // === NEU: Ladeanzeige und Fallback ===
-  if (loading) {
-    return <div>Profil wird geladen...</div>;
-  }
-  if (!user) {
-    return <div>Kein Benutzer gefunden. Bitte einloggen!</div>;
-  }
-  // === ENDE NEU ===
-
-  // const [isEditing, setIsEditing] = useState(false);
-  // const [profileData, setProfileData] = useState({
-  //   username: 'max_mustermann',
-  //   email: 'max.mustermann@email.com',
-  //   password: '••••••••••',
-  //   firstName: 'Max',
-  //   lastName: 'Mustermann',
-  //   profileImage: null,
-  //   addresses: [
-    //   {
-    //     id: 1,
-    //     type: 'Hauptadresse',
-    //     district: 'München Nord',
-    //     city: 'München',
-    //     zip: '80331',
-    //     street: 'Musterstraße 123',
-    //     isPrimary: true
-    //   }
-    // ]
-  // });
+  const emptyAddress = {
+  id: Date.now(),
+  type: 'Hauptadresse',
+  district: '',
+  city: '',
+  zip: '',
+  street: '',
+  isPrimary: true
+};
 
   // Hauptadresse auslesen
   const hauptAdresse = user?.addresses?.find(addr => addr.isPrimary) || user?.addresses?.[0] || {};
 
-  // NEU: Initialisiere mit echten Userdaten (wenn vorhanden)
+  // Initialisiere mit echten Userdaten (wenn vorhanden)
   const [isEditing, setIsEditing] = useState(false);
   const [profileData, setProfileData] = useState(user ? {
-    username: user.nickname || user.username || '',
+    nickname: user.nickname || user.username || '',
     email: user.email || '',
     password: '••••••••••',
     firstName: hauptAdresse.firstName || '',
@@ -66,7 +37,7 @@ const Profile = () => {
     profileImage: null,
     addresses: user.addresses || []
   } : {
-    username: '',
+    nickname: '',
     email: '',
     password: '',
     firstName: '',
@@ -75,7 +46,6 @@ const Profile = () => {
     addresses: []
   });
 
-  
   const [editData, setEditData] = useState({ ...profileData });
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -90,12 +60,13 @@ const Profile = () => {
   const [userEvents, setUserEvents] = useState([]);
   const [eventsLoading, setEventsLoading] = useState(false);
 
+
   // User-Daten laden
   useEffect(() => {
     const fetchUserData = async () => {
       try {
         setIsLoading(true);
-        const response = await api.get('/auth/users/me');
+        const response = await axios.get(`${API_URL}/auth/users/me`);
         const data = response.data;
         setProfileData({
           nickname: data.nickname || '',
@@ -124,10 +95,8 @@ const Profile = () => {
         setIsLoading(false);
       }
     };
-    if (!authLoading && currentUser) fetchUserData();
-  }, [currentUser, authLoading]);
-
-
+    if (!authLoading && user) fetchUserData();
+  }, [user, authLoading]);
 
   // Exchange Posts laden
   useEffect(() => {
@@ -147,15 +116,23 @@ const Profile = () => {
 
   // Events laden wenn Events-Tab aktiv
   useEffect(() => {
-    if (activeTab === 'events' && currentUser) loadUserEvents();
+    if (activeTab === 'events' && user) loadUserEvents();
     // eslint-disable-next-line
-  }, [activeTab, currentUser]);
+  }, [activeTab, user]);
+
+  // Ladeanzeige und Fallback erst nach allen Hooks!
+  if (authLoading) {
+    return <div>Profil wird geladen...</div>;
+  }
+  if (!user) {
+    return <div>Kein Benutzer gefunden. Bitte einloggen!</div>;
+  }
 
   // User-Events von Backend laden
   const loadUserEvents = async () => {
     try {
       setEventsLoading(true);
-      const response = await api.get('/auth/users/me/events');
+      const response = await axios.get(`${API_URL}/auth/users/me/events`);
       setUserEvents(response.data.events || []);
     } catch (error) {
       setUserEvents([]);
@@ -321,7 +298,7 @@ const Profile = () => {
                   {isEditing ? editData.firstName : profileData.firstName} {isEditing ? editData.lastName : profileData.lastName}
                 </h2>
                 <p className="profile-username">
-                  @{isEditing ? editData.username : profileData.username}
+                  @{isEditing ? editData.nickname : profileData.nickname}
                 </p>
               </div>
             </div>
@@ -338,11 +315,11 @@ const Profile = () => {
                       {isEditing ? (
                         <input
                           type="text"
-                          value={editData.username}
-                          onChange={(e) => handleInputChange('username', e.target.value)}
+                          value={editData.nickname}
+                          onChange={(e) => handleInputChange('nickname', e.target.value)}
                         />
                       ) : (
-                        <div className="input-display">{profileData.username}</div>
+                        <div className="input-display">{profileData.nickname}</div>
                       )}
                     </div>
                   </div>

@@ -1,3 +1,5 @@
+import ResetPassword from './components/ResetPassword.jsx';
+          <Route path="/reset-password" element={<ResetPassword />} />
 
 import { Routes, Route } from 'react-router-dom';
 import Home from './pages/Home';
@@ -6,28 +8,17 @@ import LandingPage from './pages/LandingPage';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Profile from './pages/Profile';
-import Help from './pages/Help'; 
+import Help from './pages/Help';
 import Blog from './pages/Blog';
 import Events from './pages/Events';
-import EventDetail from './pages/EventDetail.jsx';
-import EventRegister from './pages/EventRegister.jsx';
-import Help from './pages/Help';
-import Exchange from './pages/Exchange/Exchange';
 import EventDetail from './pages/EventDetail';
 import EventRegister from './pages/EventRegister.jsx';
-import ResetPassword from './pages/ResetPassword';
+import Exchange from './pages/Exchange/Exchange';
 import ForgotPassword from './components/ForgotPassword';
-import ResetPassword from './components/ResetPassword.jsx';
-import Blog from './pages/Blog'; 
 import Uberuns from './pages/Uberuns.jsx'; // Importiere die "Über uns" Seite
 import Footer from './components/Footer.jsx'; // Importiere den Footer
 import PageNotFound from './pages/PageNotFound.jsx'; // Importiere die 404-Seite
 import VerifyEmail from './components/VerifyEmail.jsx';
-import VerifyEmail from './pages/VerifyEmail';
-import Exchange from './pages/Exchange/Exchange';
-import Uberuns from './pages/Uberuns.jsx'; // Importiere die "Über uns" Seite
-import Footer from './components/Footer.jsx'; // Importiere den Footer
-import PageNotFound from './pages/PageNotFound.jsx'; // Importiere die 404-Seite
 
 function App() {
   return (
@@ -43,7 +34,6 @@ function App() {
           <Route path="/verify" element={<VerifyEmail />} />
           <Route path="/help" element={<Help />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
-          <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/exchange/*" element={<Exchange />} />
           <Route path="/blogs" element={<Blog />} />

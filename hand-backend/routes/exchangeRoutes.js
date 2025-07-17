@@ -99,6 +99,7 @@ router.get('/:id', async (req, res) => {
 router.post('/', protect, async (req, res) => {
   try {
     console.log('🚀 POST /api/exchange called');
+    console.log('Bildgröße (Zeichen):', req.body.picture ? req.body.picture.length : 0); // zeigt die Bildgröße des Uploads an
     console.log('📥 Request body:', req.body);
     console.log('👤 User from middleware:', req.user);
 
@@ -106,7 +107,7 @@ router.post('/', protect, async (req, res) => {
       title,
       description,
       category,
-      picture,
+      image,
       tauschGegen
     } = req.body;
 
@@ -133,8 +134,8 @@ router.post('/', protect, async (req, res) => {
       title,
       description,
       category: category.toLowerCase(),
-      picture: picture || '',
       tauschGegen: category === 'tauschen' ? tauschGegen : undefined,
+      image,
       author: req.user._id
     });
 
@@ -187,18 +188,18 @@ router.put('/:id', protect, async (req, res) => {
       });
     }
 
-    const { title, description, category, picture, tauschGegen, status } = req.body;
+    const { title, description, category, image, tauschGegen, status } = req.body;
 
     // Felder aktualisieren
     if (title) post.title = title;
     if (description) post.description = description;
+    if (image) post.image = image;
     if (category) {
       post.category = category.toLowerCase();
       if (category !== 'tauschen') {
         post.tauschGegen = undefined;
       }
     }
-    if (picture !== undefined) post.picture = picture;
     if (category === 'tauschen' && tauschGegen) {
       post.tauschGegen = tauschGegen;
     }
