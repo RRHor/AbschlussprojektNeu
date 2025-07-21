@@ -3,6 +3,7 @@ import jwt from "jsonwebtoken";
 import User from '../models/UserModel.js';
 import Event from "../models/eventModel.js"; // ← DIESE ZEILE HINZUFÜGEN
 import { sendVerificationEmail } from "../utils/emailService.js";
+// import sendVerificationEmail from "../utils/sendVerificationEmail.js";
 import { protect } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
