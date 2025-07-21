@@ -354,6 +354,12 @@ router.get("/users/me", protect, async (req, res) => {
  */
 router.put("/users/me", protect, async (req, res) => {
     try {
+        // Passwort beim Update hashen, falls vorhanden
+        if (req.body.password) {
+            const bcrypt = await import('bcryptjs').then(m => m.default);
+            const salt = await bcrypt.genSalt(10);
+            req.body.password = await bcrypt.hash(req.body.password, salt);
+        }
         const user = await User.findByIdAndUpdate(req.user._id, req.body, {
             new: true,
         }).select("-password");
@@ -372,6 +378,12 @@ router.put("/users/me", protect, async (req, res) => {
  */
 router.put("/users/:id", protect, async (req, res) => {
     try {
+        // Passwort beim Update hashen, falls vorhanden
+        if (req.body.password) {
+            const bcrypt = await import('bcryptjs').then(m => m.default);
+            const salt = await bcrypt.genSalt(10);
+            req.body.password = await bcrypt.hash(req.body.password, salt);
+        }
         const user = await User.findByIdAndUpdate(req.params.id, req.body, {
             new: true,
         }).select("-password");

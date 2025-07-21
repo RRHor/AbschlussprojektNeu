@@ -1,9 +1,9 @@
-import { useState, useContext } from 'react';
-import { AuthContext } from '../context/AuthContext';
+import { useState } from 'react';
+import { useAuth } from '../context/AuthContext';
 import './Profile.css';
 
 const Profile = () => {
-  const { user } = useContext(AuthContext);
+  const { user, loading, login, register, logout } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   // editData erst initialisieren, wenn Bearbeiten gestartet wird!
   const [editData, setEditData] = useState(null);
@@ -48,10 +48,35 @@ const Profile = () => {
     });
   };
 
-  const handleSave = () => {
-    // Hier würdest du speichern, z.B. API-Call
-    setIsEditing(false);
-    setEditData(null);
+  const handleSave = async () => {
+    try {
+      const API_URL = import.meta.env.VITE_API_URL;
+      const res = await fetch(`${API_URL}/auth/users/me`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + localStorage.getItem('token')
+        },
+        body: JSON.stringify({
+          addresses: editData.addresses,
+        })
+      });
+      if (res.ok) {
+        // Userdaten neu laden, damit die neuen Adressen angezeigt werden
+        if (typeof window !== 'undefined' && window.location) {
+          // Hole die aktuellen Userdaten aus dem AuthContext
+          // (fetchUser ist im AuthContext, aber nicht exportiert)
+          // Workaround: Seite neu laden, aber Hooks bleiben stabil
+          window.location.reload();
+        }
+        setIsEditing(false);
+        setEditData(null);
+      } else {
+        console.error('Fehler beim Speichern');
+      }
+    } catch (error) {
+      console.error('Fehler beim Speichern:', error);
+    }
   };
 
   // const handleSave = () => {
