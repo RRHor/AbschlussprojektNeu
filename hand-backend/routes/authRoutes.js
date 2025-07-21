@@ -336,8 +336,8 @@ router.get("/users/me", protect, async (req, res) => {
     try {
         const user = await User.findById(req.user._id).select('-password');
         console.log('👤 COMPLETE USER from DB:', JSON.stringify(user, null, 2));
-        console.log('🏠 ADDRESS from DB:', user?.address);
-        console.log('🔍 ZIP from DB:', user?.address?.zip);
+        console.log('🏠 ADDRESS from DB:', user?.addresses?.[0]);
+        console.log('🔍 ZIP from DB:', user?.addresses?.[0]?.zip);
         
         if (!user) {
             return res.status(404).json({ message: "User nicht gefunden" });

@@ -296,7 +296,7 @@ const Profile = () => {
 
                 <div className="addresses-container">
                   {currentAddresses.map((address, index) => (
-                    <div key={address.id} className="address-card">
+                    <div key={address._id || address.id || address.zip || index} className="address-card">
                       <div className="address-card-header">
                         <div className="address-title-section">
                           <h4 className={`address-title ${address.isPrimary ? 'primary' : 'secondary'}`}>
