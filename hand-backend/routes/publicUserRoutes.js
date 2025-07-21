@@ -25,7 +25,7 @@ router.get('/public-users/:nickname', async (req, res) => {
   try {
     const user = await User.findOne(
       { nickname: req.params.nickname },
-      { nickname: 1, 'addresses.district': 1 }
+      { nickname: 1, email: 1, 'addresses.district': 1 }
     );
     if (!user) {
       return res.status(404).json({ message: 'User nicht gefunden' });
