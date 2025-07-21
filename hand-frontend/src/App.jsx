@@ -7,7 +7,7 @@ import Navbar from './components/Navbar';
 import LandingPage from './pages/LandingPage';
 import Login from './pages/Login';
 import Register from './pages/Register';
-import Profile from './pages/Profile';
+import Profile from './pages/Profile/Profile.jsx';
 import Help from './pages/Help';
 import Blog from './pages/Blog';
 import Events from './pages/Events';

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../../context/AuthContext';
 import './Profile.css';
 
 const API_URL = import.meta.env.VITE_API_URL;
@@ -22,8 +22,6 @@ const Profile = () => {
     username: '',
     email: '',
     password: '',
-    firstName: '',
-    lastName: '',
     profileImage: null,
     addresses: []
   });
@@ -41,8 +39,6 @@ const Profile = () => {
           username: data.nickname || data.username || '',
           email: data.email || '',
           password: '••••••••••',
-          firstName: data.firstName || '',
-          lastName: data.lastName || '',
           profileImage: data.profileImage || null,
           addresses: Array.isArray(data.addresses) && data.addresses.length > 0
             ? data.addresses
@@ -52,8 +48,6 @@ const Profile = () => {
           username: data.nickname || data.username || '',
           email: data.email || '',
           password: '••••••••••',
-          firstName: data.firstName || '',
-          lastName: data.lastName || '',
           profileImage: data.profileImage || null,
           addresses: Array.isArray(data.addresses) && data.addresses.length > 0
             ? data.addresses
@@ -297,11 +291,11 @@ const Profile = () => {
                       {isEditing ? (
                         <input
                           type="text"
-                          value={isEditing ? editData.addresses[0]?.firstName || '' : profileData.addresses[0]?.firstName || ''}
+                          value={editData.addresses[0]?.firstName || ''}
                           onChange={e => handleAddressChange(editData.addresses[0].id, 'firstName', e.target.value)}
                         />
                       ) : (
-                        <div className="input-display">{profileData.firstName}</div>
+                        <div className="input-display">{profileData.addresses[0]?.firstName || ''}</div>
                       )}
                     </div>
                   </div>
@@ -311,11 +305,11 @@ const Profile = () => {
                       {isEditing ? (
                         <input
                           type="text"
-                          value={isEditing ? editData.addresses[0]?.lastName || '' : profileData.addresses[0]?.lastName || ''}
+                          value={editData.addresses[0]?.lastName || ''}
                           onChange={e => handleAddressChange(editData.addresses[0].id, 'lastName', e.target.value)}
                         />
                       ) : (
-                        <div className="input-display">{profileData.lastName}</div>
+                        <div className="input-display">{profileData.addresses[0]?.lastName || ''}</div>
                       )}
                     </div>
                   </div>
