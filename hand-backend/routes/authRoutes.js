@@ -145,29 +145,26 @@ router.post('/register', async (req, res) => {
  */
 router.post("/login", async (req, res) => {
   try {
-    // NEU: nickname aus dem Body holen
-    const { email, nickname, password, rememberMe } = req.body;
+    // Login mit email, nickname oder username und Passwort
+    const { email, nickname, username, password, rememberMe } = req.body;
 
-    // NEU: Suche User mit E-Mail ODER Nickname
     const user = await User.findOne({
       $or: [
         email ? { email } : null,
-        nickname ? { nickname } : null
-      ].filter(Boolean) // entfernt alle null-Werte
+        nickname ? { nickname } : null,
+        username ? { username } : null
+      ].filter(Boolean)
     });
 
     if (!user) {
-      return res.status(401).json({ message: "Ungültige E-Mail/Nickname oder Passwort" });
+      return res.status(401).json({ message: "Ungültige E-Mail/Nickname/Username oder Passwort" });
     }
-
 
     const isMatch = await user.matchPassword(password);
     if (!isMatch) {
-      return res.status(401).json({ message: "Ungültige E-Mail oder Passwort" });
+      return res.status(401).json({ message: "Ungültige E-Mail/Nickname/Username oder Passwort" });
     }
 
-    // Prüfe E-Mail-Verifizierung (mindestens eins der Felder muss true sein)
-    // ODER-Lösung für Kompatibilität beider Modelle: isVerified (UserModel) ODER isVerify (userSchema)
     if (!(user.isVerified || user.isVerify)) {
       return res.status(401).json({ 
         message: "Bitte verifizieren Sie zuerst Ihre E-Mail-Adresse",
@@ -176,7 +173,6 @@ router.post("/login", async (req, res) => {
       });
     }
 
-    // Token generieren
     const expiresIn = rememberMe ? "30d" : "1d";
     const token = jwt.sign(
       { 
@@ -194,14 +190,11 @@ router.post("/login", async (req, res) => {
       user: {
         _id: user._id,
         nickname: user.nickname,
+        username: user.username,
         email: user.email,
-        // firstName: user.firstName, // Datenschutz <-- das ist auf oberster Ebene! 
-        // lastName: user.lastName, // Datenschutz <-- das ist auf oberster Ebene! 
-        addresses: user.addresses, // firstName/lastName sind jetzt nur hier enthalten!
-        // isVerified: user.isVerified,
-        // ODER-Lösung: isVerified (UserModel) ODER isVerify (userSchema)
+        addresses: user.addresses,
         isVerified: user.isVerified || user.isVerify,
-        registeredAt: user.registeredAt //HINZUFÜGEN
+        registeredAt: user.registeredAt
       },
     });
   } catch (error) {

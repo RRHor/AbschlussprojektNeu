@@ -81,19 +81,22 @@ const userSchema = new mongoose.Schema(
   { timestamps: true } // Erstellt automatisch createdAt und updatedAt Felder
 );
 
+
 // Middleware: Passwort vor dem Speichern hashen
-// userSchema.pre("save", async function (next) {
-//   if (!this.isModified("password")) {
-//     return next();
-//   }
-//   try {
-//     const salt = await bcrypt.genSalt(10);
-//     this.password = await bcrypt.hash(this.password, salt);
-//     next();
-//   } catch (error) {
-//     next(error);
-//   }
-// });
+userSchema.pre("save", async function (next) {
+  if (!this.isModified("password")) {
+    return next();
+  }
+  try {
+    const salt = await bcrypt.genSalt(10);
+    const hashed = await bcrypt.hash(this.password, salt);
+    console.log('🔒 Passwort wird gehasht:', this.password, '→', hashed);
+    this.password = hashed;
+    next();
+  } catch (error) {
+    next(error);
+  }
+});
 
 // Methode zum Vergleichen eines eingegebenen Passworts mit dem gespeicherten Hash
 userSchema.methods.matchPassword = async function (enteredPassword) {
