@@ -3,7 +3,8 @@ import User from '../models/UserModel.js';
 
 export async function protect(req, res, next) {
   let token;
-
+  // Debug: Alle Cookies loggen
+  console.log('🍪 [Auth-Middleware] Cookies:', req.cookies);
   // 1. Token aus Header oder Cookie extrahieren
   if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
     token = req.headers.authorization.split(' ')[1];

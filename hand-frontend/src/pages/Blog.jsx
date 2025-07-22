@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Calendar, User, Search, Tag, PlusCircle, XCircle, MessageCircle, Send, ChevronDown, ChevronUp } from 'lucide-react';
 import './Blog.css';
 
@@ -43,7 +43,7 @@ const Blog = () => {
     ]
   });
 
-  const [blogPosts, setBlogPosts] = useState([
+  const staticPosts = [
     {
       id: 1,
       title: "Wie wir unseren Kiez grüner gemacht haben",
@@ -110,7 +110,33 @@ const Blog = () => {
       readTime: "4 min",
       image: "https://images.unsplash.com/photo-1556740758-90de374c12ad?w=600&h=300&fit=crop"
     }
-  ]);
+  ];
+
+  const [blogsPosts, setblogsPosts] = useState(staticPosts);
+
+  // Blog-Posts aus Backend laden und mit statischen Beiträgen kombinieren
+  const API_URL = import.meta.env.VITE_API_URL;
+  const fetchBlogs = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`${API_URL}/blogs`, {
+        headers: {
+          'Authorization': token ? `Bearer ${token}` : ''
+        }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        // Dynamische Beiträge zuerst, dann statische
+        setblogsPosts([...data, ...staticPosts]);
+      }
+    } catch (err) {
+      console.error('Fehler beim Laden der Blogs:', err);
+    }
+  };
+
+  useEffect(() => {
+    fetchBlogs();
+  }, []);
 
   const [showWritePostPopup, setShowWritePostPopup] = useState(false);
   const [newPost, setNewPost] = useState({
@@ -133,7 +159,7 @@ const Blog = () => {
     { value: 'wirtschaft', label: 'Lokale Wirtschaft' }
   ];
 
-  const filteredPosts = blogPosts.filter(post => {
+  const filteredPosts = blogsPosts.filter(post => {
     const matchesSearch = post.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          post.excerpt.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          post.author.toLowerCase().includes(searchTerm.toLowerCase());
@@ -156,7 +182,7 @@ const Blog = () => {
 
   const handleReadMore = (postId) => {
     console.log(`"Weiterlesen" für Beitrag ID: ${postId} geklickt.`);
-    alert(`Artikel "${blogPosts.find(p => p.id === postId)?.title}" wird geladen.`);
+    alert(`Artikel "${blogsPosts.find(p => p.id === postId)?.title}" wird geladen.`);
   };
 
   const handleWritePost = () => {
@@ -184,26 +210,44 @@ const Blog = () => {
     }));
   };
 
-  const handleNewPostSubmit = (e) => {
+  const handleNewPostSubmit = async (e) => {
     e.preventDefault();
     if (!newPost.title || !newPost.content || !newPost.author || !newPost.category) {
       alert("Bitte füllen Sie alle erforderlichen Felder aus (Titel, Inhalt, Autor, Kategorie).");
       return;
     }
 
-    const today = new Date();
-    const formattedDate = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
-
-    const newBlogEntry = {
-      id: blogPosts.length > 0 ? Math.max(...blogPosts.map(post => post.id)) + 1 : 1,
-      ...newPost,
-      date: formattedDate,
-      image: newPost.image || 'https://images.unsplash.com/photo-1507525428034-b723cf961c3e?w=600&h=300&fit=crop'
+    // Backend erwartet: title, description, tags, images
+    const blogsData = {
+      title: newPost.title,
+      description: newPost.content,
+      tags: [newPost.category],
+      images: newPost.image ? [newPost.image] : []
+      // author wird im Backend aus dem Token gesetzt
     };
 
-    setBlogPosts(prevPosts => [newBlogEntry, ...prevPosts]);
-    handleClosePopup();
-    alert("Ihr Beitrag wurde erfolgreich hinzugefügt!");
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`${API_URL}/blogs`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': token ? `Bearer ${token}` : ''
+        },
+        body: JSON.stringify(blogsData)
+      });
+
+      if (res.ok) {
+        await fetchBlogs(); // Nach dem Speichern Blogs neu laden
+        alert("Ihr Beitrag wurde erfolgreich hinzugefügt!");
+        handleClosePopup();
+      } else {
+        const error = await res.json();
+        alert("Fehler beim Speichern: " + (error.message || "Unbekannter Fehler"));
+      }
+    } catch (err) {
+      alert("Netzwerkfehler: " + err.message);
+    }
   };
 
   // Kommentar-Funktionen
@@ -269,21 +313,21 @@ const Blog = () => {
   };
 
   return (
-    <div className="blog-container">
-      <div className="blog-header">
-        <h1>Nachbarschafts-Blog</h1>
+    <div className="blogs-container">
+      <div className="blogs-header">
+        <h1>Nachbarschafts-blogs</h1>
         <p>Geschichten, Tipps und Erfahrungen aus unserer Gemeinschaft</p>
       </div>
 
-      <div className="blog-filters">
+      <div className="blogs-filters">
         <div className="search-bar">
           <Search className="search-icon" aria-hidden="true" />
           <input
             type="text"
-            placeholder="Blog durchsuchen..."
+            placeholder="blogs durchsuchen..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            aria-label="Blog durchsuchen"
+            aria-label="blogs durchsuchen"
           />
         </div>
 
@@ -303,23 +347,23 @@ const Blog = () => {
         </div>
       </div>
 
-      <div className="blog-content">
-        <div className="blog-posts">
+      <div className="blogs-content">
+        <div className="blogs-posts">
           {filteredPosts.length > 0 ? (
             filteredPosts.map(post => (
-              <article key={post.id} className="blog-card">
-                <div className="blog-image">
+              <article key={(post._id ? post._id : 'static-' + post.id)} className="blogs-card">
+                <div className="blogs-image">
                   <img src={post.image} alt={`Bild für den Beitrag: ${post.title}`} />
-                  <div className="blog-category">
+                  <div className="blogs-category">
                     {getCategoryLabel(post.category)}
                   </div>
                 </div>
 
-                <div className="blog-content-area">
-                  <h2 className="blog-title">{post.title}</h2>
-                  <p className="blog-excerpt">{post.excerpt}</p>
+                <div className="blogs-content-area">
+                  <h2 className="blogs-title">{post.title}</h2>
+                  <p className="blogs-excerpt">{post.excerpt}</p>
 
-                  <div className="blog-meta">
+                  <div className="blogs-meta">
                     <div className="meta-left">
                       <div className="meta-item">
                         <User className="meta-icon" aria-hidden="true" />
@@ -332,7 +376,7 @@ const Blog = () => {
                     </div>
                   </div>
 
-                  <div className="blog-actions">
+                  <div className="blogs-actions">
                     <button
                       className="read-more-btn"
                       onClick={() => handleReadMore(post.id)}
@@ -425,7 +469,7 @@ const Blog = () => {
           )}
         </div>
 
-        <aside className="blog-sidebar">
+        <aside className="blogs-sidebar">
           <div className="sidebar-widget">
             <h3>Beliebte Kategorien</h3>
             <div className="category-tags">
@@ -445,7 +489,7 @@ const Blog = () => {
           <div className="sidebar-widget">
             <h3>Neueste Beiträge</h3>
             <div className="recent-posts">
-              {blogPosts.slice(0, 3).map(post => (
+              {blogsPosts.slice(0, 3).map(post => (
                 <div key={post.id} className="recent-post">
                   <img src={post.image} alt={`Vorschaubild für den Beitrag: ${post.title}`} />
                   <div className="recent-post-content">
@@ -463,7 +507,7 @@ const Blog = () => {
             <button
               className="write-post-btn"
               onClick={handleWritePost}
-              aria-label="Neuen Blogbeitrag schreiben"
+              aria-label="Neuen blogsbeitrag schreiben"
             >
               <PlusCircle className="action-icon" aria-hidden="true" />
               <span className="action-icon-text">Beitrag schreiben</span>
@@ -479,7 +523,7 @@ const Blog = () => {
             <button className="close-popup-btn" onClick={handleClosePopup} aria-label="Popup schließen">
               <XCircle size={24} />
             </button>
-            <h2>Neuen Blogbeitrag schreiben</h2>
+            <h2>Neuen blogsbeitrag schreiben</h2>
             <form onSubmit={handleNewPostSubmit} className="new-post-form">
               <div className="form-group">
                 <label htmlFor="post-title">Titel:</label>

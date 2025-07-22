@@ -184,6 +184,14 @@ router.post("/login", async (req, res) => {
       { expiresIn }
     );
 
+    // Token als Cookie setzen
+    res.cookie('token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: rememberMe ? 30 * 24 * 60 * 60 * 1000 : 24 * 60 * 60 * 1000 // 30 Tage oder 1 Tag
+    });
+
     res.json({
       message: "Login erfolgreich",
       token,

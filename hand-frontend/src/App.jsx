@@ -14,7 +14,7 @@ import Help from './pages/Help';
 import Exchange from './pages/Exchange/Exchange';
 import ForgotPassword from './components/ForgotPassword';
 import ResetPassword from './components/ResetPassword.jsx';
-import Blog from './pages/Blog'; 
+import Blog from './pages/Blog.jsx'; 
 import Uberuns from './pages/Uberuns.jsx'; // Importiere die "Über uns" Seite
 import Footer from './components/Footer.jsx'; // Importiere den Footer
 import PageNotFound from './pages/PageNotFound.jsx'; // Importiere die 404-Seite
@@ -43,7 +43,7 @@ function App() {
           <Route path="/exchange/*" element={<Exchange />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password/:token" element={<ResetPassword />} />
-          <Route path="/blog" element={<Blog />} /> 
+          <Route path="/blogs" element={<Blog />} /> 
           <Route path="/profile" element={<Profile />} />
           <Route path="/uberuns" element={<Uberuns />} /> {/* Route für die "Über uns" Seite */}
           <Route path="*" element={<PageNotFound />} /> {/* Fallback für nicht gefundene Seiten */}

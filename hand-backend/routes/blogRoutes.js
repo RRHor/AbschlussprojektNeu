@@ -1,11 +1,11 @@
 import express from 'express';
 import { protect } from '../middleware/authMiddleware.js';
-import Blog from '../models/blogModel.js';
+import blogs from '../models/blogModel.js';
 import User from '../models/UserModel.js';
 
 const router = express.Router();
 
-// Suche nach Blogposts mit Titel, Beschreibung oder Tags.
+// Suche nach blogsposts mit Titel, Beschreibung oder Tags.
 // Beispiel: /api/blogs?q=hilfe
 router.get('/', async (req, res) => {
   const { q } = req.query;
@@ -19,49 +19,58 @@ router.get('/', async (req, res) => {
       ]
     };
   }
-  const blogs = await Blog.find(filter).populate('user', 'name');
-  res.json(blogs);
+  const blogsList = await blogs.find(filter).populate('user', 'name');
+  res.json(blogsList);
 });
 
 /*Die Suche ist case-insensitive.
 Du kannst nach Titel, Beschreibung und Tags suchen.
 Beispiel:
-/api/blogs?q=hilfe findet alle Blogposts, die „hilfe“ im Titel, in der Beschreibung oder in den Tags haben.*/
+/api/blogs?q=hilfe findet alle blogsposts, die „hilfe“ im Titel, in der Beschreibung oder in den Tags haben.*/
 
-// Einzelnen Blogpost abrufen
+// Einzelnen blogspost abrufen
 router.get('/:id', async (req, res) => {
-  const blog = await Blog.findById(req.params.id).populate('user', 'name');
-  if (!blog) return res.status(404).json({ message: 'Blogpost nicht gefunden' });
-  res.json(blog);
+  const blogs = await blogs.findById(req.params.id).populate('user', 'name');
+  if (!blogs) return res.status(404).json({ message: 'blogspost nicht gefunden' });
+  res.json(blogs);
 });
 
-// Blogpost erstellen
+// blogspost erstellen
 router.post('/', protect, async (req, res) => {
   try {
-    const blog = new Blog({ ...req.body, user: req.user._id });
+    console.log('🔎 [Blog-POST] req.user:', req.user);
+    if (!req.user || !req.user._id) {
+      console.log('❌ [Blog-POST] Kein User im Request!');
+      return res.status(401).json({ message: 'Nicht autorisiert - Kein User im Request' });
+    }
+    const blogData = { ...req.body, user: req.user._id };
+    console.log('📝 [Blog-POST] blogData:', blogData);
+    const blog = new blogs(blogData);
     await blog.save();
+    console.log('✅ [Blog-POST] Blog gespeichert:', blog);
     res.status(201).json(blog);
   } catch (error) {
+    console.log('❌ [Blog-POST] Fehler beim Erstellen:', error);
     res.status(400).json({ message: 'Fehler beim Erstellen', error });
   }
 });
 
-// Blogpost bearbeiten
+// blogspost bearbeiten
 router.put('/:id', protect, async (req, res) => {
   try {
-    const blog = await Blog.findByIdAndUpdate(req.params.id, req.body, { new: true });
-    if (!blog) return res.status(404).json({ message: 'Blogpost nicht gefunden' });
-    res.json(blog);
+    const blogs = await blogs.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    if (!blogs) return res.status(404).json({ message: 'blogspost nicht gefunden' });
+    res.json(blogs);
   } catch (error) {
     res.status(400).json({ message: 'Fehler beim Bearbeiten', error });
   }
 });
 
-// Blogpost löschen
+// blogspost löschen
 router.delete('/:id', protect, async (req, res) => {
-  const blog = await Blog.findByIdAndDelete(req.params.id);
-  if (!blog) return res.status(404).json({ message: 'Blogpost nicht gefunden' });
-  res.json({ message: 'Blogpost gelöscht' });
+  const blogs = await blogs.findByIdAndDelete(req.params.id);
+  if (!blogs) return res.status(404).json({ message: 'blogspost nicht gefunden' });
+  res.json({ message: 'blogspost gelöscht' });
 });
 
 // Suche nach User anhand von E-Mail oder Nickname

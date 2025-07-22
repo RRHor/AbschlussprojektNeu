@@ -20,7 +20,7 @@ Jetzt wäre der perfekte Zeitpunkt für das Backup, bevor das Team wieder etwas 
 Sollen wir:
 
 1. Das Backup erstellen?
-2. Noch andere Features testen (z.B. Exchange, Blog)?
+2. Noch andere Features testen (z.B. Exchange, blogs)?
 3. Debug-Logs aufräumen für Produktion?
 4. Was ist dein nächster Schritt?
 
@@ -110,7 +110,7 @@ Backend (hand-backend/):
 ✅ Adress-Verwaltung (verschachtelte Adressen)
 ✅ Posts & Kommentare (Nachbarschafts-Posts mit Kommentaren)
 ✅ Events-System (Nachbarschafts-Events erstellen/verwalten)
-✅ Blog-System (Blog-Posts mit eigenen Blog-Kommentaren)
+✅ blogs-System (blogs-Posts mit eigenen blogs-Kommentaren)
 ✅ E-Mail-Service (Verifizierung, Passwort-Reset)
 ✅ Debug-Tools (reset-passwords.js, debug-users.js)
 Frontend (hand-frontend/):
@@ -124,8 +124,8 @@ Funktionierte Tests:
 ✅ Profil-Updates
 ✅ Post-Erstellung und Kommentare
 ✅ Event-Erstellung
-✅ Blog-Posts und Blog-Kommentare
-✅ Multi-User-Tests (Maus, Posel kommentieren Dagoberts Blog)
+✅ blogs-Posts und blogs-Kommentare
+✅ Multi-User-Tests (Maus, Posel kommentieren Dagoberts blogs)
 Dein Projekt ist bereit für Produktion oder Präsentation! 🚀
 
 
@@ -203,7 +203,7 @@ Gute Nacht! 🌙
 **Fazit:**
 - Alle Kern-User-Flows (Registrierung, Verifizierung, Login, Passwort-Reset, Profilbearbeitung, Anzeigen) laufen stabil und sind getestet.
 - Frontend und Backend sind sauber synchronisiert.
-- Nächste Schritte: Bild-Upload für Anzeigen, Blogpost-Editor, weitere Features.
+- Nächste Schritte: Bild-Upload für Anzeigen, blogspost-Editor, weitere Features.
 
 ---
 

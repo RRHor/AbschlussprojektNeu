@@ -171,7 +171,7 @@
 }
 
 /* Header Bereich */
-.blog-header {
+.blogs-header {
   text-align: center;
   margin-bottom: 40px;
   padding: 30px 20px;
@@ -192,7 +192,7 @@
   opacity: 0;
 }
 
-.blog-header::before {
+.blogs-header::before {
   content: '';
   position: absolute;
   top: 0;
@@ -205,7 +205,7 @@
   z-index: 1;
 }
 
-.blog-header::after {
+.blogs-header::after {
   content: '';
   position: absolute;
   top: -50%;
@@ -217,13 +217,13 @@
   z-index: 0;
 }
 
-.blog-header h1,
-.blog-header p {
+.blogs-header h1,
+.blogs-header p {
   position: relative;
   z-index: 2;
 }
 
-.blog-header h1 {
+.blogs-header h1 {
   font-size: 2.5rem;
   margin: 0 0 20px 0;
   font-weight: 800;
@@ -236,7 +236,7 @@
   -webkit-text-fill-color: transparent;
 }
 
-.blog-header p {
+.blogs-header p {
   font-size: 1.2rem;
   margin: 0;
   opacity: 0.95;
@@ -327,30 +327,30 @@
 
 /* Responsive Anpassungen */
 @media (max-width: 768px) {
-  .blog-header {
+  .blogs-header {
     padding: 50px 15px;
   }
 
-  .blog-header h1 {
+  .blogs-header h1 {
     font-size: 2.5rem;
     letter-spacing: 1px;
   }
 
-  .blog-header p {
+  .blogs-header p {
     font-size: 1.1rem;
   }
 }
 
 @media (max-width: 480px) {
-  .blog-header {
+  .blogs-header {
     padding: 40px 10px;
   }
 
-  .blog-header h1 {
+  .blogs-header h1 {
     font-size: 2rem;
   }
 
-  .blog-header p {
+  .blogs-header p {
     font-size: 1rem;
   }
 }

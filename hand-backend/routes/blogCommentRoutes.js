@@ -1,16 +1,16 @@
 import express from "express";
-import BlogComment from "../models/blogCommentModel.js";
+import blogCommentModel from "../models/blogCommentModel.js";
 import { protect } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-// Blog-Kommentar erstellen (geschützt)
-router.post("/blog-comments", protect, async (req, res) => {
+// blogs-Kommentar erstellen (geschützt)
+router.post("/blogs-comments", protect, async (req, res) => {
     try {
-        const { blog, text } = req.body;
+        const { blogs, text } = req.body;
         
-        const newComment = new BlogComment({
-            blog,
+        const newComment = new blogsComment({
+            blogs,
             text,
             user: req.user._id
         });
@@ -18,38 +18,38 @@ router.post("/blog-comments", protect, async (req, res) => {
         await newComment.save();
         
         // Kommentar mit User-Daten zurückgeben
-        const populatedComment = await BlogComment.findById(newComment._id)
+        const populatedComment = await blogsComment.findById(newComment._id)
             .populate('user', 'nickname email')
-            .populate('blog', 'title');
+            .populate('blogs', 'title');
         
         res.status(201).json({
-            message: "Blog-Kommentar erfolgreich erstellt",
+            message: "blogs-Kommentar erfolgreich erstellt",
             comment: populatedComment
         });
     } catch (error) {
-        console.error('Blog comment creation error:', error);
+        console.error('blogs comment creation error:', error);
         res.status(500).json({ message: "Fehler beim Erstellen des Kommentars" });
     }
 });
 
-// Kommentare zu einem Blog abrufen
-router.get("/blog-comments/:blogId", async (req, res) => {
+// Kommentare zu einem blogs abrufen
+router.get("/blogs-comments/:blogsId", async (req, res) => {
     try {
-        const comments = await BlogComment.find({ blog: req.params.blogId })
+        const comments = await blogsComment.find({ blogs: req.params.blogsId })
             .populate('user', 'nickname email')
             .sort({ createdAt: -1 });
         
         res.json(comments);
     } catch (error) {
-        console.error('Get blog comments error:', error);
+        console.error('Get blogs comments error:', error);
         res.status(500).json({ message: "Fehler beim Abrufen der Kommentare" });
     }
 });
 
-// Blog-Kommentar löschen (geschützt)
-router.delete("/blog-comments/:id", protect, async (req, res) => {
+// blogs-Kommentar löschen (geschützt)
+router.delete("/blogs-comments/:id", protect, async (req, res) => {
     try {
-        const comment = await BlogComment.findById(req.params.id);
+        const comment = await blogsComment.findById(req.params.id);
         
         if (!comment) {
             return res.status(404).json({ message: "Kommentar nicht gefunden" });
@@ -60,11 +60,11 @@ router.delete("/blog-comments/:id", protect, async (req, res) => {
             return res.status(403).json({ message: "Nicht berechtigt" });
         }
         
-        await BlogComment.findByIdAndDelete(req.params.id);
+        await blogsComment.findByIdAndDelete(req.params.id);
         
-        res.json({ message: "Blog-Kommentar erfolgreich gelöscht" });
+        res.json({ message: "blogs-Kommentar erfolgreich gelöscht" });
     } catch (error) {
-        console.error('Delete blog comment error:', error);
+        console.error('Delete blogs comment error:', error);
         res.status(500).json({ message: "Fehler beim Löschen des Kommentars" });
     }
 });

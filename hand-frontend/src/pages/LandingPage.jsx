@@ -49,13 +49,13 @@ function LandingPage() {
         <a href="./Exchange" className="btn primary">Angebote ansehen</a>
       </section>
 
-      {/* Blog */}
-      <section id="blog" className="section-block section-colored">
-        <h2>📝 Blog & Geschichten</h2>
-        {/*<img src={landingphoto3} alt="blog-event" />*/}
+      {/* blogs */}
+      <section id="blogs" className="section-block section-colored">
+        <h2>📝 blogs & Geschichten</h2>
+        {/*<img src={landingphoto3} alt="blogs-event" />*/}
         <Lottie animationData={telecom} loop={true} className="telecom-animation" />
         <p>Erfahre mehr über inspirierende Nachbarschaftsprojekte und Tipps.</p>
-        <a href="./Blog" className="btn primary">Zum Blog</a>
+        <a href="./blogs" className="btn primary">Zum blogs</a>
       </section>
 
       {/* Ask */}

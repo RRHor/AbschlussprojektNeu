@@ -75,7 +75,7 @@ const Events = () => {
 
   return (
     <div className="events-container">
-      <div className="blog-header">
+      <div className="blogs-header">
         <h1>Nachbarschafts-Events</h1>
         <p>
           Entdecke, was in deiner Nachbarschaft passiert – von Sommerfesten bis
