@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { Calendar, User, Search, Tag, PlusCircle, XCircle, MessageCircle, Send, ChevronDown, ChevronUp } from 'lucide-react';
 import './Blog.css';
 
+// API_URL nur einmal deklarieren
+const API_URL = import.meta.env.VITE_API_URL;
+
 const Blog = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('alle');
@@ -115,7 +118,6 @@ const Blog = () => {
   const [blogsPosts, setblogsPosts] = useState(staticPosts);
 
   // Blog-Posts aus Backend laden und mit statischen Beiträgen kombinieren
-  const API_URL = import.meta.env.VITE_API_URL;
   const fetchBlogs = async () => {
     try {
       const token = localStorage.getItem('token');
@@ -128,6 +130,12 @@ const Blog = () => {
         const data = await res.json();
         // Dynamische Beiträge zuerst, dann statische
         setblogsPosts([...data, ...staticPosts]);
+        // Kommentare für alle dynamischen Blogposts laden
+        data.forEach(post => {
+          if (post._id) {
+            fetchComments(post._id);
+          }
+        });
       }
     } catch (err) {
       console.error('Fehler beim Laden der Blogs:', err);
@@ -278,33 +286,96 @@ const Blog = () => {
     }));
   };
 
-  const submitComment = (postId) => {
+  // Hilfsfunktion für die korrekte postId (Backend: dynamische Posts haben _id, statische Posts id)
+  const getPostId = (post) => post._id ? post._id : post.id;
+
+  const submitComment = async (postIdRaw) => {
+    // Nur für dynamische Blogposts (_id vorhanden) an Backend senden
+    const postId = postIdRaw;
     const comment = newComment[postId];
     if (!comment?.content?.trim() || !comment?.author?.trim()) {
       alert("Bitte Name und Kommentar eingeben.");
       return;
     }
 
-    const today = new Date();
-    const formattedDate = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+    // Hilfsfunktion: Ist die ID ein gültiger MongoDB ObjectId?
+    const isValidMongoId = (id) => typeof id === 'string' && id.length === 24 && /^[a-fA-F0-9]{24}$/.test(id);
 
-    const newCommentEntry = {
-      id: Date.now(),
-      author: comment.author,
-      content: comment.content,
-      date: formattedDate,
-      replies: []
-    };
+    if (isValidMongoId(postId)) {
+      try {
+        const token = localStorage.getItem('token');
+        const res = await fetch(`${API_URL}/blogs-comments`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': token ? `Bearer ${token}` : ''
+          },
+          body: JSON.stringify({
+            text: comment.content,
+            blogs: postId
+          })
+        });
+        if (res.ok) {
+          await fetchComments(postId);
+          setNewComment(prev => ({
+            ...prev,
+            [postId]: { author: '', content: '' }
+          }));
+          alert("Kommentar erfolgreich gesendet!");
+        } else {
+          const error = await res.json();
+          alert("Fehler beim Senden: " + (error.message || "Unbekannter Fehler"));
+        }
+      } catch (err) {
+        alert("Netzwerkfehler: " + err.message);
+      }
+    } else {
+      // Für statische Posts oder ungültige IDs nur lokal speichern
+      setComments(prev => ({
+        ...prev,
+        [postId]: [
+          ...(prev[postId] || []),
+          {
+            id: Date.now(),
+            author: comment.author,
+            content: comment.content,
+            date: new Date().toISOString(),
+            replies: []
+          }
+        ]
+      }));
+      setNewComment(prev => ({
+        ...prev,
+        [postId]: { author: '', content: '' }
+      }));
+      alert("Test-Kommentar lokal hinzugefügt!");
+    }
+  };
 
-    setComments(prev => ({
-      ...prev,
-      [postId]: [...(prev[postId] || []), newCommentEntry]
-    }));
-
-    setNewComment(prev => ({
-      ...prev,
-      [postId]: { author: '', content: '' }
-    }));
+  // Kommentare aus Backend laden und mit Test-Kommentaren kombinieren
+  const fetchComments = async (postId) => {
+    try {
+      const res = await fetch(`${API_URL}/blogs-comments/${postId}`);
+      let backendComments = [];
+      if (res.ok) {
+        const data = await res.json();
+        backendComments = data.map(item => ({
+          id: item._id,
+          author: item.user?.nickname || '',
+          content: item.text,
+          date: item.createdAt,
+          replies: []
+        }));
+      }
+      // Test-Kommentare für diese ID (egal ob dynamisch oder statisch)
+      const testComments = comments[postId] ? comments[postId].filter(c => !c.id || typeof c.id !== 'string') : [];
+      setComments(prev => ({
+        ...prev,
+        [postId]: [...backendComments, ...testComments]
+      }));
+    } catch (err) {
+      console.error('Fehler beim Laden der Kommentare:', err);
+    }
   };
 
   const getCommentCount = (postId) => {
@@ -350,118 +421,126 @@ const Blog = () => {
       <div className="blogs-content">
         <div className="blogs-posts">
           {filteredPosts.length > 0 ? (
-            filteredPosts.map(post => (
-              <article key={(post._id ? post._id : 'static-' + post.id)} className="blogs-card">
-                <div className="blogs-image">
-                  <img src={post.image} alt={`Bild für den Beitrag: ${post.title}`} />
-                  <div className="blogs-category">
-                    {getCategoryLabel(post.category)}
-                  </div>
-                </div>
-
-                <div className="blogs-content-area">
-                  <h2 className="blogs-title">{post.title}</h2>
-                  <p className="blogs-excerpt">{post.excerpt}</p>
-
-                  <div className="blogs-meta">
-                    <div className="meta-left">
-                      <div className="meta-item">
-                        <User className="meta-icon" aria-hidden="true" />
-                        <span>{post.author}</span>
-                      </div>
-                      <div className="meta-item">
-                        <Calendar className="meta-icon" aria-hidden="true" />
-                        <span>{formatDate(post.date)}</span>
-                      </div>
+            filteredPosts.map(post => {
+              const postKey = post._id ? post._id : 'static-' + post.id;
+              const postId = post._id ? post._id : post.id;
+              return (
+                <article key={postKey} className="blogs-card">
+                  <div className="blogs-image">
+                    <img src={post.image} alt={`Bild für den Beitrag: ${post.title}`} />
+                    <div className="blogs-category">
+                      {getCategoryLabel(post.category)}
                     </div>
                   </div>
-
-                  <div className="blogs-actions">
-                    <button
-                      className="read-more-btn"
-                      onClick={() => handleReadMore(post.id)}
-                      aria-label={`Weiterlesen: ${post.title}`}
-                    >
-                      Weiterlesen
-                    </button>
-                    
-                    <button
-                      className="comment-toggle-btn"
-                      onClick={() => toggleComments(post.id)}
-                      aria-label={`Kommentare anzeigen: ${post.title}`}
-                    >
-                      <MessageCircle className="comment-icon" aria-hidden="true" />
-                      <span>{getCommentCount(post.id)} Kommentare</span>
-                      {expandedComments[post.id] ? 
-                        <ChevronUp className="chevron-icon" aria-hidden="true" /> :
-                        <ChevronDown className="chevron-icon" aria-hidden="true" />
-                      }
-                    </button>
-                  </div>
-
-                  {/* Kommentarsektion */}
-                  {expandedComments[post.id] && (
-                    <div className="comments-section">
-                      <h3 className="comments-title">Kommentare</h3>
+  
+                  <div className="blogs-content-area">
+                    <h2 className="blogs-title">{post.title}</h2>
+                    <p className="blogs-excerpt">{post.excerpt}</p>
+  
+                    <div className="blogs-meta">
+                      <div className="meta-left">
+                        <div className="meta-item">
+                          <User className="meta-icon" aria-hidden="true" />
+                          <span>{post.author}</span>
+                        </div>
+                        <div className="meta-item">
+                          <Calendar className="meta-icon" aria-hidden="true" />
+                          <span>{formatDate(post.date)}</span>
+                        </div>
+                      </div>
+                    </div>
+  
+                    <div className="blogs-actions">
+                      <button
+                        className="read-more-btn"
+                        onClick={() => handleReadMore(postId)}
+                        aria-label={`Weiterlesen: ${post.title}`}
+                      >
+                        Weiterlesen
+                      </button>
                       
-                      {/* Bestehende Kommentare */}
-                      <div className="comments-list">
-                        {comments[post.id] && comments[post.id].map(comment => (
-                          <div key={comment.id} className="comment">
-                            <div className="comment-header">
-                              <span className="comment-author">{comment.author}</span>
-                              <span className="comment-date">{formatDate(comment.date)}</span>
-                            </div>
-                            <p className="comment-content">{comment.content}</p>
-                            
-                            {/* Antworten */}
-                            {comment.replies.length > 0 && (
-                              <div className="comment-replies">
-                                {comment.replies.map(reply => (
-                                  <div key={reply.id} className="comment-reply">
-                                    <div className="reply-header">
-                                      <span className="reply-author">{reply.author}</span>
-                                      <span className="reply-date">{formatDate(reply.date)}</span>
-                                    </div>
-                                    <p className="reply-content">{reply.content}</p>
-                                  </div>
-                                ))}
+                      <button
+                        className="comment-toggle-btn"
+                        onClick={() => toggleComments(postId)}
+                        aria-label={`Kommentare anzeigen: ${post.title}`}
+                      >
+                        <MessageCircle className="comment-icon" aria-hidden="true" />
+                        <span>{getCommentCount(postId)} Kommentare</span>
+                        {expandedComments[postId] ? 
+                          <ChevronUp className="chevron-icon" aria-hidden="true" /> :
+                          <ChevronDown className="chevron-icon" aria-hidden="true" />
+                        }
+                      </button>
+                    </div>
+  
+                    {/* Kommentarsektion */}
+                    {expandedComments[postId] && (
+                      <div className="comments-section">
+                        <h3 className="comments-title">Kommentare</h3>
+                        
+                        {/* Bestehende Kommentare */}
+                        <div className="comments-list">
+                          {comments[postId] && comments[postId].map((comment, idx) => (
+                            <div key={comment.id ? `comment-${comment.id}` : `comment-${postId}-${idx}`} className="comment">
+                              <div className="comment-header">
+                                <span className="comment-author">{comment.author}</span>
+                                <span className="comment-date">{formatDate(comment.date)}</span>
                               </div>
-                            )}
-                          </div>
-                        ))}
+                              <p className="comment-content">{comment.content}</p>
+                              
+                              {/* Antworten */}
+                              {comment.replies.length > 0 && (
+                                <div className="comment-replies">
+                                  {comment.replies.map((reply, rIdx) => (
+                                    <div key={reply.id ? `reply-${reply.id}` : `reply-${postId}-${idx}-${rIdx}`} className="comment-reply">
+                                      <div className="reply-header">
+                                        <span className="reply-author">{reply.author}</span>
+                                        <span className="reply-date">{formatDate(reply.date)}</span>
+                                      </div>
+                                      <p className="reply-content">{reply.content}</p>
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                        
+                        {/* Neuer Kommentar */}
+                        <div className="new-comment-form">
+                          <h4 className="new-comment-title">Kommentar hinzufügen</h4>
+                          <input
+                            type="text"
+                            className="comment-author-input"
+                            id={`comment-author-${postId}`}
+                            name={`author-${postId}`}
+                            placeholder="Dein Name"
+                            value={newComment[postId]?.author || ''}
+                            onChange={(e) => handleCommentAuthorChange(postId, e.target.value)}
+                          />
+                          <textarea
+                            className="comment-content-input"
+                            id={`comment-content-${postId}`}
+                            name={`content-${postId}`}
+                            placeholder="Dein Kommentar..."
+                            value={newComment[postId]?.content || ''}
+                            onChange={(e) => handleCommentChange(postId, e.target.value)}
+                            rows="3"
+                          />
+                          <button
+                            className="comment-submit-btn"
+                            onClick={() => submitComment(postId)}
+                          >
+                            <Send className="send-icon" aria-hidden="true" />
+                            Kommentar senden
+                          </button>
+                        </div>
                       </div>
-                      
-                      {/* Neuer Kommentar */}
-                      <div className="new-comment-form">
-                        <h4 className="new-comment-title">Kommentar hinzufügen</h4>
-                        <input
-                          type="text"
-                          className="comment-author-input"
-                          placeholder="Dein Name"
-                          value={newComment[post.id]?.author || ''}
-                          onChange={(e) => handleCommentAuthorChange(post.id, e.target.value)}
-                        />
-                        <textarea
-                          className="comment-content-input"
-                          placeholder="Dein Kommentar..."
-                          value={newComment[post.id]?.content || ''}
-                          onChange={(e) => handleCommentChange(post.id, e.target.value)}
-                          rows="3"
-                        />
-                        <button
-                          className="comment-submit-btn"
-                          onClick={() => submitComment(post.id)}
-                        >
-                          <Send className="send-icon" aria-hidden="true" />
-                          Kommentar senden
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </article>
-            ))
+                    )}
+                  </div>
+                </article>
+              );
+            })
           ) : (
             <div className="no-posts">
               <p>Keine Beiträge gefunden. Versuchen Sie es mit anderen Suchbegriffen oder Filtern.</p>
