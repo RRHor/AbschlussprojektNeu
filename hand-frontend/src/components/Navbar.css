@@ -149,46 +149,46 @@ navbar-logo:hover {
 }
 
 .nav-links-primary {
-  color: var(--deepBlue);
-  text-decoration: none;
-  padding: 10px 20px;
-  font-size: 1rem;
-  font-weight: 600;
-  background-color: #F8E8C3; /* cream */
+  color: var(--coral);
+  background-color: white;
   border: 2px solid #DE887B; /* coral */
-  border-radius: 50px; /* Runde Ecken */
-  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
-  display: inline-block; /* Damit der Link wie ein Button aussieht */
-  text-align: center; /* Zentriert den Text im Link */
-  min-width: 120px; /* Mindestbreite für den Button */
-  box-sizing: border-box; /* Damit Padding und Border in der Breite enthalten sind */
-  cursor: pointer; /* Zeigt an, dass es klickbar ist */
-  font-family: "Nunito", sans-serif; /* Schriftart für den Link */
-  font-optical-sizing: auto;
-  font-weight: 600;
-  font-style: normal;
-  /* Optional: Schatten für den Button */
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  /* Optional: Leichtes Hover-Effekt */
-  border: none; /* Entfernt den Standardrahmen */
-  /* Optional: Leichtes Hover-Effekt */
-  /* border: 2px solid transparent; */
-  /* border-radius: 50px; */
-  transition: background-color 0.3s ease, color 0.3s ease;
+  border-radius: 999px;
+  padding: 10px 28px;
+  font-weight: 800;
+  font-size: 1.15rem;
+  margin-left: 1.2rem;
+  transition: background 0.2s, color 0.2s, border 0.2s, box-shadow 0.2s;
+  cursor: pointer;
+  outline: none;
+  text-decoration: none;
+  box-shadow: 0 4px 16px rgba(222, 136, 123, 0.13);
+  letter-spacing: 0.5px;
+  position: relative;
+  z-index: 1;
 }
 
-.nav-links-primary:hover {
+.nav-links-primary:hover,
+.nav-links-primary:focus {
   background-color: #DE887B;
+  color: #fff;
+  border: 2px solid #DE887B;
+  box-shadow: 0 6px 24px rgba(222, 136, 123, 0.18);
 }
 
-.nav-links .nav-links-primary {
-  background-color: var(--skyBlue);
-  color: white;
+.logout-btn {
+  background-color: #DE887B !important;
+  color: white !important;
+  border: 2px solid #DE887B !important;
+  font-weight: 800;
+  box-shadow: 0 4px 16px rgba(222, 136, 123, 0.13);
 }
 
-.nav-links .nav-links-primary:hover {
-  background-color: var(--deepBlue);
-  color: white;
+.logout-btn:hover,
+.logout-btn:focus {
+  background-color: #c96a5a !important;
+  color: #fff !important;
+  border: 2px solid #c96a5a !important;
+  box-shadow: 0 6px 24px rgba(222, 136, 123, 0.18);
 }
 
 /* ------------------------------------- */

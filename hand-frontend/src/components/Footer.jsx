@@ -8,9 +8,9 @@ function Footer() {
         <div className="footer-content">
           <div className="footer-links">
             <a href="/events">Events</a>
-            <a href="/verschenke">Verschenke</a>
-            <a href="/blog">Blog</a>
-            <a href="/hilfe">Hilfe</a>
+            <a href="/exchange">Verschenke</a>
+            <a href="/blogs">Blog</a>
+            <a href="/help">Hilfe</a>
             <a href="/uberuns">Über uns</a>
           </div>
           <p>
