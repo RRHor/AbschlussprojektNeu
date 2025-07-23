@@ -59,6 +59,11 @@ function Navbar() {
                 </a>
               </li>
               <li className="nav-item">
+                <a href="/uberuns" className="nav-links">
+                  Über uns
+                </a>
+              </li>
+              <li className="nav-item">
                 <a href="/profile" className="nav-links">
                   Profil
                 </a>

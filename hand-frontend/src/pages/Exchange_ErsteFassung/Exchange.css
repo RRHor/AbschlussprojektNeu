@@ -1,0 +1,359 @@
+/* ==================== Farbvariablen ==================== */
+:root {
+  --text-color: #05004E;
+  --bg-primary: #F8E8C3;
+  --bg-secondary: #2E7EB3;
+  --bg-tertiary: #4FE3C1;
+  --warning-color: #DE887B;
+
+  --deepBlue: #05004E;
+  --skyBlue: #2E7EB3;
+  --mint: #4FE3C1;
+  --cream: #F8E8C3;
+  --coral: #DE887B;
+}
+
+/* ==================== Grundlegendes Seitenlayout ==================== */
+body,
+html {
+  margin: 0;
+  padding: 0;
+  font-family: "Nunito", sans-serif;
+  background-color: var(--bg-primary);
+  color: var(--text-color);
+  height: 100%;
+  min-height: 100vh;
+}
+
+/* ==================== Exchange Hauptcontainer ==================== */
+.exchange-page {
+  padding: 2rem;
+  min-height: 100vh;
+  background-color: var(--bg-primary);
+  color: var(--text-color);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* ==================== Titel ==================== */
+.exchange-title {
+  font-size: 2rem;
+  text-align: center;
+  color: var(--text-color);
+  margin-bottom: 2rem;
+}
+
+/* ==================== Exchange Grid (Kacheln) ==================== */
+.exchange-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  /* 2 Spalten */
+  grid-template-rows: 1fr 1fr;
+  /* 2 Reihen */
+  gap: 2rem;
+  /* Abstand zwischen den Kacheln */
+  height: 100vh;
+  /* gesamte Höhe des Viewports */
+  width: 100vw;
+  /* gesamte Breite des Viewports */
+  padding: 2rem;
+  /* optional, Innenabstand zum Rand */
+  box-sizing: border-box;
+  /* Padding gehört zur Gesamtgröße */
+  background-color: var(--bg-primary);
+  /* optional, Hintergrundfarbe */
+}
+
+
+/* ==================== Kachel-Stil ==================== */
+.exchange-box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  font-size: 2.2rem;
+  font-weight: bold;
+  color: var(--text-color);
+  border-radius: 15px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  padding: 2rem;
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Hover-Effekt mit Skalierung & Schatten */
+.exchange-box:hover {
+  transform: scale(1.05);
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+}
+
+/* Farbvariationen pro Kategorie */
+.verschenken-box {
+  background-color: var(--mint);
+  color: var(--deepBlue);
+}
+
+.tauschen-box {
+  background-color: var(--coral);
+  color: white;
+}
+
+.suchen-box {
+  background-color: var(--skyBlue);
+  color: white;
+}
+
+.hilfe-box {
+  background-color: var(--cream);
+  color: var(--deepBlue);
+}
+
+/* Glänzender Überlagerungseffekt auf Hover */
+.exchange-box::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -150%;
+  width: 150%;
+  height: 100%;
+  background: linear-gradient(120deg,
+      rgba(255, 255, 255, 0) 0%,
+      rgba(255, 255, 255, 0.3) 50%,
+      rgba(255, 255, 255, 0) 100%);
+  transform: skewX(-20deg);
+  transition: left 0.7s ease;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.exchange-box:hover::after {
+  left: 150%;
+}
+
+/* Überschriften in den Kacheln */
+.exchange-box h2 {
+  margin: 0;
+  z-index: 2;
+  position: relative;
+}
+
+/* ==================== Detailansicht unterhalb der Kacheln ==================== */
+.exchange-detail {
+  margin-top: 2rem;
+  width: 100%;
+  max-width: 960px;
+  background-color: white;
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+  animation: fadeIn 0.5s ease forwards;
+  overflow-y: auto;
+  max-height: 60vh;
+}
+
+/* Einfache Fade-In Animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(15px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ==================== Karten-Stile für Unterseiten ==================== */
+.exchange-scroll {
+  display: flex;
+  flex-direction: column;
+  gap: 2.5rem;
+  padding-bottom: 2rem;
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.exchange-card {
+  display: flex;
+  flex-direction: row;
+  background-color: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  transition: transform 0.2s;
+  width: 100%;
+  margin-bottom: 2rem;
+  /* vertikaler Abstand */
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  position: relative;
+}
+
+.exchange-card:hover {
+  transform: translateY(-4px);
+}
+
+/* Bildposition abwechseln bei geraden/ungeraden Karten */
+.exchange-card:nth-child(even) {
+  transform: translateX(30px) rotate(0.5deg);
+}
+
+.exchange-card:nth-child(odd) {
+  transform: translateX(-30px) rotate(-0.5deg);
+}
+
+
+
+.exchange-card img {
+  width: 40%;
+  object-fit: cover;
+  height: 100%;
+}
+
+/* Karteninhalt */
+.card-body {
+  flex: 1;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.card-body h3 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+.card-body p {
+  margin-top: 0.75rem;
+  font-size: 1rem;
+  line-height: 1.5;
+  color: var(--text-color);
+}
+
+/* Farbige Titel je nach Bereich */
+.verschenken-card h3 {
+  color: var(--mint);
+}
+
+.tauschen-card h3 {
+  color: var(--coral);
+}
+
+.suchen-card h3 {
+  color: var(--skyBlue);
+}
+
+.hilfe-card h3 {
+  color: var(--deepBlue);
+}
+
+/* ==================== Formular für Beiträge ==================== */
+.submission-form {
+  margin-top: 4rem;
+  padding: 2rem;
+  background-color: var(--mint);
+  border-radius: 10px;
+  width: 90%;
+  max-width: 900px;
+  margin-left: auto;
+  margin-right: auto;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.submission-form h3 {
+  margin-bottom: 1rem;
+  color: var(--deepBlue);
+}
+
+.submission-form form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.submission-form input[type="text"],
+.submission-form textarea {
+  padding: 0.75rem;
+  border: none;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 1rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.submission-form textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+.submission-form input[type="file"] {
+  font-family: inherit;
+}
+
+.submission-form button {
+  align-self: flex-start;
+  background-color: var(--coral);
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 25px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.submission-form button:hover {
+  background-color: var(--skyBlue);
+}
+
+/* ==================== Kontakt-Button ==================== */
+.contact-button {
+  margin-top: 1rem;
+  padding: 0.6rem 1.2rem;
+  background-color: var(--skyBlue);
+  color: white;
+  border: none;
+  border-radius: 25px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.contact-button:hover {
+  background-color: var(--deepBlue);
+  color: var(--mint);
+}
+
+/* ==================== Responsive Design ==================== */
+@media (max-width: 900px) {
+  .exchange-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .exchange-box {
+    font-size: 1.8rem;
+    padding: 1.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .exchange-box {
+    font-size: 1.5rem;
+    padding: 1.2rem;
+  }
+
+  .exchange-card {
+    flex-direction: column !important;
+  }
+
+  .exchange-card img {
+    width: 100%;
+    height: 200px;
+  }
+}

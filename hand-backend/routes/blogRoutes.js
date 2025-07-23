@@ -1,6 +1,7 @@
 import express from 'express';
 import { protect } from '../middleware/authMiddleware.js';
 import blogs from '../models/blogModel.js';
+import BlogComment from '../models/blogCommentModel.js';
 import User from '../models/UserModel.js';
 
 const router = express.Router();
@@ -19,7 +20,17 @@ router.get('/', async (req, res) => {
       ]
     };
   }
-  const blogsList = await blogs.find(filter).populate('user', 'name');
+  // Hole alle Blogs und populatiere Kommentare
+  const blogsList = await blogs.find(filter)
+    .populate('user', 'name')
+    .lean();
+  // Kommentare zu jedem Blog hinzufügen
+  for (let blog of blogsList) {
+    blog.comments = await BlogComment.find({ blogs: blog._id })
+      .populate('user', 'nickname email')
+      .sort({ createdAt: -1 })
+      .lean();
+  }
   res.json(blogsList);
 });
 
@@ -30,9 +41,13 @@ Beispiel:
 
 // Einzelnen blogspost abrufen
 router.get('/:id', async (req, res) => {
-  const blogs = await blogs.findById(req.params.id).populate('user', 'name');
-  if (!blogs) return res.status(404).json({ message: 'blogspost nicht gefunden' });
-  res.json(blogs);
+  const blog = await blogs.findById(req.params.id).populate('user', 'name').lean();
+  if (!blog) return res.status(404).json({ message: 'blogspost nicht gefunden' });
+  blog.comments = await BlogComment.find({ blogs: blog._id })
+    .populate('user', 'nickname email')
+    .sort({ createdAt: -1 })
+    .lean();
+  res.json(blog);
 });
 
 // blogspost erstellen
@@ -58,9 +73,11 @@ router.post('/', protect, async (req, res) => {
 // blogspost bearbeiten
 router.put('/:id', protect, async (req, res) => {
   try {
-    const blogs = await blogs.findByIdAndUpdate(req.params.id, req.body, { new: true });
-    if (!blogs) return res.status(404).json({ message: 'blogspost nicht gefunden' });
-    res.json(blogs);
+    // user-Feld immer mitgeben, damit required nicht verletzt wird
+    const updateData = { ...req.body, user: req.user._id };
+    const blog = await blogs.findByIdAndUpdate(req.params.id, updateData, { new: true });
+    if (!blog) return res.status(404).json({ message: 'blogspost nicht gefunden' });
+    res.json(blog);
   } catch (error) {
     res.status(400).json({ message: 'Fehler beim Bearbeiten', error });
   }
@@ -68,8 +85,8 @@ router.put('/:id', protect, async (req, res) => {
 
 // blogspost löschen
 router.delete('/:id', protect, async (req, res) => {
-  const blogs = await blogs.findByIdAndDelete(req.params.id);
-  if (!blogs) return res.status(404).json({ message: 'blogspost nicht gefunden' });
+  const blog = await blogs.findByIdAndDelete(req.params.id);
+  if (!blog) return res.status(404).json({ message: 'blogspost nicht gefunden' });
   res.json({ message: 'blogspost gelöscht' });
 });
 

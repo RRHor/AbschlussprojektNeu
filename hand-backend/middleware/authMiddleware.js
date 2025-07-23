@@ -42,4 +42,6 @@ export async function protect(req, res, next) {
       message: 'Nicht autorisiert - Token ungültig'
     });
   }
-};
+}
+
+export default protect;

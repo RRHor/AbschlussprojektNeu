@@ -14,7 +14,7 @@ export default function Verschenken() {
   useEffect(() => {
     const fetchItems = async () => {
       try {
-        const res = await fetch("http://localhost:5000/api/exchange?category=verschenken");
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/exchange?category=verschenken`);
         const data = await res.json();
         if (data.success) {
           setVerschenkenItems(data.data);
@@ -49,7 +49,7 @@ export default function Verschenken() {
     payload.append("picture", imageFile);
 
     try {
-      const res = await fetch("http://localhost:5000/api/exchange", {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/exchange`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${currentUser?.token || ""}`,

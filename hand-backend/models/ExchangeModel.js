@@ -1,3 +1,4 @@
+// ...existing code...
 // models/ExchangeModel.js
 import mongoose from 'mongoose';
 
@@ -17,10 +18,30 @@ const exchangeSchema = new mongoose.Schema({
   category: {
     type: String,
     required: [true, 'Kategorie ist erforderlich'],
-    enum: ['verschenken', 'tauschen', 'suchen'],
+    enum: ['verschenken', 'tauschen', 'suche', 'hilfe'],
     lowercase: true
   },
   picture: {
+  location: {
+    type: String,
+    trim: true,
+    maxlength: [200, 'Standort darf maximal 200 Zeichen haben']
+  },
+  condition: {
+    type: String,
+    trim: true,
+    maxlength: [100, 'Zustand darf maximal 100 Zeichen haben']
+  },
+  subcategory: {
+    type: String,
+    trim: true,
+    maxlength: [100, 'Subkategorie darf maximal 100 Zeichen haben']
+  },
+  date: {
+    type: String,
+    trim: true,
+    maxlength: [30, 'Datum darf maximal 30 Zeichen haben']
+  },
     type: String,
     required: false,
     validate: {

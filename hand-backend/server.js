@@ -37,6 +37,9 @@ import exchangeRoutes from './routes/exchangeRoutes.js';
 import helpQuestionRoutes from './routes/helpQuestionRoutes.js';
 import helpAnswerRoutes from './routes/helpAnswerRoutes.js';
 import userRoutes from './routes/userRoutes.js';
+// Eigene Kommentare-Route
+import myCommentsRoute from './routes/myCommentsRoute.js';
+import myPostsRoute from './routes/myPostsRoute.js';
 
 
 const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
@@ -99,6 +102,10 @@ app.use('/api/auth', passwordResetRoute);
 // User-Routen
 app.use('/api', publicUserRoutes);
 app.use('/api', profileRoutes);
+// Eigene Kommentare-Route
+app.use('/api', myCommentsRoute);
+// Eigene Blogposts-Route
+app.use('/api/my-posts', myPostsRoute);
 app.use('/api', userRoutes);
 
 // Content-Routen

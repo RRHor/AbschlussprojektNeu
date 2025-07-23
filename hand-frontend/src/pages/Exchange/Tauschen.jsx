@@ -9,7 +9,7 @@ export default function Tauschen() {
   useEffect(() => {
     const fetchItems = async () => {
       try {
-        const res = await fetch("http://localhost:5000/api/exchange?category=tauschen");
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/exchange?category=tauschen`);
         const data = await res.json();
         if (data.success) {
           setTauschenItems(data.data);
@@ -33,7 +33,7 @@ export default function Tauschen() {
     const formData = new FormData(e.target);
 
     try {
-      const res = await fetch("http://localhost:5000/api/exchange", {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/exchange`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${currentUser?.token || ""}`,
@@ -68,7 +68,7 @@ export default function Tauschen() {
             }`}
             key={item._id}
           >
-            {item.picture && <img src={`http://localhost:5000/uploads/${item.picture}`} alt={item.title} />}
+            {item.picture && <img src={`${import.meta.env.VITE_API_URL.replace(/\/api$/, '')}/uploads/${item.picture}`} alt={item.title} />}
             <div className="card-body">
               <h3>{item.title}</h3>
               <p>{item.description}</p>
