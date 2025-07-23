@@ -1,3 +1,68 @@
+/* Inline Edit Form Anpassungen */
+.edit-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+  background: rgba(255,255,255,0.18);
+  border-radius: 16px;
+  padding: 1.2rem 1rem 1rem 1rem;
+  box-shadow: 0 2px 12px rgba(46,126,179,0.07);
+  margin-bottom: 1.2rem;
+}
+
+.edit-input {
+  width: 100%;
+  font-size: 1rem;
+  font-family: inherit;
+  padding: 0.7rem 1rem;
+  border-radius: 10px;
+  border: 1.5px solid var(--border-light);
+  background: rgba(255,255,255,0.7);
+  color: var(--text-dark);
+  box-shadow: 0 1px 4px rgba(46,126,179,0.06);
+  margin-bottom: 0.2rem;
+  transition: border 0.2s, box-shadow 0.2s;
+  outline: none;
+}
+.edit-input:focus {
+  border: 1.5px solid var(--skyBlue);
+  box-shadow: 0 2px 8px rgba(46,126,179,0.13);
+}
+
+.edit-actions {
+  display: flex;
+  gap: 0.7rem;
+  margin-top: 0.5rem;
+}
+.edit-form .btn-primary {
+  background: linear-gradient(135deg, var(--skyBlue), var(--mint));
+  color: var(--deepBlue);
+  border: none;
+  font-weight: 600;
+  border-radius: 10px;
+  padding: 0.7rem 1.5rem;
+  box-shadow: 0 2px 8px rgba(46,126,179,0.13);
+  transition: background 0.2s, box-shadow 0.2s;
+}
+.edit-form .btn-primary:hover {
+  background: linear-gradient(135deg, var(--mint), var(--skyBlue));
+  box-shadow: 0 4px 16px rgba(79,227,193,0.18);
+}
+.edit-form .btn-secondary {
+  background: var(--light-gray);
+  color: var(--deepBlue);
+  border: 1.5px solid var(--border-light);
+  font-weight: 500;
+  border-radius: 10px;
+  padding: 0.7rem 1.5rem;
+  box-shadow: 0 1px 4px rgba(46,126,179,0.06);
+  transition: background 0.2s, box-shadow 0.2s;
+}
+.edit-form .btn-secondary:hover {
+  background: var(--mint);
+  color: var(--deepBlue);
+  box-shadow: 0 2px 8px rgba(79,227,193,0.13);
+}
 /* User Posts Section Styles - Modern Design mit neuen Farben */
 .user-posts-section {
   margin-top: 2rem;

@@ -33,7 +33,7 @@ const Blog = () => {
 
   const API_URL = import.meta.env.VITE_API_URL;
   useEffect(() => {
-    axios.get(`${API_URL}/blogs`)
+    axios.get(`${API_URL}/api/blogs`)
       .then(res => setBlogPosts(res.data))
       .catch(() => setBlogPosts([]));
   }, []);
@@ -75,7 +75,7 @@ const Blog = () => {
   // Kommentare für einen Blogpost laden
   const loadComments = async (blogId) => {
     try {
-      const res = await axios.get(`${API_URL}/blog-comments/${blogId}`);
+      const res = await axios.get(`${API_URL}/api/blog-comments/${blogId}`);
       setComments(prev => ({ ...prev, [blogId]: res.data }));
     } catch {
       setComments(prev => ({ ...prev, [blogId]: [] }));
@@ -103,7 +103,7 @@ const Blog = () => {
     if (!commentText[blogId]) return;
     try {
       const token = localStorage.getItem('token');
-      await axios.post(`${API_URL}/blog-comments`, {
+      await axios.post(`${API_URL}/api/blog-comments`, {
         blog: blogId,
         text: commentText[blogId]
       }, {
@@ -155,13 +155,13 @@ const Blog = () => {
         readTime: newPost.readTime,
         image: newPost.image
       };
-      await axios.post(`${API_URL}/blogs`, blogData, {
+      await axios.post(`${API_URL}/api/blogs`, blogData, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
       });
       // Nach dem Hinzufügen: Blogposts neu laden!
-      await axios.get(`${API_URL}/blogs`)
+      await axios.get(`${API_URL}/api/blogs`)
         .then(res => setBlogPosts(res.data))
         .catch(() => setBlogPosts([]));
       handleClosePopup();

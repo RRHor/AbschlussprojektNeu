@@ -56,7 +56,7 @@ const RegisterForm = ({ onSuccess }) => {
     if (Object.keys(errors).length) return;
     setIsSubmitting(true);
     try {
-      const response = await axios.post(`${API_URL}/auth/register`, {
+      const response = await axios.post(`${API_URL}/api/auth/register`, {
         username: formData.nickname,
         nickname: formData.nickname,
         email: formData.email,

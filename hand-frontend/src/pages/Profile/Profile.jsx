@@ -34,7 +34,7 @@ const Profile = () => {
     const fetchUserData = async () => {
       try {
         setIsLoading(true);
-        const response = await axios.get(`${API_URL}/auth/users/me`);
+        const response = await axios.get(`${API_URL}/api/auth/users/me`);
         const data = response.data;
         setProfileData({
           username: data.nickname || data.username || '',

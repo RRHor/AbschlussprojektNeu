@@ -1,5 +1,3 @@
-
-
 import { useState, useEffect } from 'react';
 import { useParams, useLocation } from 'react-router-dom';
 import { ArrowLeft, Users, Loader } from 'lucide-react';
@@ -49,7 +47,7 @@ const EventDetail = () => {
 
   useEffect(() => {
     if (eventData?._id) {
-      axios.get(`${API_URL}/event-comments/event/${eventData._id}`)
+      axios.get(`${API_URL}/api/event-comments/event/${eventData._id}`)
         .then(res => setComments(res.data))
         .catch(err => console.error('Fehler beim Laden der Kommentare:', err));
     }
@@ -58,7 +56,7 @@ const EventDetail = () => {
   // Event aus Backend laden, falls nicht im State
   useEffect(() => {
     if (!eventData && id) {
-      axios.get(`${API_URL}/events/${id}`)
+      axios.get(`${API_URL}/api/events/${id}`)
         .then(res => setEventData(res.data))
         .catch(() => setEventData(null));
     }
@@ -67,7 +65,7 @@ const EventDetail = () => {
   // Teilnahme-Status prüfen
   const checkParticipationStatus = async () => {
     try {
-      const response = await axios.get(`${API_URL}/events/${eventData._id}/my-participation`);
+      const response = await axios.get(`${API_URL}/api/events/${eventData._id}/my-participation`);
       setIsParticipating(response.data.isParticipating);
       setIsOrganizer(response.data.isOrganizer);
       setParticipantCount(response.data.participantCount);
@@ -177,7 +175,7 @@ return (
           onClick={async () => {
             try {
               const token = localStorage.getItem('token');
-              await axios.post(`${API_URL}/events/${eventData._id}/join`, {}, {
+              await axios.post(`${API_URL}/api/events/${eventData._id}/join`, {}, {
                 headers: { Authorization: `Bearer ${token}` }
               });
               checkParticipationStatus();
