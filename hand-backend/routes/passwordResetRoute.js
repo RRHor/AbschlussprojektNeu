@@ -1,67 +1,98 @@
 
+
 import express from 'express';
 import User from '../models/UserModel.js';
 import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
 
 const router = express.Router();
 
-/**
- * Passwort-Reset-Route
- * Diese Route setzt das Passwort eines Users zurück, wenn ein gültiger Reset-Code oder Reset-Token vorliegt.
- * Sie akzeptiert sowohl "resetCode" als auch "code" im Request-Body, damit Frontend und Backend flexibel bleiben.
- */
+// Route für Password-Reset (mit Token in der URL)
+router.post('/reset-password/:token', async (req, res) => {
+  try {
+    const { token } = req.params;
+    const { email, newPassword } = req.body;
+
+    // User anhand des Tokens und E-Mail finden
+    const user = await User.findOne({
+      email,
+      resetPasswordToken: token,
+      resetPasswordExpires: { $gt: Date.now() }
+    });
+
+    if (!user) {
+      return res.status(400).json({ message: 'Ungültiger oder abgelaufener Token' });
+    }
+
+    // Neues Passwort hashen und speichern
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    user.password = hashedPassword;
+    user.resetPasswordToken = null;
+    user.resetPasswordExpires = null;
+    user.resetCode = null;
+    user.resetCodeExpires = null;
+    user.markModified('password');
+    await user.save();
+
+    res.json({ message: 'Passwort erfolgreich zurückgesetzt (Token-Route)' });
+  } catch (error) {
+    console.error('❌ Password reset error (Token-Route):', error);
+    res.status(500).json({
+      success: false,
+      message: 'Serverfehler beim Zurücksetzen des Passworts (Token-Route)'
+    });
+  }
+});
+
+// Route für Password-Reset (ohne Token in der URL, sondern mit Daten im Body)
 router.post('/reset-password', async (req, res) => {
   try {
-    // Hole alle möglichen Felder aus dem Request-Body
     // "resetCode" und "code" sind beide erlaubt, damit verschiedene Frontends funktionieren
     const { email, resetCode, code, resetPasswordToken, newPassword } = req.body;
-
-    // Nutze entweder resetCode oder code (je nachdem, was gesendet wurde)
     const realResetCode = resetCode || code;
-
     let user = null;
 
-    // 1. Suche User mit gültigem Reset-Code (6-stelliger Code aus E-Mail)
+    // 1. Suche User mit gültigem Reset-Code (6-stelliger Code aus E-Mail, Nickname oder Username)
     if (realResetCode) {
       user = await User.findOne({
-        email,
+        $or: [
+          { email },
+          { nickname: email },
+          { username: email }
+        ],
         resetCode: realResetCode,
-        resetCodeExpires: { $gt: Date.now() } // Code darf nicht abgelaufen sein
+        resetCodeExpires: { $gt: Date.now() }
       });
     }
 
     // 2. Alternativ: Suche User mit gültigem Reset-Token (z.B. für Links)
     if (!user && resetPasswordToken) {
       user = await User.findOne({
-        email,
+        $or: [
+          { email },
+          { nickname: email },
+          { username: email }
+        ],
         resetPasswordToken,
         resetPasswordExpires: { $gt: Date.now() }
       });
     }
 
-    // 3. Wenn kein User gefunden wurde, ist der Code/Token ungültig oder abgelaufen
     if (!user) {
-      return res.status(400).json({ message: 'Ungültiger oder abgelaufener Code' });
+      return res.status(400).json({ message: 'Ungültiger oder abgelaufener Code/Token' });
     }
 
-    // 4. Neues Passwort hashen (bcryptjs) – Sicherheit!
+    // Neues Passwort hashen und speichern
     const hashedPassword = await bcrypt.hash(newPassword, 10);
-
-    // 5. Passwort und Reset-Felder im User-Objekt aktualisieren
     user.password = hashedPassword;
     user.resetCode = null;
     user.resetCodeExpires = null;
     user.resetPasswordToken = null;
     user.resetPasswordExpires = null;
-
-    // 6. User speichern (jetzt ist das neue Passwort aktiv)
+    user.markModified('password');
     await user.save();
 
-    // 7. Erfolgsmeldung zurückgeben
     res.json({ message: 'Passwort erfolgreich zurückgesetzt' });
   } catch (error) {
-    // Fehlerbehandlung: Logge den Fehler und sende eine Fehlermeldung an den Client
     console.error('❌ Password reset error:', error);
     res.status(500).json({
       success: false,

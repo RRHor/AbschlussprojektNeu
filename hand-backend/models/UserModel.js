@@ -87,6 +87,13 @@ userSchema.pre("save", async function (next) {
   if (!this.isModified("password")) {
     return next();
   }
+  // Prüfen, ob das Passwort bereits ein bcrypt-Hash ist
+  // bcrypt-Hashes beginnen immer mit $2a$, $2b$, $2x$ oder $2y$ und sind 60 Zeichen lang
+  const isBcryptHash = /^\$2[abxy]\$\d{2}\$.{53}$/.test(this.password);
+  if (isBcryptHash) {
+    // 🔄 Passwort ist bereits ein Hash, Middleware übersprungen
+    return next();
+  }
   try {
     const salt = await bcrypt.genSalt(10);
     const hashed = await bcrypt.hash(this.password, salt);

@@ -147,32 +147,56 @@ router.post("/login", async (req, res) => {
   try {
     // Login mit email, nickname oder username und Passwort
     const { email, nickname, username, password, rememberMe } = req.body;
-
-    const user = await User.findOne({
-      $or: [
-        email ? { email } : null,
-        nickname ? { nickname } : null,
-        username ? { username } : null
-      ].filter(Boolean)
-    });
-
+    console.log('🔐 [DEBUG] Login attempt:', { email, nickname, username, passwordLength: password?.length });
+    // Debug: Alle User ausgeben
+    const allUsers = await User.find({});
+    console.log('📋 [DEBUG] Alle User in MongoDB:', allUsers.map(u => ({ email: u.email, nickname: u.nickname, username: u.username })));
+    // Flexible ODER-Logik wie in loginRoutes.js
+    const searchFields = [
+      email ? { email } : null,
+      nickname ? { nickname } : null,
+      username ? { username } : null
+    ].filter(Boolean);
+    console.log('🔎 [DEBUG] ODER-Suche im Login:', searchFields);
+    const user = await User.findOne({ $or: searchFields });
     if (!user) {
+      console.log('❌ [DEBUG] User not found:', { email, nickname, username });
       return res.status(401).json({ message: "Ungültige E-Mail/Nickname/Username oder Passwort" });
     }
-
-    const isMatch = await user.matchPassword(password);
+    // Debug: Gefundenen User komplett ausgeben
+    console.log('🧑 [DEBUG] Gefundener User:', JSON.stringify(user, null, 2));
+    // Debug: Passwort-Hash ausgeben
+    console.log('🔑 [DEBUG] Gespeicherter Passwort-Hash:', user.password);
+    console.log('👤 [DEBUG] User found:', {
+      nickname: user.nickname,
+      username: user.username,
+      hasPassword: !!user.password,
+      passwordLength: user.password?.length,
+      isActive: user.isActive,
+      isVerify: user.isVerify
+    });
+    // Passwort-Vergleich
+    let isMatch;
+    if (typeof user.matchPassword === 'function') {
+      isMatch = await user.matchPassword(password);
+      console.log('🔍 [DEBUG] Password comparison result (matchPassword):', isMatch);
+    } else {
+      isMatch = await bcrypt.compare(password, user.password);
+      console.log('🔍 [DEBUG] Password comparison result (bcrypt):', isMatch);
+    }
     if (!isMatch) {
+      console.log('❌ [DEBUG] Password mismatch for user:', user.nickname);
       return res.status(401).json({ message: "Ungültige E-Mail/Nickname/Username oder Passwort" });
     }
-
+    // Verifizierungs-Check
     if (!(user.isVerified || user.isVerify)) {
+      console.log('⚠️ [DEBUG] User nicht verifiziert:', user.email);
       return res.status(401).json({ 
         message: "Bitte verifizieren Sie zuerst Ihre E-Mail-Adresse",
         requiresVerification: true,
         email: user.email
       });
     }
-
     const expiresIn = rememberMe ? "30d" : "1d";
     const token = jwt.sign(
       { 
@@ -183,7 +207,6 @@ router.post("/login", async (req, res) => {
       process.env.JWT_SECRET, 
       { expiresIn }
     );
-
     // Token als Cookie setzen
     res.cookie('token', token, {
       httpOnly: true,
@@ -191,7 +214,6 @@ router.post("/login", async (req, res) => {
       sameSite: 'lax',
       maxAge: rememberMe ? 30 * 24 * 60 * 60 * 1000 : 24 * 60 * 60 * 1000 // 30 Tage oder 1 Tag
     });
-
     res.json({
       message: "Login erfolgreich",
       token,
@@ -206,7 +228,7 @@ router.post("/login", async (req, res) => {
       },
     });
   } catch (error) {
-    console.error('Login error:', error);
+    console.error('❌ [DEBUG] Login error:', error);
     res.status(500).json({ message: "Serverfehler" });
   }
 });
