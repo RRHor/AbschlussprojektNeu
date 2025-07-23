@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useAuth } from '../../context/AuthContext';
 import './Profile.css';
+import UserPostsSection from './UserPostsSection';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -334,7 +335,7 @@ const Profile = () => {
 
                 <div className="addresses-container">
                   {currentAddresses.map((address, index) => (
-                    <div key={address.id} className="address-card">
+                    <div key={address.id || index} className="address-card">
                       <div className="address-card-header">
                         <div className="address-title-section">
                           <h4 className={`address-title ${address.isPrimary ? 'primary' : 'secondary'}`}>
@@ -435,6 +436,7 @@ const Profile = () => {
               </div>
             </div>
           </div>
+          <UserPostsSection />
         </div>
       </div>
     </div>

@@ -1,7 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import './UserPostsSection.css'; 
+import { useNavigate } from 'react-router-dom';
+import './UserPostsSection.css';
+
+const API_URL = import.meta.env.VITE_API_URL;
 
 const UserPostsSection = () => {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('alle');
   const [userPosts, setUserPosts] = useState({
     verschenken: [],
@@ -13,7 +17,6 @@ const UserPostsSection = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Fetch user posts from API
   useEffect(() => {
     fetchUserPosts();
   }, []);
@@ -21,29 +24,49 @@ const UserPostsSection = () => {
   const fetchUserPosts = async () => {
     try {
       setLoading(true);
-      // API-Aufruf um Posts des eingeloggten Users zu holen
-      const response = await fetch('/api/user/posts', {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-          'Content-Type': 'application/json'
-        }
-      });
+      // Alle drei Endpunkte parallel abfragen
+      const [postsRes, blogRes, eventRes] = await Promise.all([
+        fetch(`${API_URL}/posts/user`, {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`,
+            'Content-Type': 'application/json'
+          }
+        }),
+        fetch(`${API_URL}/blog-comments/user`, {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`,
+            'Content-Type': 'application/json'
+          }
+        }),
+        fetch(`${API_URL}/event-comments/user`, {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`,
+            'Content-Type': 'application/json'
+          }
+        })
+      ]);
 
-      if (!response.ok) {
-        throw new Error('Fehler beim Laden der Posts');
+      if (!postsRes.ok || !blogRes.ok || !eventRes.ok) {
+        const text = !postsRes.ok ? await postsRes.text() : !blogRes.ok ? await blogRes.text() : await eventRes.text();
+        throw new Error(`Fehler beim Laden der Daten: ${text}`);
       }
 
-      const data = await response.json();
-      
-      // Posts nach Kategorie sortieren
-      const sortedPosts = {
-        verschenken: data.filter(post => post.category === 'verschenken'),
-        tauschen: data.filter(post => post.category === 'tauschen'),
-        suchen: data.filter(post => post.category === 'suchen'),
-        blog: [], // Falls später Blog-Posts hinzugefügt werden
-        events: [] // Falls später Events hinzugefügt werden
-      };
+      let postsData, blogData, eventData;
+      try {
+        postsData = await postsRes.json();
+        blogData = await blogRes.json();
+        eventData = await eventRes.json();
+      } catch (jsonErr) {
+        throw new Error('Antwort ist kein gültiges JSON. Prüfe die API-URL und Backend-Response.');
+      }
 
+      const sortedPosts = {
+        verschenken: postsData.filter(post => post.category === 'verschenken'),
+        tauschen: postsData.filter(post => post.category === 'tauschen'),
+        suchen: postsData.filter(post => post.category === 'suchen'),
+        blog: blogData,
+        events: eventData
+      };
       setUserPosts(sortedPosts);
     } catch (err) {
       setError(err.message);
@@ -77,21 +100,17 @@ const UserPostsSection = () => {
     if (!window.confirm('Möchten Sie diesen Post wirklich löschen?')) {
       return;
     }
-
     try {
-      const response = await fetch(`/api/exchanges/${postId}`, {
+      const response = await fetch(`${API_URL}/exchanges/${postId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
           'Content-Type': 'application/json'
         }
       });
-
       if (!response.ok) {
         throw new Error('Fehler beim Löschen des Posts');
       }
-
-      // Post aus dem lokalen State entfernen
       setUserPosts(prev => {
         const newPosts = { ...prev };
         Object.keys(newPosts).forEach(category => {
@@ -99,7 +118,6 @@ const UserPostsSection = () => {
         });
         return newPosts;
       });
-
     } catch (err) {
       console.error('Fehler beim Löschen:', err);
       alert('Fehler beim Löschen des Posts: ' + err.message);
@@ -110,8 +128,7 @@ const UserPostsSection = () => {
     try {
       const post = getFilteredPosts().find(p => p._id === postId);
       const newStatus = post.status === 'aktiv' ? 'reserviert' : 'aktiv';
-
-      const response = await fetch(`/api/exchanges/${postId}/status`, {
+      const response = await fetch(`${API_URL}/exchanges/${postId}/status`, {
         method: 'PATCH',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
@@ -119,12 +136,9 @@ const UserPostsSection = () => {
         },
         body: JSON.stringify({ status: newStatus })
       });
-
       if (!response.ok) {
         throw new Error('Fehler beim Ändern des Status');
       }
-
-      // Status im lokalen State aktualisieren
       setUserPosts(prev => {
         const newPosts = { ...prev };
         Object.keys(newPosts).forEach(category => {
@@ -134,7 +148,6 @@ const UserPostsSection = () => {
         });
         return newPosts;
       });
-
     } catch (err) {
       console.error('Fehler beim Status ändern:', err);
       alert('Fehler beim Ändern des Status: ' + err.message);
@@ -142,8 +155,7 @@ const UserPostsSection = () => {
   };
 
   const handleEditPost = (postId) => {
-    // Navigation zur Edit-Seite oder Modal öffnen
-    window.location.href = `/edit-post/${postId}`;
+    navigate(`/edit-post/${postId}`);
   };
 
   const formatDate = (dateString) => {
@@ -253,7 +265,7 @@ const UserPostsSection = () => {
               }
             </p>
             <button 
-              onClick={() => window.location.href = '/create-post'} 
+              onClick={() => navigate('/create-post')} 
               className="btn btn-primary"
             >
               Ersten Post erstellen

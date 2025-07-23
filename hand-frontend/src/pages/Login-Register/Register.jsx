@@ -1,4 +1,4 @@
-import RegisterForm from '../components/RegisterForm.jsx';
+import RegisterForm from '../../components/RegisterForm.jsx';
 
 // Wegen Fehlermeldung in Browserkonsole geändert
 const Register = () => {

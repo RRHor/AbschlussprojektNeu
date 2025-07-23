@@ -3,10 +3,10 @@
 import { useState, useEffect } from 'react';
 import { useParams, useLocation } from 'react-router-dom';
 import { ArrowLeft, Users, Loader } from 'lucide-react';
-import { useAuth } from '../context/AuthContext.jsx';
+import { useAuth } from '../../context/AuthContext.jsx';
 import axios from 'axios';
 const API_URL = import.meta.env.VITE_API_URL;
-import logo from '../assets/logo.png'; 
+import logo from '../../assets/logo.png'; 
 import './EventDetail.css';
 import { useNavigate } from 'react-router-dom';
 

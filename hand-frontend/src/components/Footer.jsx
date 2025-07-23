@@ -14,7 +14,7 @@ function Footer() {
             <a href="/uberuns">Über uns</a>
           </div>
           <p>
-            &copy; {new Date().getFullYear()} Hand in Hand – Nachbarschaft verbindet. All rights reserved by Rea,Dominik,Nazli,Dogmar,Brian,Arben.
+            &copy; {new Date().getFullYear()} Hand in Hand – Nachbarschaft verbindet. All rights reserved by Arben, Brian, Dagmar, Dominik, Nazli, Rea.
           </p>
         </div>
       </footer>

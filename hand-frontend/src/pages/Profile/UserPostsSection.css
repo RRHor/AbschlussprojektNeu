@@ -1,10 +1,10 @@
-/* User Posts Section Styles - Modern Design */
+/* User Posts Section Styles - Modern Design mit neuen Farben */
 .user-posts-section {
   margin-top: 2rem;
   padding: 0;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, var(--deepBlue) 0%, var(--skyBlue) 100%);
   border-radius: 20px;
-  box-shadow: 0 20px 40px rgba(102, 126, 234, 0.1);
+  box-shadow: 0 20px 40px rgba(5, 0, 78, 0.15);
   overflow: hidden;
   position: relative;
 }
@@ -16,7 +16,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(79, 227, 193, 0.05) 100%);
   pointer-events: none;
 }
 
@@ -30,17 +30,18 @@
 .posts-header .section-title {
   font-size: 2rem;
   font-weight: 700;
-  color: #ffffff;
+  color: var(--white);
   margin: 0 0 0.75rem 0;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  text-shadow: 0 2px 4px var(--shadow-dark);
   letter-spacing: -0.02em;
 }
 
 .posts-header .section-subtitle {
-  color: rgba(255, 255, 255, 0.9);
+  color: var(--cream);
   font-size: 1rem;
   margin: 0;
   font-weight: 400;
+  opacity: 0.9;
 }
 
 /* Filter Tabs - Modern Glass Effect */
@@ -49,10 +50,10 @@
   gap: 0.5rem;
   margin: 0 2rem 2rem;
   padding: 0.75rem;
-  background: rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(10px);
   border-radius: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.15);
   overflow-x: auto;
   scrollbar-width: none;
   -ms-overflow-style: none;
@@ -74,7 +75,7 @@
   border-radius: 12px;
   font-size: 0.9rem;
   font-weight: 600;
-  color: rgba(255, 255, 255, 0.8);
+  color: var(--cream);
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   white-space: nowrap;
@@ -91,7 +92,7 @@
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  background: linear-gradient(90deg, transparent, rgba(79, 227, 193, 0.2), transparent);
   transition: left 0.5s ease;
 }
 
@@ -100,21 +101,21 @@
 }
 
 .tab-button:hover {
-  background: rgba(255, 255, 255, 0.2);
-  color: #ffffff;
+  background: rgba(79, 227, 193, 0.15);
+  color: var(--white);
   transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 8px 25px rgba(79, 227, 193, 0.2);
 }
 
 .tab-button.active {
-  background: rgba(255, 255, 255, 0.95);
-  color: #4f46e5;
-  box-shadow: 0 8px 25px rgba(255, 255, 255, 0.2);
+  background: var(--mint);
+  color: var(--deepBlue);
+  box-shadow: 0 8px 25px rgba(79, 227, 193, 0.3);
   transform: translateY(-2px);
 }
 
 .tab-count {
-  background: rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.2);
   padding: 0.25rem 0.6rem;
   border-radius: 20px;
   font-size: 0.8rem;
@@ -125,8 +126,8 @@
 }
 
 .tab-button.active .tab-count {
-  background: #4f46e5;
-  color: white;
+  background: var(--deepBlue);
+  color: var(--white);
 }
 
 /* Posts Container */
@@ -140,7 +141,7 @@
 .no-posts {
   text-align: center;
   padding: 4rem 2rem;
-  color: rgba(255, 255, 255, 0.8);
+  color: var(--cream);
 }
 
 .no-posts-icon {
@@ -152,7 +153,7 @@
 .no-posts h4 {
   font-size: 1.5rem;
   margin: 0 0 1rem 0;
-  color: #ffffff;
+  color: var(--white);
   font-weight: 600;
 }
 
@@ -171,14 +172,15 @@
 
 /* Post Card - Glassmorphism Style */
 .post-card {
-  background: rgba(255, 255, 255, 0.95);
+  background: var(--white);
   backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  border: 1px solid var(--border-light);
   border-radius: 20px;
   padding: 1.75rem;
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   overflow: hidden;
+  box-shadow: var(--shadow-light);
 }
 
 .post-card::before {
@@ -188,14 +190,14 @@
   left: 0;
   right: 0;
   height: 4px;
-  background: linear-gradient(90deg, #667eea, #764ba2, #f093fb);
+  background: linear-gradient(90deg, var(--deepBlue), var(--skyBlue), var(--mint));
   border-radius: 20px 20px 0 0;
 }
 
 .post-card:hover {
   transform: translateY(-8px) scale(1.02);
-  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
-  background: rgba(255, 255, 255, 0.98);
+  box-shadow: 0 25px 50px var(--shadow-medium);
+  background: var(--white);
 }
 
 .post-card-header {
@@ -210,12 +212,12 @@
   align-items: center;
   gap: 0.5rem;
   padding: 0.5rem 1rem;
-  background: linear-gradient(135deg, #667eea, #764ba2);
-  color: white;
+  background: linear-gradient(135deg, var(--deepBlue), var(--skyBlue));
+  color: var(--white);
   border-radius: 25px;
   font-size: 0.85rem;
   font-weight: 600;
-  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+  box-shadow: 0 4px 15px rgba(5, 0, 78, 0.2);
 }
 
 .category-icon {
@@ -228,9 +230,9 @@
   gap: 0.5rem;
   font-size: 0.85rem;
   font-weight: 600;
-  color: #6b7280;
+  color: var(--text-light);
   padding: 0.4rem 0.8rem;
-  background: rgba(107, 114, 128, 0.1);
+  background: var(--light-gray);
   border-radius: 20px;
 }
 
@@ -238,7 +240,7 @@
   width: 10px;
   height: 10px;
   border-radius: 50%;
-  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.3);
+  box-shadow: 0 0 0 2px var(--border-light);
 }
 
 .status-text {
@@ -253,14 +255,14 @@
 .post-title {
   font-size: 1.25rem;
   font-weight: 700;
-  color: #1f2937;
+  color: var(--text-dark);
   margin: 0 0 0.75rem 0;
   line-height: 1.4;
   letter-spacing: -0.01em;
 }
 
 .post-description {
-  color: #6b7280;
+  color: var(--text-light);
   font-size: 0.95rem;
   line-height: 1.6;
   margin: 0 0 1.25rem 0;
@@ -275,7 +277,7 @@
   gap: 1.5rem;
   margin-bottom: 1.25rem;
   padding: 0.75rem;
-  background: rgba(107, 114, 128, 0.05);
+  background: var(--light-gray);
   border-radius: 12px;
 }
 
@@ -285,12 +287,13 @@
   align-items: center;
   gap: 0.4rem;
   font-size: 0.85rem;
-  color: #6b7280;
+  color: var(--text-light);
   font-weight: 500;
 }
 
 .meta-icon {
   font-size: 1rem;
+  color: var(--skyBlue);
 }
 
 .post-stats {
@@ -298,9 +301,9 @@
   gap: 2rem;
   margin-bottom: 1.5rem;
   padding: 1rem;
-  background: linear-gradient(135deg, rgba(102, 126, 234, 0.05), rgba(118, 75, 162, 0.05));
+  background: linear-gradient(135deg, rgba(5, 0, 78, 0.03), rgba(46, 126, 179, 0.03));
   border-radius: 16px;
-  border: 1px solid rgba(102, 126, 234, 0.1);
+  border: 1px solid rgba(46, 126, 179, 0.1);
 }
 
 .stat-item {
@@ -312,16 +315,17 @@
 
 .stat-icon {
   font-size: 1.1rem;
+  color: var(--skyBlue);
 }
 
 .stat-value {
   font-weight: 700;
-  color: #4f46e5;
+  color: var(--deepBlue);
   font-size: 1.1rem;
 }
 
 .stat-label {
-  color: #6b7280;
+  color: var(--text-light);
   font-weight: 500;
 }
 
@@ -351,36 +355,36 @@
 }
 
 .btn-post-edit {
-  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
-  color: white;
-  box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+  background: linear-gradient(135deg, var(--skyBlue), var(--deepBlue));
+  color: var(--white);
+  box-shadow: 0 4px 15px rgba(46, 126, 179, 0.3);
 }
 
 .btn-post-edit:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4);
+  box-shadow: 0 8px 25px rgba(46, 126, 179, 0.4);
 }
 
 .btn-post-toggle {
-  background: linear-gradient(135deg, #f59e0b, #d97706);
-  color: white;
-  box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);
+  background: linear-gradient(135deg, var(--mint), var(--skyBlue));
+  color: var(--deepBlue);
+  box-shadow: 0 4px 15px rgba(79, 227, 193, 0.3);
 }
 
 .btn-post-toggle:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(245, 158, 11, 0.4);
+  box-shadow: 0 8px 25px rgba(79, 227, 193, 0.4);
 }
 
 .btn-post-delete {
-  background: linear-gradient(135deg, #ef4444, #dc2626);
-  color: white;
-  box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
+  background: linear-gradient(135deg, var(--coral), #c75a52);
+  color: var(--white);
+  box-shadow: 0 4px 15px rgba(222, 136, 123, 0.3);
 }
 
 .btn-post-delete:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(239, 68, 68, 0.4);
+  box-shadow: 0 8px 25px rgba(222, 136, 123, 0.4);
 }
 
 .btn-icon {
@@ -451,25 +455,34 @@
 /* Dark mode support */
 @media (prefers-color-scheme: dark) {
   .post-card {
-    background: rgba(17, 24, 39, 0.95);
+    background: rgba(5, 0, 78, 0.95);
     border: 1px solid rgba(255, 255, 255, 0.1);
   }
   
   .post-title {
-    color: #f9fafb;
+    color: var(--white);
   }
   
   .post-description {
-    color: #d1d5db;
+    color: var(--cream);
   }
   
   .post-date,
   .post-location {
-    color: #d1d5db;
+    color: var(--cream);
   }
   
   .stat-label {
-    color: #d1d5db;
+    color: var(--cream);
+  }
+  
+  .post-meta {
+    background: rgba(255, 255, 255, 0.05);
+  }
+  
+  .post-status {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--cream);
   }
 }
 
