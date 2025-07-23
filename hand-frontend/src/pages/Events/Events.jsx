@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import "./Events.css";
 import { ArrowLeft } from "lucide-react";
@@ -11,7 +10,7 @@ const Events = () => {
 
   useEffect(() => {
     const API_URL = import.meta.env.VITE_API_URL;
-    axios.get(`${API_URL}/events`)
+    axios.get(`${API_URL}/api/events`)
       .then(res => setEvents(res.data))
       .catch(() => setEvents([]));
   }, []);

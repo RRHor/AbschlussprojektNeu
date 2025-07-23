@@ -7,6 +7,8 @@ const API_URL = import.meta.env.VITE_API_URL;
 const UserPostsSection = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('alle');
+  const [editPostId, setEditPostId] = useState(null);
+  const [editForm, setEditForm] = useState({});
   const [userPosts, setUserPosts] = useState({
     verschenken: [],
     tauschen: [],
@@ -24,21 +26,21 @@ const UserPostsSection = () => {
   const fetchUserPosts = async () => {
     try {
       setLoading(true);
-      // Alle drei Endpunkte parallel abfragen
-      const [postsRes, blogRes, eventRes] = await Promise.all([
-        fetch(`${API_URL}/posts/user`, {
+      // Alle relevanten Endpunkte parallel abfragen (Exchanges, Blog-Kommentare, Event-Kommentare)
+      const [exchangesRes, blogRes, eventRes] = await Promise.all([
+        fetch(`${API_URL}/api/exchange/my/posts`, {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`,
             'Content-Type': 'application/json'
           }
         }),
-        fetch(`${API_URL}/blog-comments/user`, {
+        fetch(`${API_URL}/api/blog-comments/user`, {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`,
             'Content-Type': 'application/json'
           }
         }),
-        fetch(`${API_URL}/event-comments/user`, {
+        fetch(`${API_URL}/api/event-comments/user`, {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`,
             'Content-Type': 'application/json'
@@ -46,24 +48,25 @@ const UserPostsSection = () => {
         })
       ]);
 
-      if (!postsRes.ok || !blogRes.ok || !eventRes.ok) {
-        const text = !postsRes.ok ? await postsRes.text() : !blogRes.ok ? await blogRes.text() : await eventRes.text();
+      if (!exchangesRes.ok || !blogRes.ok || !eventRes.ok) {
+        const text = !exchangesRes.ok ? await exchangesRes.text() : !blogRes.ok ? await blogRes.text() : await eventRes.text();
         throw new Error(`Fehler beim Laden der Daten: ${text}`);
       }
 
-      let postsData, blogData, eventData;
+      let exchangesData, blogData, eventData;
       try {
-        postsData = await postsRes.json();
+        exchangesData = await exchangesRes.json();
         blogData = await blogRes.json();
         eventData = await eventRes.json();
       } catch (jsonErr) {
         throw new Error('Antwort ist kein gültiges JSON. Prüfe die API-URL und Backend-Response.');
       }
 
+      const exchangeList = Array.isArray(exchangesData.data) ? exchangesData.data : [];
       const sortedPosts = {
-        verschenken: postsData.filter(post => post.category === 'verschenken'),
-        tauschen: postsData.filter(post => post.category === 'tauschen'),
-        suchen: postsData.filter(post => post.category === 'suchen'),
+        verschenken: exchangeList.filter(post => post.category === 'verschenken'),
+        tauschen: exchangeList.filter(post => post.category === 'tauschen'),
+        suchen: exchangeList.filter(post => post.category === 'suchen'),
         blog: blogData,
         events: eventData
       };
@@ -101,7 +104,7 @@ const UserPostsSection = () => {
       return;
     }
     try {
-      const response = await fetch(`${API_URL}/exchanges/${postId}`, {
+      const response = await fetch(`${API_URL}/api/exchange/${postId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
@@ -128,7 +131,7 @@ const UserPostsSection = () => {
     try {
       const post = getFilteredPosts().find(p => p._id === postId);
       const newStatus = post.status === 'aktiv' ? 'reserviert' : 'aktiv';
-      const response = await fetch(`${API_URL}/exchanges/${postId}/status`, {
+      const response = await fetch(`${API_URL}/api/exchange/${postId}/status`, {
         method: 'PATCH',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
@@ -154,8 +157,66 @@ const UserPostsSection = () => {
     }
   };
 
-  const handleEditPost = (postId) => {
-    navigate(`/edit-post/${postId}`);
+  const handleEditPost = (post) => {
+    setEditPostId(post._id);
+    // Initialwerte je nach Typ
+    if (post.blog && post.text) {
+      setEditForm({ text: post.text });
+    } else if (post.event && post.text) {
+      setEditForm({ text: post.text });
+    } else {
+      setEditForm({
+        title: post.title || '',
+        description: post.description || '',
+        tauschGegen: post.tauschGegen || ''
+      });
+    }
+  };
+
+  const handleEditFormChange = (e) => {
+    const { name, value } = e.target;
+    setEditForm(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleEditCancel = () => {
+    setEditPostId(null);
+    setEditForm({});
+  };
+
+  const handleEditSave = async (post) => {
+    try {
+      let url = '';
+      let method = 'PUT';
+      let body = {};
+      if (post.blog && post.text) {
+        url = `${API_URL}/api/blog-comments/${post._id}`;
+        body = { text: editForm.text };
+      } else if (post.event && post.text) {
+        url = `${API_URL}/api/event-comments/${post._id}`;
+        body = { text: editForm.text };
+      } else {
+        url = `${API_URL}/api/exchange/${post._id}`;
+        body = {
+          title: editForm.title,
+          description: editForm.description,
+          tauschGegen: post.category === 'tauschen' ? editForm.tauschGegen : undefined
+        };
+      }
+      const response = await fetch(url, {
+        method,
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(body)
+      });
+      if (!response.ok) throw new Error('Fehler beim Speichern');
+      await fetchUserPosts();
+      setEditPostId(null);
+      setEditForm({});
+    } catch (err) {
+      alert('Fehler beim Speichern: ' + err.message);
+    }
   };
 
   const formatDate = (dateString) => {
@@ -296,69 +357,141 @@ const UserPostsSection = () => {
                   </div>
                 )}
 
-                <div className="post-content">
-                  <h4 className="post-title">{post.title}</h4>
-                  <p className="post-description">{post.description}</p>
-                  
-                  {/* Tausch-Gegen Info für Tausch-Posts */}
-                  {post.category === 'tauschen' && post.tauschGegen && (
-                    <div className="tausch-info">
-                      <span className="tausch-label">Tausche gegen:</span>
-                      <span className="tausch-gegen">{post.tauschGegen}</span>
-                    </div>
-                  )}
-                  
-                  <div className="post-meta">
-                    <div className="post-date">
-                      <span className="meta-icon">📅</span>
-                      {formatDate(post.createdAt)}
-                    </div>
-                    {post.updatedAt && post.updatedAt !== post.createdAt && (
-                      <div className="post-updated">
-                        <span className="meta-icon">✏️</span>
-                        Bearbeitet: {formatDate(post.updatedAt)}
-                      </div>
-                    )}
-                  </div>
 
-                  <div className="post-stats">
-                    <div className="stat-item">
-                      <span className="stat-icon">👁️</span>
-                      <span className="stat-value">{post.views || 0}</span>
-                      <span className="stat-label">Aufrufe</span>
-                    </div>
-                    <div className="stat-item">
-                      <span className="stat-icon">❤️</span>
-                      <span className="stat-value">{post.interested || 0}</span>
-                      <span className="stat-label">Interessenten</span>
-                    </div>
-                  </div>
+                <div className="post-content">
+                  {editPostId === post._id ? (
+                    <form onSubmit={e => { e.preventDefault(); handleEditSave(post); }} className="edit-form">
+                      {/* Blog-Kommentar */}
+                      {post.blog && post.text ? (
+                        <>
+                          <h4 className="post-title">Kommentar zu: {post.blog.title}</h4>
+                          <textarea name="text" value={editForm.text || ''} onChange={handleEditFormChange} className="edit-input" rows={3} />
+                        </>
+                      ) : post.event && post.text ? (
+                        <>
+                          <h4 className="post-title">Kommentar zu Event: {post.event.title}</h4>
+                          <textarea name="text" value={editForm.text || ''} onChange={handleEditFormChange} className="edit-input" rows={3} />
+                        </>
+                      ) : (
+                        <>
+                          <input name="title" value={editForm.title || ''} onChange={handleEditFormChange} className="edit-input" placeholder="Titel" />
+                          <textarea name="description" value={editForm.description || ''} onChange={handleEditFormChange} className="edit-input" placeholder="Beschreibung" rows={3} />
+                          {post.category === 'tauschen' && (
+                            <input name="tauschGegen" value={editForm.tauschGegen || ''} onChange={handleEditFormChange} className="edit-input" placeholder="Tausche gegen..." />
+                          )}
+                        </>
+                      )}
+                      <div className="edit-actions">
+                        <button type="submit" className="btn btn-primary">Speichern</button>
+                        <button type="button" className="btn btn-secondary" onClick={handleEditCancel}>Abbrechen</button>
+                      </div>
+                    </form>
+                  ) : (
+                    <>
+                      {/* ...bestehende Anzeige wie bisher... */}
+                      {post.blog && post.text ? (
+                        <>
+                          <h4 className="post-title">Kommentar zu: {post.blog.title}</h4>
+                          <p className="post-description">{post.text}</p>
+                          <div className="post-meta">
+                            <div className="post-date">
+                              <span className="meta-icon">📅</span>
+                              {formatDate(post.createdAt)}
+                            </div>
+                            {post.updatedAt && post.updatedAt !== post.createdAt && (
+                              <div className="post-updated">
+                                <span className="meta-icon">✏️</span>
+                                Bearbeitet: {formatDate(post.updatedAt)}
+                              </div>
+                            )}
+                          </div>
+                        </>
+                      ) : post.event && post.text ? (
+                        <>
+                          <h4 className="post-title">Kommentar zu Event: {post.event.title}</h4>
+                          <p className="post-description">{post.text}</p>
+                          <div className="post-meta">
+                            <div className="post-date">
+                              <span className="meta-icon">📅</span>
+                              {formatDate(post.createdAt)}
+                            </div>
+                            {post.updatedAt && post.updatedAt !== post.createdAt && (
+                              <div className="post-updated">
+                                <span className="meta-icon">✏️</span>
+                                Bearbeitet: {formatDate(post.updatedAt)}
+                              </div>
+                            )}
+                          </div>
+                        </>
+                      ) : (
+                        <>
+                          <h4 className="post-title">{post.title}</h4>
+                          <p className="post-description">{post.description}</p>
+                          {/* Tausch-Gegen Info für Tausch-Posts */}
+                          {post.category === 'tauschen' && post.tauschGegen && (
+                            <div className="tausch-info">
+                              <span className="tausch-label">Tausche gegen:</span>
+                              <span className="tausch-gegen">{post.tauschGegen}</span>
+                            </div>
+                          )}
+                          <div className="post-meta">
+                            <div className="post-date">
+                              <span className="meta-icon">📅</span>
+                              {formatDate(post.createdAt)}
+                            </div>
+                            {post.updatedAt && post.updatedAt !== post.createdAt && (
+                              <div className="post-updated">
+                                <span className="meta-icon">✏️</span>
+                                Bearbeitet: {formatDate(post.updatedAt)}
+                              </div>
+                            )}
+                          </div>
+                          <div className="post-stats">
+                            <div className="stat-item">
+                              <span className="stat-icon">👁️</span>
+                              <span className="stat-value">{post.views || 0}</span>
+                              <span className="stat-label">Aufrufe</span>
+                            </div>
+                            <div className="stat-item">
+                              <span className="stat-icon">❤️</span>
+                              <span className="stat-value">{post.interested || 0}</span>
+                              <span className="stat-label">Interessenten</span>
+                            </div>
+                          </div>
+                        </>
+                      )}
+                    </>
+                  )}
                 </div>
 
                 <div className="post-actions">
-                  <button 
-                    onClick={() => handleEditPost(post._id)}
-                    className="btn btn-post-edit"
-                  >
-                    <span className="btn-icon">✏️</span>
-                    Bearbeiten
-                  </button>
-                  <button 
-                    onClick={() => handleToggleStatus(post._id)}
-                    className="btn btn-post-toggle"
-                  >
-                    <span className="btn-icon">
-                      {post.status === 'aktiv' ? '⏸️' : '▶️'}
-                    </span>
-                    {post.status === 'aktiv' ? 'Reservieren' : 'Aktivieren'}
-                  </button>
-                  <button 
-                    onClick={() => handleDeletePost(post._id)}
-                    className="btn btn-post-delete"
-                  >
-                    <span className="btn-icon">🗑️</span>
-                    Löschen
-                  </button>
+                  {editPostId === post._id ? null : (
+                    <>
+                      <button 
+                        onClick={() => handleEditPost(post)}
+                        className="btn btn-post-edit"
+                      >
+                        <span className="btn-icon">✏️</span>
+                        Bearbeiten
+                      </button>
+                      <button 
+                        onClick={() => handleToggleStatus(post._id)}
+                        className="btn btn-post-toggle"
+                      >
+                        <span className="btn-icon">
+                          {post.status === 'aktiv' ? '⏸️' : '▶️'}
+                        </span>
+                        {post.status === 'aktiv' ? 'Reservieren' : 'Aktivieren'}
+                      </button>
+                      <button 
+                        onClick={() => handleDeletePost(post._id)}
+                        className="btn btn-post-delete"
+                      >
+                        <span className="btn-icon">🗑️</span>
+                        Löschen
+                      </button>
+                    </>
+                  )}
                 </div>
               </div>
             ))}

@@ -50,7 +50,7 @@ function Login() {
       }
       console.log('Login-Payload:', loginPayload);
       const API_URL = import.meta.env.VITE_API_URL;
-      const response = await axios.post(`${API_URL}/auth/login`, loginPayload);
+      const response = await axios.post(`${API_URL}/api/auth/login`, loginPayload);
       console.log('Login-Response:', response.data);
       localStorage.setItem('token', response.data.token);
       localStorage.setItem('user', JSON.stringify(response.data.user));

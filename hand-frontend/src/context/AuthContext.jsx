@@ -49,7 +49,7 @@ export const AuthProvider = ({ children }) => {
 
   const fetchUser = async () => {
     try {
-      const response = await axios.get(`${API_URL}/auth/users/me`);
+      const response = await axios.get(`${API_URL}/api/auth/users/me`);
       setUser(response.data);
     } catch (error) {
       logout();
@@ -61,7 +61,7 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password) => {
     setLoading(true);
     try {
-      const response = await axios.post(`${API_URL}/auth/login`, { email, password });
+      const response = await axios.post(`${API_URL}/api/auth/login`, { email, password });
       const { token, user } = response.data;
       localStorage.setItem('token', token);
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
@@ -80,7 +80,7 @@ export const AuthProvider = ({ children }) => {
   const register = async (userData) => {
     setLoading(true);
     try {
-      const response = await axios.post(`${API_URL}/auth/register`, userData);
+      const response = await axios.post(`${API_URL}/api/auth/register`, userData);
       const { token, user } = response.data;
       localStorage.setItem('token', token);
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;

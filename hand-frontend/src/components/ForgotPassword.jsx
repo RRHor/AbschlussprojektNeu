@@ -50,7 +50,7 @@ const ForgotPassword = () => {
 
     setIsLoading(true);
     try {
-      await axios.post(`${API_URL}/auth/password-reset-request`, { email: formData.email });
+      await axios.post(`${API_URL}/api/auth/password-reset-request`, { email: formData.email });
       setStep('verification');
       setErrors({});
     } catch (err) {
@@ -78,7 +78,7 @@ const ForgotPassword = () => {
 
     setIsLoading(true);
     try {
-      await axios.post(`${API_URL}/auth/verify-reset-code`, {
+      await axios.post(`${API_URL}/api/auth/verify-reset-code`, {
         email: formData.email,
         code: formData.verificationCode
       });
@@ -115,7 +115,7 @@ const ForgotPassword = () => {
 
     setIsLoading(true);
     try {
-      await axios.post(`${API_URL}/auth/reset-password`, {
+      await axios.post(`${API_URL}/api/auth/reset-password`, {
         email: formData.email,
         code: formData.verificationCode,
         newPassword: formData.newPassword
@@ -133,7 +133,7 @@ const ForgotPassword = () => {
   const resendCode = async () => {
     setIsLoading(true);
     try {
-      await axios.post(`${API_URL}/auth/password-reset-request`, { email: formData.email });
+      await axios.post(`${API_URL}/api/auth/password-reset-request`, { email: formData.email });
     } catch (err) {
       // Fehler ignorieren, UI zeigt nur Spinner
     } finally {
