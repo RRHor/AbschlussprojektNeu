@@ -1,6 +1,6 @@
 import express from 'express';
 import { protect } from '../middleware/authMiddleware.js';
-import EventComment from '../models/eventCommentModel.js'; // <-- Das Event-Kommentar-Model!
+import EventComment from '../models/eventCommentModel.js';
 
 const router = express.Router();
 
@@ -12,6 +12,22 @@ router.get('/event/:eventId', async (req, res) => {
   const comments = await EventComment.find({ event: req.params.eventId })
     .populate('user', 'nickname');
   res.json(comments);
+});
+
+
+/**
+ * Alle Event-Kommentare des eingeloggten Users
+ * Beispiel: GET /api/event-comments/user
+ */
+router.get('/user', protect, async (req, res) => {
+  try {
+    const comments = await EventComment.find({ user: req.user._id })
+      .populate('event', 'title')
+      .sort({ createdAt: -1 });
+    res.json(comments);
+  } catch (error) {
+    res.status(500).json({ message: "Fehler beim Abrufen der eigenen Event-Kommentare" });
+  }
 });
 
 /**

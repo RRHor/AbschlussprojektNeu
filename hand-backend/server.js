@@ -69,6 +69,7 @@ connectDB();
 // mongoose.set('debug', true);
 
 // Middleware
+
 app.use(cors({
   origin: frontendUrl,
   credentials: true

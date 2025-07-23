@@ -1,121 +1,58 @@
-import { useState, useEffect } from 'react';
-// NEU: AuthContext importieren
-import { useAuth } from '../context/AuthContext';
-import { useNavigate } from 'react-router-dom';
-import { User, MapPin, Edit3, Save, X, Camera, Loader, Calendar, Users } from 'lucide-react';
-import api from '../api';
-import exchangeService from '../services/exchangeService';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import { useAuth } from '../../context/AuthContext';
 import './Profile.css';
-import Footer from '../components/Footer';
+import UserPostsSection from './UserPostsSection';
 
+const API_URL = import.meta.env.VITE_API_URL;
+
+const emptyAddress = {
+  id: Date.now(),
+  type: 'Hauptadresse',
+  district: '',
+  city: '',
+  zip: '',
+  street: '',
+  isPrimary: true
+};
 
 const Profile = () => {
-
-  // User und Ladezustand aus dem Context holen
-  const { user, loading } = useAuth();
-
-
-const Profile = () => {
-  const { currentUser, loading: authLoading } = useAuth();
-  const navigate = useNavigate();
-
-  console.log('User im Profil:', user);
-
-
-  // === NEU: Ladeanzeige und Fallback ===
-  if (loading) {
-    return <div>Profil wird geladen...</div>;
-  }
-  if (!user) {
-    return <div>Kein Benutzer gefunden. Bitte einloggen!</div>;
-  }
-  // === ENDE NEU ===
-
-  // const [isEditing, setIsEditing] = useState(false);
-  // const [profileData, setProfileData] = useState({
-  //   username: 'max_mustermann',
-  //   email: 'max.mustermann@email.com',
-  //   password: '••••••••••',
-  //   firstName: 'Max',
-  //   lastName: 'Mustermann',
-  //   profileImage: null,
-  //   addresses: [
-    //   {
-    //     id: 1,
-    //     type: 'Hauptadresse',
-    //     district: 'München Nord',
-    //     city: 'München',
-    //     zip: '80331',
-    //     street: 'Musterstraße 123',
-    //     isPrimary: true
-    //   }
-    // ]
-  // });
-
-  // Hauptadresse auslesen
-  const hauptAdresse = user?.addresses?.find(addr => addr.isPrimary) || user?.addresses?.[0] || {};
-
-  // NEU: Initialisiere mit echten Userdaten (wenn vorhanden)
+  const { user, loading: authLoading } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
-  const [profileData, setProfileData] = useState(user ? {
-    username: user.nickname || user.username || '',
-    email: user.email || '',
-    password: '••••••••••',
-    firstName: hauptAdresse.firstName || '',
-    lastName: hauptAdresse.lastName || '',
-    profileImage: null,
-    addresses: user.addresses || []
-  } : {
+  const [profileData, setProfileData] = useState({
     username: '',
     email: '',
     password: '',
-    firstName: '',
-    lastName: '',
     profileImage: null,
     addresses: []
   });
-
-  
   const [editData, setEditData] = useState({ ...profileData });
   const [isLoading, setIsLoading] = useState(true);
-  const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState(null);
 
-  // STATES - Exchange Posts
-  const [myExchangePosts, setMyExchangePosts] = useState([]);
-  const [loadingPosts, setLoadingPosts] = useState(false);
-
-  // STATES - Events & Navigation
-  const [activeTab, setActiveTab] = useState('profile');
-  const [userEvents, setUserEvents] = useState([]);
-  const [eventsLoading, setEventsLoading] = useState(false);
-
-  // User-Daten laden
   useEffect(() => {
     const fetchUserData = async () => {
       try {
         setIsLoading(true);
-        const response = await api.get('/auth/users/me');
+        const response = await axios.get(`${API_URL}/auth/users/me`);
         const data = response.data;
         setProfileData({
-          nickname: data.nickname || '',
+          username: data.nickname || data.username || '',
           email: data.email || '',
-          firstName: data.firstName || '',
-          lastName: data.lastName || '',
+          password: '••••••••••',
+          profileImage: data.profileImage || null,
           addresses: Array.isArray(data.addresses) && data.addresses.length > 0
             ? data.addresses
-            : [ { ...emptyAddress } ],
-          profileImage: data.profileImage || null
+            : [ { ...emptyAddress } ]
         });
         setEditData({
-          nickname: data.nickname || '',
+          username: data.nickname || data.username || '',
           email: data.email || '',
-          firstName: data.firstName || '',
-          lastName: data.lastName || '',
+          password: '••••••••••',
+          profileImage: data.profileImage || null,
           addresses: Array.isArray(data.addresses) && data.addresses.length > 0
             ? data.addresses
-            : [ { ...emptyAddress } ],
-          profileImage: data.profileImage || null
+            : [ { ...emptyAddress } ]
         });
         setError(null);
       } catch (error) {
@@ -124,52 +61,8 @@ const Profile = () => {
         setIsLoading(false);
       }
     };
-    if (!authLoading && currentUser) fetchUserData();
-  }, [currentUser, authLoading]);
-
-
-
-  // Exchange Posts laden
-  useEffect(() => {
-    const fetchMyExchangePosts = async () => {
-      setLoadingPosts(true);
-      try {
-        const result = await exchangeService.getMyPosts();
-        if (result.success) setMyExchangePosts(result.data);
-      } catch (error) {
-        // Fehler ignorieren
-      } finally {
-        setLoadingPosts(false);
-      }
-    };
-    if (profileData.nickname) fetchMyExchangePosts();
-  }, [profileData.nickname]);
-
-  // Events laden wenn Events-Tab aktiv
-  useEffect(() => {
-    if (activeTab === 'events' && currentUser) loadUserEvents();
-    // eslint-disable-next-line
-  }, [activeTab, currentUser]);
-
-  // User-Events von Backend laden
-  const loadUserEvents = async () => {
-    try {
-      setEventsLoading(true);
-      const response = await api.get('/auth/users/me/events');
-      setUserEvents(response.data.events || []);
-    } catch (error) {
-      setUserEvents([]);
-    } finally {
-      setEventsLoading(false);
-    }
-  };
-
-  // Event-Detail-Seite öffnen
-  const handleEventClick = (event) => {
-    navigate(`/events/${event._id}`, { state: { event } });
-  };
-
-  // Bearbeiten/Speichern
+    if (!authLoading && user) fetchUserData();
+  }, [user, authLoading]);
 
   const handleEdit = () => {
     setIsEditing(true);
@@ -258,10 +151,19 @@ const Profile = () => {
 
   const currentAddresses = isEditing ? editData.addresses : profileData.addresses;
 
+  if (isLoading || authLoading) {
+    return <div>Profil wird geladen...</div>;
+  }
+  if (error) {
+    return <div>{error}</div>;
+  }
+  if (!user) {
+    return <div>Kein Benutzer gefunden. Bitte einloggen!</div>;
+  }
+
   return (
     <div className="profile-container">
       <div className="profile-wrapper">
-        {/* Header */}
         <div className="profile-header">
           <div className="header-content">
             <div className="header-text">
@@ -318,7 +220,10 @@ const Profile = () => {
                   )}
                 </div>
                 <h2 className="profile-name">
-                  {isEditing ? editData.firstName : profileData.firstName} {isEditing ? editData.lastName : profileData.lastName}
+                  {isEditing
+                    ? (editData.addresses[0]?.firstName || '') + ' ' + (editData.addresses[0]?.lastName || '')
+                    : (profileData.addresses[0]?.firstName || '') + ' ' + (profileData.addresses[0]?.lastName || '')
+                  }
                 </h2>
                 <p className="profile-username">
                   @{isEditing ? editData.username : profileData.username}
@@ -387,11 +292,11 @@ const Profile = () => {
                       {isEditing ? (
                         <input
                           type="text"
-                          value={editData.firstName}
-                          onChange={(e) => handleInputChange('firstName', e.target.value)}
+                          value={editData.addresses[0]?.firstName || ''}
+                          onChange={e => handleAddressChange(editData.addresses[0].id, 'firstName', e.target.value)}
                         />
                       ) : (
-                        <div className="input-display">{profileData.firstName}</div>
+                        <div className="input-display">{profileData.addresses[0]?.firstName || ''}</div>
                       )}
                     </div>
                   </div>
@@ -401,11 +306,11 @@ const Profile = () => {
                       {isEditing ? (
                         <input
                           type="text"
-                          value={editData.lastName}
-                          onChange={(e) => handleInputChange('lastName', e.target.value)}
+                          value={editData.addresses[0]?.lastName || ''}
+                          onChange={e => handleAddressChange(editData.addresses[0].id, 'lastName', e.target.value)}
                         />
                       ) : (
-                        <div className="input-display">{profileData.lastName}</div>
+                        <div className="input-display">{profileData.addresses[0]?.lastName || ''}</div>
                       )}
                     </div>
                   </div>
@@ -430,7 +335,7 @@ const Profile = () => {
 
                 <div className="addresses-container">
                   {currentAddresses.map((address, index) => (
-                    <div key={address.id} className="address-card">
+                    <div key={address.id || index} className="address-card">
                       <div className="address-card-header">
                         <div className="address-title-section">
                           <h4 className={`address-title ${address.isPrimary ? 'primary' : 'secondary'}`}>
@@ -458,7 +363,7 @@ const Profile = () => {
                               disabled={address.isPrimary}
                               title={address.isPrimary ? "Hauptadresse kann nicht gelöscht werden" : "Adresse löschen"}
                             >
-                              🗑️
+                              Adresse entfernen
                             </button>
                           </div>
                         )}
@@ -531,6 +436,7 @@ const Profile = () => {
               </div>
             </div>
           </div>
+          <UserPostsSection />
         </div>
       </div>
     </div>

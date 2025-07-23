@@ -1,8 +1,19 @@
+
 import express from 'express';
 import {protect} from '../middleware/authMiddleware.js';
 import Post from '../models/postModel.js';
 
 const router = express.Router();
+// Alle Posts des eingeloggten Users
+router.get('/user', protect, async (req, res) => {
+  try {
+    const posts = await Post.find({ user: req.user._id }).populate('user', 'name');
+    res.json(posts);
+  } catch (error) {
+    console.error('Fehler beim Laden der User-Posts:', error);
+    res.status(500).json({ message: 'Serverfehler', error: error.message });
+  }
+});
 
 
 

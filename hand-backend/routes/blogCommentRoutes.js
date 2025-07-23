@@ -4,6 +4,7 @@ import { protect } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
+
 // Blog-Kommentar erstellen (geschützt)
 router.post("/blog-comments", protect, async (req, res) => {
     try {
@@ -30,6 +31,18 @@ router.post("/blog-comments", protect, async (req, res) => {
         console.error('Blog comment creation error:', error);
         res.status(500).json({ message: "Fehler beim Erstellen des Kommentars" });
     }
+});
+
+// Alle Blog-Kommentare des eingeloggten Users
+router.get('/blog-comments/user', protect, async (req, res) => {
+  try {
+    const comments = await BlogComment.find({ user: req.user._id })
+      .populate('blog', 'title')
+      .sort({ createdAt: -1 });
+    res.json(comments);
+  } catch (error) {
+    res.status(500).json({ message: "Fehler beim Abrufen der eigenen Kommentare" });
+  }
 });
 
 // Kommentare zu einem Blog abrufen

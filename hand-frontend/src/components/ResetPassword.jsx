@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import axios from 'axios';
+const API_URL = import.meta.env.VITE_API_URL;
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Eye, EyeOff, Lock, CheckCircle } from 'lucide-react';
 import './ResetPassword.css';
@@ -30,11 +32,10 @@ export default function ResetPassword() {
     }
     setIsLoading(true);
     try {
-      const res = await api.post(`/auth/reset-password/${token}`, {
+      const res = await axios.post(`${API_URL}/auth/reset-password/${token}`, {
         newPassword: password,
         confirmPassword: confirmPassword
       });
-      // Axios: Antwortdaten sind unter res.data
       if (res.data && res.data.success) {
         setSuccess(true);
       } else {

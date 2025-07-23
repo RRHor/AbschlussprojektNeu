@@ -3,14 +3,15 @@ import React, { useEffect, useState } from "react";
 import "./Events.css";
 import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import api from "../api"; // Passe den Pfad ggf. an
+import axios from "axios";
 
 const Events = () => {
   const [events, setEvents] = useState([]);
   const navigate = useNavigate();
 
   useEffect(() => {
-    api.get("/events")
+    const API_URL = import.meta.env.VITE_API_URL;
+    axios.get(`${API_URL}/events`)
       .then(res => setEvents(res.data))
       .catch(() => setEvents([]));
   }, []);

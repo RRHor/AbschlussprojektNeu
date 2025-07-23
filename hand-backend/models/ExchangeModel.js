@@ -20,17 +20,7 @@ const exchangeSchema = new mongoose.Schema({
     enum: ['verschenken', 'tauschen', 'suchen'],
     lowercase: true
   },
-  picture: {
-    type: String,
-    required: false,
-    validate: {
-      validator: function(v) {
-        if (!v || v.trim() === '') return true;
-        return /^https?:\/\/.+/.test(v) || /^data:image\//.test(v);
-      },
-      message: 'Bild muss eine gültige URL oder Base64-String sein'
-    }
-  },
+ 
   tauschGegen: {
     type: String,
     trim: true,
@@ -52,7 +42,8 @@ const exchangeSchema = new mongoose.Schema({
   views: {
     type: Number,
     default: 0
-  }
+  },
+  image: { type: String }
 }, {
   timestamps: true
 });

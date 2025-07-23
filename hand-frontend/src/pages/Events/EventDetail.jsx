@@ -1,32 +1,34 @@
 
-import { useState, useContext, useEffect } from 'react';
+
+import { useState, useEffect } from 'react';
 import { useParams, useLocation } from 'react-router-dom';
 import { ArrowLeft, Users, Loader } from 'lucide-react';
-import { useAuth } from '../context/AuthContext.jsx';
-import api from '../api.js';
-
-import logo from '../assets/logo.png'; 
+import { useAuth } from '../../context/AuthContext.jsx';
+import axios from 'axios';
+const API_URL = import.meta.env.VITE_API_URL;
+import logo from '../../assets/logo.png'; 
 import './EventDetail.css';
-
 import { useNavigate } from 'react-router-dom';
 
 const EventDetail = () => {
 
   const { id } = useParams();
   const { state } = useLocation();
-  const [event, setEvent] = useState(state?.event || null);
+  const [eventData, setEventData] = useState(state?.event || null);
   const { user } = useAuth();
 
   // 🔍 DEBUG: Event-Objekt komplett ausgeben
   console.log('🔍 LOCATION STATE:', state);
-  console.log('🔍 EVENT OBJECT:', event);
-  console.log('🔍 EVENT._id:', event?._id);
-  console.log('🔍 EVENT.id:', event?.id);
-  console.log('🔍 EVENT keys:', event ? Object.keys(event) : 'No event');
+  console.log('🔍 EVENT OBJECT:', eventData);
+  console.log('🔍 EVENT._id:', eventData?._id);
+  console.log('🔍 EVENT.id:', eventData?.id);
+  console.log('🔍 EVENT keys:', eventData ? Object.keys(eventData) : 'No event');
 
 
   const [text, setText] = useState('');
   const [comments, setComments] = useState([]);
+  const emojis = ['😊', '😂', '😍', '😢', '😡', '👍', '👏', '🙌', '🎉', '❤️'];
+  const [activeEmojiPicker, setActiveEmojiPicker] = useState(null);
 
   
   // NEUE States für Teilnahme
@@ -39,66 +41,47 @@ const EventDetail = () => {
 
   // Teilnahme-Status beim Laden prüfen
   useEffect(() => {
-    if (event && event._id && user) {
+    if (eventData && eventData._id && user) {
       checkParticipationStatus();
     }
-  }, [event, user]);
+  }, [eventData, user]);
 
 
   useEffect(() => {
-
-    if (event?._id) {
-      api.get(`/event-comments/event/${event._id}`)
+    if (eventData?._id) {
+      axios.get(`${API_URL}/event-comments/event/${eventData._id}`)
         .then(res => setComments(res.data))
         .catch(err => console.error('Fehler beim Laden der Kommentare:', err));
     }
-  }, [event]);
+  }, [eventData]);
 
   // Event aus Backend laden, falls nicht im State
   useEffect(() => {
-    if (!event && id) {
-      api.get(`/events/${id}`)
-        .then(res => setEvent(res.data))
-        .catch(() => setEvent(null));
+    if (!eventData && id) {
+      axios.get(`${API_URL}/events/${id}`)
+        .then(res => setEventData(res.data))
+        .catch(() => setEventData(null));
     }
-  }, [id, event]);
+  }, [id, eventData]);
 
   // Teilnahme-Status prüfen
   const checkParticipationStatus = async () => {
     try {
-      const response = await api.get(`/events/${event._id}/my-participation`);
+      const response = await axios.get(`${API_URL}/events/${eventData._id}/my-participation`);
       setIsParticipating(response.data.isParticipating);
       setIsOrganizer(response.data.isOrganizer);
       setParticipantCount(response.data.participantCount);
     } catch (error) {
       console.error('Fehler beim Prüfen der Teilnahme:', error);
-
     }
-}, [event, id]);
-
-// Handlers
-const handleSubmit = (e) => {
-  e.preventDefault();
-  if (!text.trim()) return;
-
-  const newComment = {
-    id: Date.now(),
-    user: {
-      name: user?.name || 'Unbekannt',
-      avatar: user?.avatar || logo,
-    },
-    text,
-    time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
   };
 
- setComments(prev => [newComment, ...prev]);
-  setText('');
-};
+
 
 function handleLike(id) {
   setComments(prev =>
     prev.map(comment =>
-      comment.id === id
+      (comment._id ? comment._id : comment.id) === id
         ? { ...comment, liked: !comment.liked }
         : comment
     )
@@ -107,7 +90,7 @@ function handleLike(id) {
 const handleEmoji = (id, emoji) => {
   setComments(prev =>
     prev.map(comment =>
-      comment.id === id
+      (comment._id ? comment._id : comment.id) === id
         ? { ...comment, text: comment.text + ' ' + emoji }
         : comment
     )
@@ -137,19 +120,19 @@ function handleEdit(id) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!text.trim()) return;
-    if (!event || !event._id) {
+    if (!eventData || !eventData._id) {
       alert("Event nicht geladen!");
       return;
     }
 
     // Debug-Ausgabe:
-    console.log("event:", event);
-    console.log("event._id:", event?._id);
+    console.log("eventData:", eventData);
+    console.log("eventData._id:", eventData?._id);
 
     try {
-      const res = await api.post('/event-comments', {
+      const res = await axios.post(`${API_URL}/event-comments`, {
         text,
-        event: event._id   // <-- Das muss mitgesendet werden!
+        event: eventData._id   // <-- Das muss mitgesendet werden!
       });
       setComments([res.data, ...comments]);
       setText('');
@@ -169,46 +152,46 @@ const goBack = () => {
 };
 
 
-if (!event) return <p>Event nicht gefunden.</p>;
+if (!eventData) return <p>Event nicht gefunden.</p>;
 if (loading) return <p>Benutzerdaten werden geladen...</p>;
-
 
 return (
   <div className="event-detail-wrapper">
+    <button onClick={goBack} className="back-button">
+      <ArrowLeft size={20} className="back-button-icon" />
+      Zurück
+    </button>
 
-
-      {/* Zurück Button */}
-
-  if (!event) {
-    return <div>Lade Event...</div>;
-  }
-
-  return (
-    <div className="event-detail-wrapper">
-
-      <button onClick={goBack} className="back-button">
-        <ArrowLeft size={20} className="back-button-icon" />
-        Zurück
-      </button>
-
-      {/* Event Info */}
-      <div className="event-detail-container">
-        <div className="events-image">
-          <img src={event.image} alt={event.title} />
-        </div>
-        <div className="event-info">
-          <h1>{event.title}</h1>
-          <p><strong>📅 Datum:</strong> {event.date}</p>
-          <p><strong>📍 Ort:</strong> {event.location}</p>
-          <p className="event-description">{event.description}</p>
-          <button
-  className="register-button"
-  onClick={() => navigate(`/events/${event.id}/register`, { state: { event } })}
->
-  Ich will teilnehmen!
-</button>
-        </div>
+    {/* Event Info */}
+    <div className="event-detail-container">
+      <div className="events-image">
+        <img src={eventData.image} alt={eventData.title} />
       </div>
+      <div className="event-info">
+        <h1>{eventData.title}</h1>
+        <p><strong>📅 Datum:</strong> {eventData.date}</p>
+        <p><strong>📍 Ort:</strong> {eventData.location}</p>
+        <p className="event-description">{eventData.description}</p>
+        <button
+          className="register-button"
+          onClick={async () => {
+            try {
+              const token = localStorage.getItem('token');
+              await axios.post(`${API_URL}/events/${eventData._id}/join`, {}, {
+                headers: { Authorization: `Bearer ${token}` }
+              });
+              checkParticipationStatus();
+              alert('Du bist jetzt Teilnehmer!');
+            } catch (error) {
+              alert(error.response?.data?.message || 'Fehler bei der Anmeldung');
+            }
+          }}
+          disabled={isParticipating}
+        >
+          {isParticipating ? 'Du bist bereits Teilnehmer' : 'Ich will teilnehmen!'}
+        </button>
+      </div>
+    </div>
 
 
       {/* Kommentare */}
@@ -279,59 +262,60 @@ return (
           {comments.length === 0 ? (
             <p className="no-comments">Noch keine Kommentare.</p>
           ) : (
-            comments.map((c) => (
-              <div key={c.id} className="comment-item">
-                <div className="comment-left">
-                  {/* Show first letter of commenter's name or logo if not available */}
-                  {c.user.name ? (
-                    <div className="comment-avatar-circle">
-                      {c.user.name.charAt(0).toUpperCase()}
-                    </div>
-                  ) : (
-                    <img
-                      src={logo}
-                      alt="avatar"
-                      className="comment-avatar-img"
-                    />
-                  )}
-                </div>
-                <div className="comment-right">
-                  <div className="comment-header">
-                    <span className="comment-author">{c.user.name}</span>
-                    <span className="comment-time">{c.time}</span>
-                  </div>
-                  <p className="comment-text-display">{c.text}</p>
-                  <div className="comment-actions">
-                    <button onClick={() => handleLike(c.id)} title="Gefällt mir">
-                      {c.liked ? '💙' : '👍'}
-                    </button>
-                    <div style={{ position: 'relative' }}>
-  <button onClick={() => setActiveEmojiPicker(c.id)} title="Emoji">😊</button>
-
-  {activeEmojiPicker === c.id && (
-    <div className="emoji-picker">
-      {emojis.map((emoji) => (
-        <button
-          key={emoji}
-          className="emoji-btn"
-          onClick={() => handleEmoji(c.id, emoji)}
-        >
-          {emoji}
-        </button>
-      ))}
-    </div>
-  )}
-</div>
-
-                    <button onClick={() => handleReply(c.user.name)} title="Antworten">Antworten</button>
-                    <button onClick={() => handleEdit(c.id)} title="Bearbeiten">Bearbeiten</button>
-                    {c.user.name === user?.name && (
-                      <button onClick={() => handleDelete(c.id)} title="Kommentar löschen">🗑</button>
+            comments.map((c) => {
+              const commentId = c._id ? c._id : c.id;
+              return (
+                <div key={commentId} className="comment-item">
+                  <div className="comment-left">
+                    {/* Show first letter of commenter's name or logo if not available */}
+                    {c.user?.name ? (
+                      <div className="comment-avatar-circle">
+                        {c.user.name.charAt(0).toUpperCase()}
+                      </div>
+                    ) : (
+                      <img
+                        src={logo}
+                        alt="avatar"
+                        className="comment-avatar-img"
+                      />
                     )}
                   </div>
+                  <div className="comment-right">
+                    <div className="comment-header">
+                      <span className="comment-author">{c.user?.name}</span>
+                      <span className="comment-time">{c.time}</span>
+                    </div>
+                    <p className="comment-text-display">{c.text}</p>
+                    <div className="comment-actions">
+                      <button onClick={() => handleLike(commentId)} title="Gefällt mir">
+                        {c.liked ? '💙' : '👍'}
+                      </button>
+                      <div style={{ position: 'relative' }}>
+                        <button onClick={() => setActiveEmojiPicker(commentId)} title="Emoji">😊</button>
+                        {activeEmojiPicker === commentId && (
+                          <div className="emoji-picker">
+                            {emojis.map((emoji) => (
+                              <button
+                                key={emoji}
+                                className="emoji-btn"
+                                onClick={() => handleEmoji(commentId, emoji)}
+                              >
+                                {emoji}
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                      <button onClick={() => handleReply(c.user?.name)} title="Antworten">Antworten</button>
+                      <button onClick={() => handleEdit(commentId)} title="Bearbeiten">Bearbeiten</button>
+                      {c.user?.name === user?.name && (
+                        <button onClick={() => handleDelete(commentId)} title="Kommentar löschen">🗑</button>
+                      )}
+                    </div>
+                  </div>
                 </div>
-              </div>
-            ))
+              );
+            })
           )}
         </div>
       </div>
