@@ -293,18 +293,28 @@ const UserPostsSection = () => {
 
 
   // Exchange-Tabs
+
+  // Hilfsfunktion für Kategorie-Mapping (Singular/Plural)
+  const matchCategory = (cat, tabId) => {
+    if (tabId === 'tauschen') return cat === 'tauschen' || cat === 'tausch';
+    if (tabId === 'verschenken') return cat === 'verschenken' || cat === 'verschenke';
+    if (tabId === 'suchen') return cat === 'suchen' || cat === 'suche';
+    if (tabId === 'hilfe') return cat === 'hilfe';
+    return false;
+  };
+
   const exchangeTabs = [
     { id: 'alle', label: 'Alle', count: exchangePosts.length },
-    { id: 'tauschen', label: 'Tauschen', count: exchangePosts.filter(p => p.category === 'tauschen').length },
-    { id: 'verschenken', label: 'Verschenken', count: exchangePosts.filter(p => p.category === 'verschenken').length },
-    { id: 'suchen', label: 'Suchen', count: exchangePosts.filter(p => p.category === 'suchen').length },
-    { id: 'hilfe', label: 'Hilfe', count: exchangePosts.filter(p => p.category === 'hilfe').length },
+    { id: 'tauschen', label: 'Tauschen', count: exchangePosts.filter(p => matchCategory(p.category, 'tauschen')).length },
+    { id: 'verschenken', label: 'Verschenken', count: exchangePosts.filter(p => matchCategory(p.category, 'verschenken')).length },
+    { id: 'suchen', label: 'Suchen', count: exchangePosts.filter(p => matchCategory(p.category, 'suchen')).length },
+    { id: 'hilfe', label: 'Hilfe', count: exchangePosts.filter(p => matchCategory(p.category, 'hilfe')).length },
   ];
 
   // Gefilterte Exchange-Posts
   const getFilteredExchangePosts = () => {
     if (activeExchangeTab === 'alle') return exchangePosts;
-    return exchangePosts.filter(p => p.category === activeExchangeTab);
+    return exchangePosts.filter(p => matchCategory(p.category, activeExchangeTab));
   };
 
   return (
