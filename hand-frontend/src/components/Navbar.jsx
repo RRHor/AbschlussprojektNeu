@@ -1,8 +1,10 @@
 import React from 'react';
 import './Navbar.css';
-import logo from '../assets/logo.png'; // Importiere das Logo, falls du es in der Navbar verwenden möchtest
+import logo from '../assets/logo.png';
+import { useAuth } from '../context/AuthContext';
 
 function Navbar() {
+  const { user, logout } = useAuth();
   return (
     <nav className="navbar">
       <div className="navbar-container">
@@ -15,9 +17,15 @@ function Navbar() {
           {/* Direkte Links: Register und Login (links in dieser Gruppe) */}
           <ul className="direct-nav-menu">
             <li className="nav-item">
-              <a href="/login" className="nav-links nav-links-primary">
-                Login
-              </a>
+              {user ? (
+                <a href="#" className="nav-links nav-links-primary logout-btn" onClick={e => { e.preventDefault(); logout(); }}>
+                  Logout
+                </a>
+              ) : (
+                <a href="/login" className="nav-links nav-links-primary">
+                  Login
+                </a>
+              )}
             </li>
           </ul>
 
