@@ -39,7 +39,7 @@ import helpAnswerRoutes from './routes/helpAnswerRoutes.js';
 import userRoutes from './routes/userRoutes.js';
 
 
-const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173' || 'http://localhost:5174';
 
 // Registriere das User-Modell mit deinem Schema, falls noch nicht geschehen
 if (!mongoose.models.User) {
@@ -70,8 +70,14 @@ connectDB();
 
 // Middleware
 
+const allowedOrigins = [
+  process.env.FRONTEND_URL,
+  'http://localhost:5173',
+  'http://localhost:5174'
+].filter(Boolean);
+
 app.use(cors({
-  origin: frontendUrl,
+  origin: allowedOrigins,
   credentials: true
 }));
 app.use(express.json());
