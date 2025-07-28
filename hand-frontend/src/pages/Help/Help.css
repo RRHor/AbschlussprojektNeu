@@ -203,9 +203,6 @@
   width: 100%;
   max-width: 100%;
   margin: 0 auto;
-  .btn {
-    width: 100%;
-  }
 }
 .section-block::before {
   content: '';
@@ -291,15 +288,20 @@
 }
 /* Button Styling */
 .btn {
-  padding: 1rem 2rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
   border: none;
-  border-radius: 12px;
-  font-size: 1rem;
-  font-weight: 600;
+  border-radius: 0.5rem;
+  font-weight: 500;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  transition: transform 0.2s ease, background-color 0.2s ease;
+  text-decoration: none;
+  justify-content: center;
+  font-size: 1rem;
+  text-transform: none;
+  letter-spacing: 0;
   position: relative;
   overflow: hidden;
 }
@@ -329,13 +331,23 @@
   transform: translateY(0);
 }
 .ask-btn {
-  align-self: flex-start;
-  min-width: 200px;
+  margin-top: 1rem;
 }
 .answer-btn {
-  /* Arben-Design, keine min-width, keine align-self */
+  background-color: var(--mint);
+  color: var(--deepBlue);
+  border-radius: 0.5rem;
+  font-weight: 500;
   font-size: 1rem;
   padding: 0.75rem 1.5rem;
+  margin-top: 0.5rem;
+  transition: transform 0.2s ease, background-color 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  border: none;
+  cursor: pointer;
+  justify-content: center;
 }
 /* Questions Section */
 .questions-section {
@@ -493,8 +505,6 @@
     padding: 1.5rem;
   }
   .ask-btn {
-    width: 100%;
-    align-self: stretch;
     margin-top: 1rem;
   }
 }
@@ -512,7 +522,6 @@
   .ask-btn {
     margin-top: 1rem;
   }
-  .btn {
-    /* Buttons behalten ihre natürliche Breite */
-  }
 
+
+}
