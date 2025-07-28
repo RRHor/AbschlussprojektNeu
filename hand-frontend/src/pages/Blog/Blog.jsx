@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Calendar, User, Search, Tag, PlusCircle, XCircle } from 'lucide-react'; // XCircle für Schließen-Button im Popup
+import logo from '../../assets/logo.png';
 import './Blog.css';
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -256,33 +257,60 @@ const Blog = () => {
 
                   {/* Kommentarsektion */}
                   {expandedPost === post._id && (
-                    <div className="comments-section">
-                      <h3 className="comments-title">Kommentare</h3>
-                      <div className="comments-list">
-                        {(comments[post._id] || []).length === 0 && (
-                          <div className="comment">Noch keine Kommentare.</div>
-                        )}
-                        {(comments[post._id] || []).map(c => (
-                          <div key={c._id} className="comment">
-                            <div className="comment-header">
-                              <span className="comment-author">{c.user?.nickname || "Unbekannt"}</span>
-                              <span className="comment-date">{c.createdAt ? formatDate(c.createdAt) : ""}</span>
-                            </div>
-                            <div className="comment-content">{c.text}</div>
+                    <div className="comment-section">
+                      <h2>Kommentare</h2>
+                      <form className="comment-form" onSubmit={e => handleCommentSubmit(e, post._id)}>
+                        <div className="comment-input-wrapper">
+                          {/* Hand in Hand Logo als Avatar */}
+                          <img
+                            src={logo}
+                            alt="avatar"
+                            className="comment-avatar-img"
+                          />
+                          <div className="comment-form-fields">
+                            <div className="comment-user-name">{post.author?.nickname || post.author?.username || 'Unbekannt'}</div>
+                            <textarea
+                              className="comment-textarea"
+                              placeholder="Schreibe einen Kommentar..."
+                              value={commentText[post._id] || ""}
+                              onChange={e => handleCommentChange(post._id, e.target.value)}
+                            />
                           </div>
-                        ))}
-                      </div>
-                      <form className="new-comment-form" onSubmit={e => handleCommentSubmit(e, post._id)}>
-                        <textarea
-                          className="comment-content-input"
-                          value={commentText[post._id] || ""}
-                          onChange={e => handleCommentChange(post._id, e.target.value)}
-                          placeholder="Kommentar schreiben..."
-                          required
-                        />
-                        <button type="submit" className="comment-submit-btn">Absenden</button>
+                        </div>
+                        <button type="submit" className="comment-submit-btn">Kommentieren</button>
                       </form>
-
+                      <div className="comment-list">
+                        {(comments[post._id] || []).length === 0 ? (
+                          <p className="no-comments">Noch keine Kommentare.</p>
+                        ) : (
+                          (comments[post._id] || []).map((c) => {
+                            return (
+                              <div key={c._id} className="comment-item">
+                                <div className="comment-left">
+                                  <img
+                                    src={logo}
+                                    alt="avatar"
+                                    className="comment-avatar-img"
+                                  />
+                                </div>
+                                <div className="comment-right">
+                                  <div className="comment-header">
+                                    <span className="comment-author">{c.user?.nickname || c.user?.username || "Unbekannt"}</span>
+                                    <span className="comment-time">{c.createdAt ? formatDate(c.createdAt) : ""}</span>
+                                  </div>
+                                  <p className="comment-text-display">{c.text}</p>
+                                  {/* Aktionen wie Antworten, Bearbeiten, Löschen können hier ergänzt werden */}
+                                  {/* <div className="comment-actions">
+                                    <button>Antworten</button>
+                                    <button>Bearbeiten</button>
+                                    <button>Löschen</button>
+                                  </div> */}
+                                </div>
+                              </div>
+                            );
+                          })
+                        )}
+                      </div>
                     </div>
                   )}
                 </div>

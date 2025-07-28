@@ -104,7 +104,20 @@ const UserPostsSection = () => {
       return;
     }
     try {
-      const response = await fetch(`${API_URL}/api/exchange/${postId}`, {
+      // Den Post in allen Kategorien suchen, um den Typ zu bestimmen
+      let post = null;
+      Object.values(userPosts).forEach(postsArr => {
+        if (!post) post = postsArr.find(p => p._id === postId);
+      });
+      let url = '';
+      if (post?.blog && post?.text) {
+        url = `${API_URL}/api/blog-comments/${postId}`;
+      } else if (post?.event && post?.text) {
+        url = `${API_URL}/api/event-comments/${postId}`;
+      } else {
+        url = `${API_URL}/api/exchange/${postId}`;
+      }
+      const response = await fetch(url, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,

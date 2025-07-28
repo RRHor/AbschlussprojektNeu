@@ -61,7 +61,7 @@ return (
 
         <div className="event-register-header">
             <h1 className="event-register-title">Anmeldung für: {event.title}</h1>
-            <p style={{ fontStyle: 'italic' }}>{event.date} – {event.location}</p>
+            <p style={{ fontStyle: 'italic' }}>{new Date(event.date).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' })} – {event.location}</p>
         </div>
 
         <form className="register-form" onSubmit={handleSubmit}>

@@ -101,16 +101,24 @@ const handleReply = (name) => {
   setText(prev => `@${name} ` + prev);
 };
 
-function handleEdit(id) {
-  const newText = prompt('Bearbeite deinen Kommentar:');
-  if (newText && newText.trim()) {
-    setComments(prev =>
-      prev.map(comment =>
-        comment.id === id
-          ? { ...comment, text: newText }
-          : comment
-      )
-    );
+
+async function handleEdit(id) {
+  const comment = comments.find(c => (c._id || c.id) === id);
+  const oldText = comment?.text || '';
+  const newText = prompt('Bearbeite deinen Kommentar:', oldText);
+  if (newText && newText.trim() && newText !== oldText) {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await axios.put(`${API_URL}/api/event-comments/${id}`, { text: newText }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setComments(prev => prev.map(comment =>
+        (comment._id || comment.id) === id ? { ...comment, text: res.data.text } : comment
+      ));
+    } catch (err) {
+      alert('Fehler beim Bearbeiten des Kommentars');
+      console.error(err);
+    }
   }
 }
 
@@ -128,7 +136,7 @@ function handleEdit(id) {
     console.log("eventData._id:", eventData?._id);
 
     try {
-      const res = await axios.post(`${API_URL}/event-comments`, {
+      const res = await axios.post(`${API_URL}/api/event-comments`, {
         text,
         event: eventData._id   // <-- Das muss mitgesendet werden!
       });
@@ -141,9 +149,20 @@ function handleEdit(id) {
   };
 
 
-  function handleDelete(id) {
-    setComments(comments.filter((c) => c.id !== id));
+
+async function handleDelete(id) {
+  if (!window.confirm('Kommentar wirklich löschen?')) return;
+  try {
+    const token = localStorage.getItem('token');
+    await axios.delete(`${API_URL}/api/event-comments/${id}`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    setComments(prev => prev.filter((c) => (c._id || c.id) !== id));
+  } catch (err) {
+    alert('Fehler beim Löschen des Kommentars');
+    console.error(err);
   }
+}
 
 const goBack = () => {
   window.history.back();
@@ -163,11 +182,11 @@ return (
     {/* Event Info */}
     <div className="event-detail-container">
       <div className="events-image">
-        <img src={eventData.image} alt={eventData.title} />
+        <img src={eventData.images && eventData.images[0]} alt={eventData.title} />
       </div>
       <div className="event-info">
         <h1>{eventData.title}</h1>
-        <p><strong>📅 Datum:</strong> {eventData.date}</p>
+        <p><strong>📅 Datum:</strong> {new Date(eventData.date).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' })}</p>
         <p><strong>📍 Ort:</strong> {eventData.location}</p>
         <p className="event-description">{eventData.description}</p>
         <button
@@ -280,13 +299,13 @@ return (
                   </div>
                   <div className="comment-right">
                     <div className="comment-header">
-                      <span className="comment-author">{c.user?.name}</span>
+                      <span className="comment-author">{c.user?.name || c.user?.nickname || c.user?.username || "Unbekannt"}</span>
                       <span className="comment-time">{c.time}</span>
                     </div>
                     <p className="comment-text-display">{c.text}</p>
                     <div className="comment-actions">
-                      <button onClick={() => handleLike(commentId)} title="Gefällt mir">
-                        {c.liked ? '💙' : '👍'}
+                      <button onClick={() => handleLike(commentId)} title="Gefällt mir" style={c.liked ? { color: '#e63946', fontSize: '1.25em' } : {}}>
+                        {c.liked ? '❤️' : '👍'}
                       </button>
                       <div style={{ position: 'relative' }}>
                         <button onClick={() => setActiveEmojiPicker(commentId)} title="Emoji">😊</button>

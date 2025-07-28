@@ -10,7 +10,7 @@ const router = express.Router();
  */
 router.get('/event/:eventId', async (req, res) => {
   const comments = await EventComment.find({ event: req.params.eventId })
-    .populate('user', 'nickname');
+    .populate('user', 'name nickname username');
   res.json(comments);
 });
 
@@ -36,7 +36,7 @@ router.get('/user', protect, async (req, res) => {
  */
 router.get('/:id', async (req, res) => {
   const comment = await EventComment.findById(req.params.id)
-    .populate('user', 'nickname');
+    .populate('user', 'name nickname username');
   if (!comment) return res.status(404).json({ message: 'Kommentar nicht gefunden' });
   res.json(comment);
 });
@@ -53,6 +53,8 @@ router.post('/', protect, async (req, res) => {
       user: req.user._id // <-- User-ID aus Token setzen!
     });
     await comment.save();
+    // User-Objekt mit name, nickname und username beifügen
+    await comment.populate('user', 'name nickname username');
     res.status(201).json(comment);
   } catch (error) {
     res.status(400).json({ message: 'Fehler beim Erstellen', error });

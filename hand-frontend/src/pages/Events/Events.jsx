@@ -32,11 +32,11 @@ const Events = () => {
       <div className="event-cards">
         {events.map((event, index) => (
           <div className="event-card" key={index}>
-            <img src={event.image} alt={event.title} />
+            <img src={event.images && event.images[0]} alt={event.title} />
             <div className="event-content">
               <h2>{event.title}</h2>
               <p className="event-date">
-                {event.date} – {event.location}
+                {new Date(event.date).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' })} – {event.location}
               </p>
               <p>{event.description}</p>
               <button
@@ -48,7 +48,7 @@ const Events = () => {
 
                 }
               >
-                Ich mache mit!
+                Mehr Infos
               </button>
             </div>
           </div>

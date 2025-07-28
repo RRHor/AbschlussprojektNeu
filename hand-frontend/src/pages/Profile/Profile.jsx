@@ -62,6 +62,7 @@ const Profile = () => {
       }
     };
     if (!authLoading && user) fetchUserData();
+    if (!authLoading && !user) setIsLoading(false); // <-- Fix: Ladezustand beenden, wenn kein User
   }, [user, authLoading]);
 
   const handleEdit = () => {
@@ -158,7 +159,84 @@ const Profile = () => {
     return <div>{error}</div>;
   }
   if (!user) {
-    return <div>Kein Benutzer gefunden. Bitte einloggen!</div>;
+    return (
+      <section
+        className="profile-locked"
+        aria-labelledby="profile-locked-title"
+        style={{
+          background: 'linear-gradient(135deg, #4FE3C1 0%, #F8E8C3 100%)',
+          borderRadius: '24px',
+          boxShadow: '0 12px 36px rgba(46,126,179,0.13)',
+          padding: '3.5rem 2.5rem',
+          margin: '3.5rem auto',
+          maxWidth: 440,
+          textAlign: 'center',
+          color: '#05004E',
+          border: '2px solid #2E7EB3',
+          position: 'relative',
+          overflow: 'hidden',
+        }}
+      >
+        <h2
+          id="profile-locked-title"
+          style={{
+            fontWeight: 900,
+            fontSize: '2.1rem',
+            marginBottom: '0.7rem',
+            color: '#05004E',
+            letterSpacing: '-0.02em',
+            textShadow: '0 2px 8px rgba(46,126,179,0.08)'
+          }}
+        >
+          Hoppla! Nur für Nachbar:innen
+        </h2>
+        <p style={{
+          fontSize: '1.15rem',
+          marginBottom: '1.7rem',
+          color: '#1A2A3A',
+          fontWeight: 600,
+          lineHeight: 1.6
+        }}>
+          Um dein Profil zu sehen, musst du dich erst einloggen.<br />
+        </p>
+        <a
+          href="/login"
+          className="btn btn-primary"
+          style={{
+            display: 'inline-block',
+            background: '#05004E',
+            color: '#FFFFFF',
+            fontWeight: 700,
+            padding: '0.85rem 2.2rem',
+            borderRadius: '14px',
+            fontSize: '1.13rem',
+            textDecoration: 'none',
+            boxShadow: '0 4px 18px rgba(5,0,78,0.10)',
+            marginBottom: '1.7rem',
+            letterSpacing: '0.01em',
+            border: 'none',
+            transition: 'background 0.2s, color 0.2s',
+            outline: '2px solid transparent',
+            outlineOffset: 2
+          }}
+          tabIndex={0}
+          aria-label="Jetzt einloggen und Profil ansehen"
+          onFocus={e => e.target.style.outline = '2px solid #DE887B'}
+          onBlur={e => e.target.style.outline = '2px solid transparent'}
+        >
+          Jetzt einloggen
+        </a>
+        <div style={{
+          fontSize: '1.25rem',
+          color: '#05004E',
+          fontWeight: 700,
+          marginTop: '0.5rem',
+          opacity: 0.95
+        }}>
+          Nachbarschaft verbindet!
+        </div>
+      </section>
+    );
   }
 
   return (

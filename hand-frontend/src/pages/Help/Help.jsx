@@ -1,8 +1,17 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import { useAuth } from "../../context/AuthContext.jsx";
 import "./Help.css"; // Import the CSS file
 
 function Help() {
+  const { user } = useAuth();
   const [questions, setQuestions] = useState([]);
+  // Lade Fragen beim Mount
+  useEffect(() => {
+    axios.get("/api/help/questions")
+      .then(res => setQuestions(res.data))
+      .catch(() => setQuestions([]));
+  }, []);
   const [newQuestion, setNewQuestion] = useState("");
   const [answerText, setAnswerText] = useState({});
 
@@ -10,24 +19,22 @@ function Help() {
     setNewQuestion(event.target.value);
   };
 
-  const handleAskQuestion = (event) => {
+  const handleAskQuestion = async (event) => {
     event.preventDefault();
     if (newQuestion.trim()) {
-      const questionId =
-        questions.length > 0 ? Math.max(...questions.map((q) => q.id)) + 1 : 1;
-      const newUser = "Aktueller Nutzer";
+      const newUser = user ? (user.nickname || user.name || user.username || user.email) : "Unbekannt";
       const newDate = new Date().toISOString().split("T")[0];
-      setQuestions([
-        ...questions,
-        {
-          id: questionId,
+      try {
+        const res = await axios.post("/api/help/questions", {
           user: newUser,
           question: newQuestion.trim(),
-          date: newDate,
-          answers: [],
-        },
-      ]);
-      setNewQuestion("");
+          date: newDate
+        });
+        setQuestions([...questions, res.data]);
+        setNewQuestion("");
+      } catch (err) {
+        // Fehlerbehandlung (optional)
+      }
     }
   };
 
@@ -35,33 +42,21 @@ function Help() {
     setAnswerText({ ...answerText, [questionId]: event.target.value });
   };
 
-  const handleAddAnswer = (questionId) => {
+  const handleAddAnswer = async (questionId) => {
     if (answerText[questionId] && answerText[questionId].trim()) {
-      const updatedQuestions = questions.map((q) => {
-        if (q.id === questionId) {
-          const answerId =
-            q.answers.length > 0
-              ? Math.max(...q.answers.map((a) => a.id)) + 1
-              : 1;
-          const newUser = "Aktueller Nutzer";
-          const newDate = new Date().toISOString().split("T")[0];
-          return {
-            ...q,
-            answers: [
-              ...q.answers,
-              {
-                id: answerId,
-                user: newUser,
-                answer: answerText[questionId].trim(),
-                date: newDate,
-              },
-            ],
-          };
-        }
-        return q;
-      });
-      setQuestions(updatedQuestions);
-      setAnswerText({ ...answerText, [questionId]: "" });
+      const newUser = user ? (user.nickname || user.name || user.username || user.email) : "Unbekannt";
+      const newDate = new Date().toISOString().split("T")[0];
+      try {
+        const res = await axios.post(`/api/help/questions/${questionId}/answer`, {
+          user: newUser,
+          answer: answerText[questionId].trim(),
+          date: newDate
+        });
+        setQuestions(questions.map(q => q._id === res.data._id ? res.data : q));
+        setAnswerText({ ...answerText, [questionId]: "" });
+      } catch (err) {
+        // Fehlerbehandlung (optional)
+      }
     }
   };
 
@@ -103,7 +98,7 @@ function Help() {
             ) : (
               <div className="questions-list">
                 {questions.map((q) => (
-                  <div key={q.id} className="question-item">
+                  <div key={q._id} className="question-item">
                     <div className="question-header">
                       <h3>{q.question}</h3>
                       <span className="question-meta">
@@ -113,8 +108,8 @@ function Help() {
                     {q.answers.length > 0 && (
                       <div className="answers-list">
                         <h4>Antworten:</h4>
-                        {q.answers.map((a) => (
-                          <div key={a.id} className="answer-item">
+                        {q.answers.map((a, idx) => (
+                          <div key={a._id || idx} className="answer-item">
                             <p>{a.answer}</p>
                             <span className="answer-meta">
                               Beantwortet von {a.user} am {a.date}
@@ -129,12 +124,12 @@ function Help() {
                           className="answer-input"
                           placeholder="Deine Antwort..."
                           rows="2"
-                          value={answerText[q.id] || ""}
-                          onChange={(e) => handleAnswerChange(q.id, e)}
+                          value={answerText[q._id] || ""}
+                          onChange={(e) => handleAnswerChange(q._id, e)}
                         ></textarea>
                       </div>
                       <button
-                        onClick={() => handleAddAnswer(q.id)}
+                        onClick={() => handleAddAnswer(q._id)}
                         className="btn primary answer-btn"
                       >
                         Antworten
