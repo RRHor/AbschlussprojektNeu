@@ -84,7 +84,7 @@ const Exchange = () => {
       description: "Ich suche ein funktionsfähiges Damenrad, 26 Zoll. Gerne auch reparaturbedürftig.",
       author: "Anna Grün", date: "2025-07-19", category: "suche", subcategory: "suchen",
       location: "Kreuzberg, 10961 Berlin", condition: "egal", status: "aktiv",
-      image: "https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?w=600&h=300&fit=crop"
+      image: "https://www.entsorgo.de/wp-content/uploads/Fahrrad-entsorgen.jpg"
     },
     {
       id: 4, title: "Hilfe beim Umzug gesucht",

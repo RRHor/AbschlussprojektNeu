@@ -1,473 +1,40 @@
-/* Color Variables (from profile.css)
-:root {
-  --deepBlue: #05004E;
-  --skyBlue: #2E7EB3;
-  --mint: #4FE3C1;
-  --cream: #F8E8C3;
-  --coral: #DE887B;
-  --white: #ffffff;
-}
 
-/* Container 
-.help-container {
-  min-height: 100vh;
-  background-color: var(--cream);
-  padding: 2rem 1rem;
-}
-
-.help-wrapper {
-  max-width: 1200px;
-  margin: 0 auto;
-}
-
-/* Animated Header - ähnlich wie blog-header 
-.help-animated-header {
-  text-align: center;
-  margin-bottom: 40px;
-  padding: 30px 20px;
-  background: linear-gradient(45deg, var(--deepBlue), var(--skyBlue), var(--mint), var(--coral));
-  background-size: 400% 400%;
-  border-radius: 25px;
-  color: var(--white);
-  position: relative;
-  overflow: hidden;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-  animation: 
-    gradientWave 8s ease-in-out infinite,
-    headerSlideIn 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards,
-    headerPulse 4s ease-in-out infinite 2s;
-  transform: translateY(-20px);
-  opacity: 0;
-}
-
-.help-animated-header::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: radial-gradient(circle at 30% 70%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
-              radial-gradient(circle at 70% 30%, rgba(255, 255, 255, 0.08) 0%, transparent 50%);
-  animation: backgroundShimmer 6s ease-in-out infinite;
-  z-index: 1;
-}
-
-.help-animated-header::after {
-  content: '';
-  position: absolute;
-  top: -50%;
-  left: -50%;
-  width: 200%;
-  height: 200%;
-  background: conic-gradient(from 0deg, transparent, rgba(255, 255, 255, 0.1), transparent);
-  animation: rotate 10s linear infinite;
-  z-index: 0;
-}
-
-.help-animated-header h1,
-.help-animated-header p {
-  position: relative;
-  z-index: 2;
-}
-
-.help-animated-header h1 {
-  font-size: 2.5rem;
-  margin: 0 0 20px 0;
-  font-weight: 800;
-  text-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-  animation: titleGlow 3s ease-in-out infinite alternate;
-  letter-spacing: 2px;
-  background: linear-gradient(45deg, var(--white), var(--cream));
-  background-clip: text;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  font-family: "Nunito", sans-serif;
-}
-
-.help-animated-header p {
-  font-size: 1.2rem;
+.question-input, .answer-input {
+  min-width: 0;
+  max-width: 100vw;
   margin: 0;
-  opacity: 0.95;
-  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-  animation: subtitleFloat 4s ease-in-out infinite;
-  font-family: "Nunito", sans-serif;
-}
-
-/* Header (similar to profile-header) - Original Header als Alternative 
-.help-header {
-  background-color: var(--deepBlue);
-  color: white;
-  padding: 2rem;
-  border-radius: 1rem 1rem 0 0;
-}
-
-.help-header .header-content {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 1rem;
-}
-
-.help-header .header-text h1 {
-  font-size: 2rem;
-  font-weight: bold;
-  margin: 0 0 0.5rem 0;
-}
-
-.help-header .header-text p {
-  opacity: 0.8;
-  margin: 0;
-}
-
-.help-content {
-  background-color: white;
-  padding: 2rem;
-  border-radius: 0 0 1rem 1rem;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
-
-/* Section Block Styling (similar to profile-form-section) 
-.section-block {
-  margin-bottom: 2rem;
-  padding-bottom: 1.5rem;
-  border-bottom: 1px solid var(--cream); /* subtle separator 
-}
-
-.section-block:last-child {
-  border-bottom: none;
-  margin-bottom: 0;
-}
-
-.section-title {
-  font-size: 1.5rem;
-  font-weight: 600;
+  display: block;
+  box-sizing: border-box;
+  padding: 1.5rem 1.5rem;
+  font-size: 1.1rem;
+  border: 2px solid rgba(46, 126, 179, 0.2);
+  border-radius: 12px;
+  background: var(--white);
   color: var(--deepBlue);
-  padding-bottom: 0.5rem;
-  border-bottom: 2px solid var(--mint);
-  margin-bottom: 1.5rem;
+  transition: all 0.3s ease;
+  resize: vertical;
 }
-
-/* Input Group Styling (similar to profile.css) 
-.input-group {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  margin-bottom: 1rem;
+.question-input {
+  min-height: 180px;
 }
-
-.input-group label {
-  font-weight: 500;
-  color: var(--deepBlue);
-  font-size: 0.9rem;
-}
-
-.input-container {
-  position: relative;
-}
-
-.question-input,
 .answer-input {
-  width: 100%;
-  padding: 0.75rem;
-  border: 2px solid var(--mint);
-  border-radius: 0.5rem;
-  background-color: var(--cream);
-  color: var(--deepBlue);
+  min-height: 120px;
   font-size: 1rem;
-  resize: vertical; /* Allow vertical resizing 
-  min-height: 50px;
 }
 
-.question-input:focus,
-.answer-input:focus {
-  outline: none;
-  border-color: var(--skyBlue);
-  box-shadow: 0 0 0 3px rgba(46, 126, 179, 0.1);
-}
-
-/* Button Styling (from profile.css) 
-.btn {
-  display: inline-flex; /* Use inline-flex for better button sizing 
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1.5rem;
-  border: none;
-  border-radius: 0.5rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: transform 0.2s ease, background-color 0.2s ease;
-  text-decoration: none; /* In case it's an <a> tag 
-  justify-content: center; /* Center content horizontally 
-}
-
-.btn:hover {
-  transform: scale(1.03); /* Slightly less aggressive hover for non-edit/save 
-}
-
-.btn.primary {
-  background-color: var(--mint);
-  color: var(--deepBlue);
-}
-
-.btn.primary:hover {
-  background-color: #37d0b1; /* Slightly darker mint on hover 
-}
-
-.btn.secondary {
-  background-color: var(--skyBlue);
-  color: white;
-}
-
-.btn.secondary:hover {
-  background-color: #266b96; /* Slightly darker sky blue on hover 
-}
-
-.ask-btn {
-  margin-top: 1rem;
-  width: auto; /* Allow button to size based on content 
-  align-self: flex-end; /* Align button to the right if form is flex column 
-}
-
-/* Questions List 
-.questions-list {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-}
-
-.question-item {
-  background-color: var(--cream);
-  border-radius: 0.75rem;
-  padding: 1.5rem;
-  border: 1px solid var(--mint);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-}
-
-.question-header h3 {
-  font-size: 1.25rem;
-  color: var(--deepBlue);
-  margin-top: 0;
-  margin-bottom: 0.5rem;
-}
-
-.question-meta {
-  font-size: 0.85rem;
-  color: var(--skyBlue);
-  display: block;
-  margin-bottom: 1rem;
-}
-
-.answers-list {
-  margin-top: 1.5rem;
-  padding-top: 1rem;
-  border-top: 1px dashed var(--mint);
-}
-
-.answers-list h4 {
-  font-size: 1rem;
-  color: var(--deepBlue);
-  margin-bottom: 0.75rem;
-}
-
-.answer-item {
-  background-color: white;
-  border-left: 3px solid var(--skyBlue);
-  padding: 0.75rem 1rem;
-  margin-bottom: 0.75rem;
-  border-radius: 0.4rem;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
-}
-
-.answer-item p {
-  margin: 0 0 0.5rem 0;
-  color: var(--deepBlue);
-}
-
-.answer-meta {
-  font-size: 0.75rem;
-  color: #666;
-  display: block;
-  text-align: right;
-}
-
-.answer-form {
-  margin-top: 1.5rem;
-  padding-top: 1rem;
-  border-top: 1px solid var(--cream);
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-.answer-btn {
-  align-self: flex-end;
-}
-
-.h1-text {
-  display: inline-block;
-  vertical-align: middle;
-  margin-left: 10px;
-  font-family: "Nunito", sans-serif;
-  font-weight: bold;  
-  letter-spacing: 0.5px;
-  color: var(--mint);
-  transition: color 0.4s ease;
-  font-optical-sizing: auto;
-  font-style: normal;
-}
-
-.h1-text:hover {
-  color: var(--cream); 
-  text-shadow: #216491 0px 0px 5px; 
-  transform: scale(1.01); 
-}
-
-/* Keyframe Animationen für den animierten Header 
-@keyframes gradientWave {
-  0% {
-    background-position: 0% 50%;
+@media (min-width: 600px) {
+  .question-input, .answer-input {
+    max-width: 700px;
+    margin-left: auto;
+    margin-right: auto;
   }
-  25% {
-    background-position: 100% 50%;
-  }
-  50% {
-    background-position: 100% 100%;
-  }
-  75% {
-    background-position: 0% 100%;
-  }
-  100% {
-    background-position: 0% 50%;
+}
+@media (min-width: 900px) {
+  .question-input, .answer-input {
+    max-width: 900px;
   }
 }
 
-@keyframes headerSlideIn {
-  0% {
-    transform: translateY(-50px) scale(0.9);
-    opacity: 0;
-  }
-  60% {
-    transform: translateY(5px) scale(1.05);
-    opacity: 1;
-  }
-  100% {
-    transform: translateY(0) scale(1);
-    opacity: 1;
-  }
-}
-
-@keyframes headerPulse {
-  0%, 100% {
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-  }
-  50% {
-    box-shadow: 0 25px 70px rgba(79, 227, 193, 0.4);
-  }
-}
-
-@keyframes backgroundShimmer {
-  0%, 100% {
-    opacity: 0.3;
-    transform: translateX(-10px);
-  }
-  50% {
-    opacity: 0.6;
-    transform: translateX(10px);
-  }
-}
-
-@keyframes rotate {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
-}
-
-@keyframes titleGlow {
-  0% {
-    text-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-  }
-  100% {
-    text-shadow: 0 4px 20px rgba(0, 0, 0, 0.3), 0 0 30px rgba(255, 255, 255, 0.2);
-  }
-}
-
-@keyframes subtitleFloat {
-  0%, 100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-5px);
-  }
-}
-
-/* Responsive Design (adapting from profile.css) 
-@media (max-width: 768px) {
-  .help-container {
-    padding: 1rem 0.5rem;
-  }
-  
-  .help-header {
-    padding: 1.5rem;
-  }
-  
-  .help-header .header-content {
-    flex-direction: column;
-    text-align: center;
-  }
-  
-  .help-content {
-    padding: 1.5rem;
-  }
-
-  .section-title {
-    font-size: 1.25rem;
-  }
-
-  .btn {
-    width: 100%; /* Full width buttons on small screens 
-  }
-
-  .ask-btn, .answer-btn {
-    align-self: stretch; /* Stretch buttons to full width 
-  }
-
-  /* Responsive für animierten Header 
-  .help-animated-header {
-    padding: 50px 15px;
-  }
-
-  .help-animated-header h1 {
-    font-size: 2.5rem;
-    letter-spacing: 1px;
-  }
-
-  .help-animated-header p {
-    font-size: 1.1rem;
-  }
-}
-
-@media (max-width: 480px) {
-  .help-header .header-text h1 {
-    font-size: 1.5rem;
-  }
-
-  .help-animated-header {
-    padding: 40px 10px;
-  }
-
-  .help-animated-header h1 {
-    font-size: 2rem;
-  }
-
-  .help-animated-header p {
-    font-size: 1rem;
-  }
-} */
 
 /* Arbens Version */
 
@@ -503,6 +70,62 @@
   position: relative;
   overflow: hidden;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+/* --- Arben Button Design --- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 0.5rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: transform 0.2s ease, background-color 0.2s ease;
+  text-decoration: none;
+  justify-content: center;
+}
+.btn:hover {
+  transform: scale(1.03);
+}
+.btn.primary {
+  background-color: var(--mint);
+  color: var(--deepBlue);
+}
+.btn.primary:hover {
+  background-color: #37d0b1;
+}
+.btn.secondary {
+  background-color: var(--skyBlue);
+  color: white;
+}
+.btn.secondary:hover {
+  background-color: #266b96;
+}
+.ask-btn {
+  margin-top: 1rem;
+  margin-top: 1rem;
+}
+.answer-btn {
+  /* explizit wie .btn.primary */
+  background-color: var(--mint);
+  color: var(--deepBlue);
+  border-radius: 0.5rem;
+  font-weight: 500;
+  font-size: 1rem;
+  padding: 0.75rem 1.5rem;
+  margin-top: 0.5rem;
+  transition: transform 0.2s ease, background-color 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  border: none;
+  cursor: pointer;
+  justify-content: center;
+}
+.answer-btn:hover {
+  background-color: #37d0b1;
+  transform: scale(1.03);
+}
   animation:
     gradientWave 8s ease-in-out infinite,
     headerSlideIn 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards,
@@ -563,7 +186,6 @@
   grid-template-columns: 1fr;
   gap: 2.5rem;
   max-width: 100%;
-  width: 100%;
   margin: 0 auto;
 }
 /* Section Blocks - Completely New Design */
@@ -581,6 +203,9 @@
   width: 100%;
   max-width: 100%;
   margin: 0 auto;
+  .btn {
+    width: 100%;
+  }
 }
 .section-block::before {
   content: '';
@@ -708,10 +333,9 @@
   min-width: 200px;
 }
 .answer-btn {
-  align-self: flex-end;
-  min-width: 150px;
-  font-size: 0.9rem;
-  padding: 0.8rem 1.5rem;
+  /* Arben-Design, keine min-width, keine align-self */
+  font-size: 1rem;
+  padding: 0.75rem 1.5rem;
 }
 /* Questions Section */
 .questions-section {
@@ -868,15 +492,10 @@
   .question-item {
     padding: 1.5rem;
   }
-  .btn {
-    width: 100%;
-    margin-top: 1rem;
-  }
-  .answer-btn {
-    align-self: stretch;
-  }
   .ask-btn {
+    width: 100%;
     align-self: stretch;
+    margin-top: 1rem;
   }
 }
 @media (max-width: 480px) {
@@ -889,8 +508,11 @@
   .section-block {
     padding: 1.5rem 1rem;
   }
-  .question-input, .answer-input {
-    padding: 1rem;
+  /* Keine width/align-self für ask-btn und btn, damit Buttons schmal bleiben */
+  .ask-btn {
+    margin-top: 1rem;
   }
-}
+  .btn {
+    /* Buttons behalten ihre natürliche Breite */
+  }
 

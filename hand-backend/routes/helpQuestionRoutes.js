@@ -1,50 +1,47 @@
 // helpQuestionRoutes.js
 // Routen für Community-Fragen (Hilfe/FAQ)
 
+
 import express from 'express';
 import HelpQuestion from '../models/helpQuestionModel.js';
-import { protect } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
-// Neue Frage stellen
-router.post('/', protect, async (req, res) => {
-  try {
-    const { question } = req.body;
-    if (!question) return res.status(400).json({ error: 'Frage darf nicht leer sein.' });
-    const helpQuestion = new HelpQuestion({
-      user: req.user.id,
-      question
-    });
-    await helpQuestion.save();
-    res.status(201).json(helpQuestion);
-  } catch (err) {
-    res.status(500).json({ error: 'Fehler beim Speichern der Frage.' });
-  }
-});
 
-// Alle Fragen abrufen
-router.get('/', async (req, res) => {
+// Alle Fragen & Antworten abrufen
+router.get('/questions', async (req, res) => {
   try {
-    const questions = await HelpQuestion.find().populate('user', 'nickname email');
+    const questions = await HelpQuestion.find();
     res.json(questions);
   } catch (err) {
     res.status(500).json({ error: 'Fehler beim Laden der Fragen.' });
   }
 });
 
-// Einzelne Frage beantworten
-router.put('/:id/answer', protect, async (req, res) => {
+// Neue Frage speichern
+router.post('/questions', async (req, res) => {
   try {
-    const { answer } = req.body;
+    const { user, question, date } = req.body;
+    if (!question) return res.status(400).json({ error: 'Frage darf nicht leer sein.' });
+    const newQuestion = new HelpQuestion({ user, question, date, answers: [] });
+    await newQuestion.save();
+    res.status(201).json(newQuestion);
+  } catch (err) {
+    res.status(400).json({ error: 'Fehler beim Speichern der Frage.' });
+  }
+});
+
+// Antwort zu einer Frage speichern
+router.post('/questions/:id/answer', async (req, res) => {
+  try {
+    const { user, answer, date } = req.body;
     const question = await HelpQuestion.findById(req.params.id);
     if (!question) return res.status(404).json({ error: 'Frage nicht gefunden.' });
-    question.answer = answer;
-    question.answeredAt = new Date();
+    question.answers.push({ user, answer, date });
     await question.save();
-    res.json(question);
+    res.status(201).json(question);
   } catch (err) {
-    res.status(500).json({ error: 'Fehler beim Beantworten der Frage.' });
+    res.status(400).json({ error: 'Fehler beim Speichern der Antwort.' });
   }
 });
 

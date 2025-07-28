@@ -1,14 +1,21 @@
 // helpQuestionModel.js
 // Modell für Community-Fragen (Hilfe/FAQ)
 
+
 import mongoose from 'mongoose';
 
+
+const answerSchema = new mongoose.Schema({
+  user: { type: String, required: true },
+  answer: { type: String, required: true },
+  date: { type: String, required: true }
+});
+
 const helpQuestionSchema = new mongoose.Schema({
-  user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  user: { type: String, required: true },
   question: { type: String, required: true },
-  answer: { type: String },
-  createdAt: { type: Date, default: Date.now },
-  answeredAt: { type: Date }
+  date: { type: String, required: true },
+  answers: [answerSchema]
 });
 
 const HelpQuestion = mongoose.model('HelpQuestion', helpQuestionSchema);
