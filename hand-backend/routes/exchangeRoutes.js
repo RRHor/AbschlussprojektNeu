@@ -1,6 +1,7 @@
 // routes/exchangeRoutes.js
 import express from 'express';
 import Exchange from '../models/ExchangeModel.js';
+import User from '../models/UserModel.js'; // Importiere das User-Modell
 import { protect } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
@@ -113,15 +114,12 @@ router.post('/', protect, async (req, res) => {
 
     // Validierung
     if (!title || !description || !category) {
-      console.log('❌ Validation failed - missing fields');
       return res.status(400).json({
         success: false,
         message: 'Titel, Beschreibung und Kategorie sind erforderlich'
       });
     }
-
     if (category === 'tauschen' && !tauschGegen) {
-      console.log('❌ Validation failed - missing tauschGegen');
       return res.status(400).json({
         success: false,
         message: 'Für Kategorie "tauschen" ist das Feld "tausche gegen" erforderlich'
@@ -131,12 +129,8 @@ router.post('/', protect, async (req, res) => {
     console.log('✅ Validation passed, creating exchange post...');
 
     const exchangePost = new Exchange({
-      title,
-      description,
-      category: category.toLowerCase(),
-      tauschGegen: category === 'tauschen' ? tauschGegen : undefined,
-      image,
-      author: req.user._id
+      ...req.body,
+      author: req.user._id // Wichtig: User-ID aus Token setzen
     });
 
     console.log('📝 Exchange post object created:', exchangePost);
@@ -144,14 +138,11 @@ router.post('/', protect, async (req, res) => {
     const savedPost = await exchangePost.save();
     console.log('💾 Post saved to MongoDB:', savedPost._id);
 
-    await savedPost.populate('author', 'nickname');
-    console.log('👤 Author populated:', savedPost.author);
-
-    res.status(201).json({
-      success: true,
-      data: savedPost,
-      message: 'Post erfolgreich erstellt'
-    });
+    // User-lastActivity aktualisieren
+    await User.findByIdAndUpdate(req.user._id, { lastActivity: new Date() });
+    
+    await savedPost.populate('author', 'nickname username email');
+    res.status(201).json(savedPost);
 
     console.log('✅ Response sent successfully');
 

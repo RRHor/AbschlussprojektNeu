@@ -1,52 +1,63 @@
 // models/ExchangeModel.js
 import mongoose from 'mongoose';
 
-const exchangeSchema = new mongoose.Schema({
-  title: {
-    type: String,
-    required: [true, 'Titel ist erforderlich'],
-    trim: true,
-    maxlength: [100, 'Titel darf maximal 100 Zeichen haben']
-  },
-  description: {
-    type: String,
-    required: [true, 'Beschreibung ist erforderlich'],
-    trim: true,
-    maxlength: [1000, 'Beschreibung darf maximal 1000 Zeichen haben']
-  },
-  category: {
-    type: String,
-    required: [true, 'Kategorie ist erforderlich'],
-    enum: ['verschenken', 'tauschen', 'suchen'],
-    lowercase: true
-  },
+// const exchangeSchema = new mongoose.Schema({
+//   title: {
+//     type: String,
+//     required: [true, 'Titel ist erforderlich'],
+//     trim: true,
+//     maxlength: [100, 'Titel darf maximal 100 Zeichen haben']
+//   },
+//   description: {
+//     type: String,
+//     required: [true, 'Beschreibung ist erforderlich'],
+//     trim: true,
+//     maxlength: [1000, 'Beschreibung darf maximal 1000 Zeichen haben']
+//   },
+//   category: {
+//     type: String,
+//     required: [true, 'Kategorie ist erforderlich'],
+//     enum: ['verschenken', 'tauschen', 'suchen'],
+//     lowercase: true
+//   },
  
-  tauschGegen: {
-    type: String,
-    trim: true,
-    required: function() {
-      return this.category === 'tauschen';
-    },
-    maxlength: [200, 'Tausch-Beschreibung darf maximal 200 Zeichen haben']
-  },
-  author: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: true
-  },
-  status: {
-    type: String,
-    enum: ['aktiv', 'reserviert', 'abgeschlossen'],
-    default: 'aktiv'
-  },
-  views: {
-    type: Number,
-    default: 0
-  },
-  image: { type: String }
-}, {
-  timestamps: true
-});
+//   tauschGegen: {
+//     type: String,
+//     trim: true,
+//     required: function() {
+//       return this.category === 'tauschen';
+//     },
+//     maxlength: [200, 'Tausch-Beschreibung darf maximal 200 Zeichen haben']
+//   },
+//   author: {
+//     type: mongoose.Schema.Types.ObjectId,
+//     ref: 'User',
+//     required: true
+//   },
+//   status: {
+//     type: String,
+//     enum: ['aktiv', 'reserviert', 'abgeschlossen'],
+//     default: 'aktiv'
+//   },
+//   views: {
+//     type: Number,
+//     default: 0
+//   },
+//   image: { type: String }
+// }, {
+//   timestamps: true
+// });
+
+const exchangeSchema = new mongoose.Schema({
+  title: { type: String, required: true },
+  description: { type: String, required: true },
+  category: { type: String, required: true },
+  author: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  image: String,
+  tauschGegen: String,
+  status: { type: String, default: 'aktiv' },
+  views: { type: Number, default: 0 }
+}, { timestamps: true });
 
 // Debug Pre-Save Hook
 exchangeSchema.pre('save', function(next) {
@@ -83,3 +94,4 @@ exchangeSchema.post('save', function(error, doc, next) {
 const Exchange = mongoose.model('Exchange', exchangeSchema);
 
 export default Exchange;
+

@@ -58,12 +58,21 @@
   margin-top: 2rem;
 }
 
+.team-member {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
 .team-member img {
-  width: 100%;
-  height: 220px;
+  width: 200px;
+  height: 250px;
+  /* width: 180px;
+  height: 180px; */
   object-fit: cover;
+  object-position: center top;
   border-radius: 10px;
-   box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
 
 .team-member h3 {

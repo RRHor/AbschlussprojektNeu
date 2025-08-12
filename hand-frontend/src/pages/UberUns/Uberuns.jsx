@@ -106,7 +106,7 @@ import uberuns2 from '../../assets/uberuns2.jpg';
 import uberuns3 from '../../assets/uberuns3.jpg';
 import Nazli from '../../assets/personalphoto/Nazli.png';
 import Dominik from '../../assets/personalphoto/Dominik.png';
-import Rea from '../../assets/personalphoto/Rea.avif';
+import Rea from '../../assets/personalphoto/Rea.png';
 import Brian from '../../assets/personalphoto/Brian.png';
 import Arben from '../../assets/personalphoto/Arben.png';
 import Dagmar from '../../assets/personalphoto/Dagmar.png';

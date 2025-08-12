@@ -43,8 +43,9 @@
 
 //Router-Switcher von Arben
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Calendar, User, Search, Tag, PlusCircle, XCircle, MessageCircle, Send, ChevronDown, ChevronUp, MapPin, Gift, RefreshCw, HelpCircle, Eye } from 'lucide-react';
+import axios from 'axios';
 import './Exchange.css';
 
 const Exchange = () => {
@@ -59,8 +60,8 @@ const Exchange = () => {
   });
 
   const [newItem, setNewItem] = useState({
-    title: '', description: '', author: '', category: 'verschenken', 
-    subcategory: 'verschenken', location: '', condition: 'gut', image: ''
+    title: '', description: '', category: 'verschenken', 
+    subcategory: 'verschenken', location: '', condition: 'gut', image: '', wantedItems: ''
   });
 
   const [items, setItems] = useState([
@@ -134,17 +135,25 @@ const Exchange = () => {
   };
 
   const getStatusColor = (status, category) => {
+    if (status === 'aktiv') return '#22c55e'; // grün für aktiv
     if (category === 'suche' || category === 'hilfe') {
-      return status === 'aktiv' ? '#22c55e' : '#6b7280';
+      return status === 'erfüllt' ? '#6b7280' : '#22c55e';
     }
-    return status === 'verfügbar' ? '#22c55e' : status === 'reserviert' ? '#f59e0b' : '#ef4444';
+    return status === 'verfügbar' ? '#22c55e'
+      : status === 'reserviert' ? '#f59e0b'
+      : status === 'vergeben' ? '#ef4444'
+      : '#6b7280';
   };
 
   const getStatusLabel = (status, category) => {
+    if (status === 'aktiv') return 'Aktiv';
     if (category === 'suche' || category === 'hilfe') {
-      return status === 'aktiv' ? 'Aktiv' : 'Erfüllt';
+      return status === 'erfüllt' ? 'Erfüllt' : 'Aktiv';
     }
-    return status === 'verfügbar' ? 'Verfügbar' : status === 'reserviert' ? 'Reserviert' : 'Vergeben';
+    return status === 'verfügbar' ? 'Verfügbar'
+      : status === 'reserviert' ? 'Reserviert'
+      : status === 'vergeben' ? 'Vergeben'
+      : 'Aktiv';
   };
 
   const handleContactUser = (itemId) => {
@@ -152,25 +161,58 @@ const Exchange = () => {
     alert(`Kontakt zu ${item.author} wird hergestellt.`);
   };
 
-  const handleNewItemSubmit = (e) => {
+  const handleNewItemSubmit = async (e) => {
     e.preventDefault();
-    if (!newItem.title || !newItem.description || !newItem.author || !newItem.location) {
+
+    // Pflichtfelder prüfen
+    if (!newItem.title || !newItem.description || !newItem.category || !newItem.location) {
       alert("Bitte füllen Sie alle erforderlichen Felder aus.");
       return;
     }
 
+    // Für "tauschen" und "suche" muss das jeweilige Feld gesetzt sein
+    if (newItem.category === 'tauschen' && !newItem.wantedItems) {
+      alert("Bitte gib an, was du suchst (Tausche gegen).");
+      return;
+    }
+
+    // Das Backend erwartet KEIN author-Feld!
     const newItemEntry = {
-      ...newItem,
-      id: Math.max(...items.map(item => item.id)) + 1,
-      date: new Date().toISOString().split('T')[0],
-      status: newItem.category === 'suche' || newItem.category === 'hilfe' ? 'aktiv' : 'verfügbar',
-      image: newItem.image || 'https://images.unsplash.com/photo-1507525428034-b723cf961c3e?w=600&h=300&fit=crop'
+      title: newItem.title,
+      description: newItem.description,
+      category: newItem.category,
+      location: newItem.location,
+      condition: newItem.condition,
+      image: newItem.image || 'https://images.unsplash.com/photo-1507525428034-b723cf961c3e?w=600&h=300&fit=crop',
+      // Für "tauschen" und "suche" das richtige Feld mitschicken:
+      ...(newItem.category === 'tauschen' && { tauschGegen: newItem.wantedItems }),
+      // Falls du für "suche" ein extra Feld brauchst, z.B. gesuchtNach: newItem.wantedItems
     };
 
-    setItems([newItemEntry, ...items]);
+    try {
+      const token = localStorage.getItem('token');
+      await axios.post('/api/exchange', {
+        title: newItem.title,
+        description: newItem.description,
+        category: newItem.category,
+        location: newItem.location,
+        image: newItem.image || 'https://images.unsplash.com/photo-1507525428034-b723cf961c3e?w=600&h=300&fit=crop',
+        tauschGegen: newItem.category === 'tauschen' ? newItem.wantedItems : undefined
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      alert("Eintrag erfolgreich hinzugefügt!");
+      fetchItems(); // Items neu laden
+    } catch (err) {
+      alert("Fehler beim Speichern des Eintrags!");
+      console.error(err);
+    }
+
     setShowAddItemPopup(false);
-    setNewItem({ title: '', description: '', author: '', category: 'verschenken', subcategory: 'verschenken', location: '', condition: 'gut', image: '' });
-    alert("Eintrag erfolgreich hinzugefügt!");
+    setNewItem({
+      title: '', description: '', category: 'verschenken', subcategory: 'verschenken',
+      location: '', condition: 'gut', image: '', wantedItems: ''
+    });
   };
 
   const submitComment = (itemId) => {
@@ -195,6 +237,20 @@ const Exchange = () => {
 
     setNewComment(prev => ({ ...prev, [itemId]: { author: '', content: '' } }));
   };
+
+  const fetchItems = async () => {
+    try {
+      const response = await axios.get('/api/exchange');
+      setItems(Array.isArray(response.data.data) ? response.data.data : []);
+    } catch (err) {
+      console.error('Fehler beim Laden der Einträge:', err);
+      setItems([]);
+    }
+  };
+
+  useEffect(() => {
+    fetchItems();
+  }, []);
 
   return (
     <div className="exchange-container">
@@ -234,7 +290,7 @@ const Exchange = () => {
         <div>
           {filteredItems.length > 0 ? (
             filteredItems.map(item => (
-              <div key={item.id} className="item-card">
+              <div key={item._id || item.id} className="item-card">
                 <div className="item-image-container">
                   <img src={item.image} alt={item.title} className="item-image" />
                   <div className="category-badge">
@@ -272,7 +328,11 @@ const Exchange = () => {
                     <div className="meta-info">
                       <div className="meta-item">
                         <User size={16} />
-                        <span>{item.author}</span>
+                        <span>
+                          {item.author && typeof item.author === 'object'
+                            ? item.author.nickname || item.author.username || 'Unbekannt'
+                            : item.author || 'Unbekannt'}
+                        </span>
                       </div>
                       <div className="meta-item">
                         <Calendar size={16} />
@@ -284,11 +344,11 @@ const Exchange = () => {
                   <div className="button-group">
                     <button
                       onClick={() => handleContactUser(item.id)}
-                      disabled={item.status === 'vergeben' || item.status === 'erfüllt'}
+                      disabled={item.status === 'vergeben' || item.status === 'Reserviert'}
                       className="contact-button"
                     >
                       {item.status === 'vergeben' || item.status === 'erfüllt' ? 
-                        (item.category === 'suche' || item.category === 'hilfe' ? 'Erfüllt' : 'Vergeben') :
+                        (item.category === 'suche' || item.category === 'hilfe' ? 'Reserviert' : 'Vergeben') :
                         'Kontakt aufnehmen'
                       }
                     </button>
@@ -433,17 +493,6 @@ const Exchange = () => {
                   rows="3"
                   required
                   className="form-textarea"
-                />
-              </div>
-              
-              <div className="form-group">
-                <label className="form-label">Dein Name:</label>
-                <input
-                  type="text"
-                  value={newItem.author}
-                  onChange={(e) => setNewItem({ ...newItem, author: e.target.value })}
-                  required
-                  className="form-input"
                 />
               </div>
               

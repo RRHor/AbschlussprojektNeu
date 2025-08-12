@@ -49,7 +49,7 @@ export const AuthProvider = ({ children }) => {
 
   const fetchUser = async () => {
     try {
-      const response = await axios.get(`${API_URL}/api/auth/users/me`);
+      const response = await axios.get(`${API_URL}/api/users/me`);
       setUser(response.data);
     } catch (error) {
       logout();

@@ -71,4 +71,26 @@
   background-color: var(--mint);
   border-radius: 4px;
   color: var(--text-color);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Status-Indicator */
+.status {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+  margin-left: 0.5rem;
+}
+
+.status.online {
+  background-color: #4CAF50;
+  box-shadow: 0 0 6px rgba(76, 175, 80, 0.6);
+}
+
+.status.away {
+  background-color: #FF9800;
+  box-shadow: 0 0 6px rgba(255, 152, 0, 0.6);
 }

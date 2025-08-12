@@ -1,7 +1,6 @@
 import mongoose from "mongoose";
 import bcrypt from "bcrypt";
 
-
 // User-Schema Definition
 const userSchema = new mongoose.Schema(
   {
@@ -18,7 +17,7 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: [false, "Benutzername ist erforderlich"],
       unique: true,
-       sparse: true, // <--- Diese Zeile hinzufügen!
+      sparse: true,
       trim: true,
       maxlength: [30, "Benutzername darf maximal 30 Zeichen haben"],
     },
@@ -53,8 +52,6 @@ const userSchema = new mongoose.Schema(
     },
 
     // Profil-Felder
-    // firstName: { type: String }, Datenschutz beachten
-    // lastName: { type: String }, Datenschutz beachten
     addresses: [
       {
         street: String,
@@ -66,16 +63,29 @@ const userSchema = new mongoose.Schema(
         lastName: { type: String },
       },
     ],
-    // --- Wichtige User-Status-Felder direkt unter addresses ---
+    
+    // --- Wichtige User-Status-Felder ---
     isAdmin: {
       type: Boolean,
       default: false,
     },
-    isVerified: { type: Boolean, default: false },
-    verificationCode: { type: Number },
-    verificationCodeExpires: { type: Date, default: null },
+    isVerified: { 
+      type: Boolean, 
+      default: false 
+    },
+    verificationCode: { 
+      type: Number 
+    },
+    verificationCodeExpires: { 
+      type: Date, 
+      default: null 
+    },
+    lastActivity: { 
+      type: Date, 
+      default: Date.now 
+    },
   },
-  { timestamps: true } // Erstellt automatisch createdAt und updatedAt Felder
+  { timestamps: true }
 );
 
 // Middleware: Passwort vor dem Speichern hashen
@@ -97,9 +107,6 @@ userSchema.methods.matchPassword = async function (enteredPassword) {
   return await bcrypt.compare(enteredPassword, this.password);
 };
 
-// ODER-Logik: Entweder username ODER nickname muss gesetzt sein, nie beide Pflicht
-// (Validierung siehe unten)
-
 // ODER-Validierung: Mindestens username ODER nickname muss gesetzt sein
 userSchema.pre("validate", function (next) {
   if (!this.username && !this.nickname) {
@@ -109,8 +116,6 @@ userSchema.pre("validate", function (next) {
   next();
 });
 
-
-
-// User-Modell exportieren (verhindert Mehrfach-Registrierung bei Hot-Reload)
+// User-Modell exportieren
 const User = mongoose.models.User || mongoose.model("User", userSchema);
 export default User;
